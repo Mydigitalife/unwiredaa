@@ -138,9 +138,9 @@ class Nodes_Form_NodeSettings extends Unwired_Form
 		$admin = Zend_Auth::getInstance()->getIdentity();
 
 		if (!$acl->isAllowed($admin, new Nodes_Model_Node(), 'special')) {
-			$this->getElement('ssid')->setAttrib('disabled', true)
+			$this->getElement('ssid')->setAttrib('disabled', 'disabled')
 									 ->setRequired(false);
-			$this->getElement('channel')->setAttrib('disabled', true)
+			$this->getElement('channel')->setAttrib('disabled', 'disabled')
 										->setRequired(false);
 		/*	$this->getElement('wifi_enabled')->setAttrib('disabled', true)
 											 ->setRequired(false); */
