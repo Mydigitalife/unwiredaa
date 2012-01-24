@@ -39,7 +39,8 @@ class Users_Form_Admin extends Unwired_Form
 													'class' => 'span-5',
 													'multiOptions' => array(
 																		'users_admin_edit_form_notification_scheme_all',
-																		'users_admin_edit_form_notification_scheme_digest'
+																		'users_admin_edit_form_notification_scheme_digest',
+																		'users_admin_edit_form_notification_scheme_none'
 																		)));
 
 		$this->addElement('text', 'phone', array('label' => 'users_admin_edit_form_phone',
