@@ -29,6 +29,8 @@ class Users_Model_Admin extends Unwired_Model_Generic implements Zend_Acl_Role_I
 
 	protected $_email = null;
 
+	protected $_notificationScheme = 0;
+
 	protected $_phone = null;
 
 	protected $_address = null;
@@ -151,6 +153,17 @@ class Users_Model_Admin extends Unwired_Model_Generic implements Zend_Acl_Role_I
 	 */
 	public function setEmail($email) {
 		$this->_email = $email;
+		return $this;
+	}
+
+	public function getNotificationScheme()
+	{
+		return $this->_notificationScheme;
+	}
+
+	public function setNotificationScheme($scheme)
+	{
+		$this->_notificationScheme = (int) $scheme;
 		return $this;
 	}
 

@@ -34,6 +34,13 @@ class Users_Form_Admin extends Unwired_Form
 													'required' => true,
 													'class' => 'span-5',
 													'validators' => array('len' => array('validator' => 'EmailAddress'))));
+		$this->addElement('select', 'notification_scheme', array('label' => 'users_admin_edit_form_notification_scheme',
+													'required' => true,
+													'class' => 'span-5',
+													'multiOptions' => array(
+																		'users_admin_edit_form_notification_scheme_all',
+																		'users_admin_edit_form_notification_scheme_digest'
+																		)));
 
 		$this->addElement('text', 'phone', array('label' => 'users_admin_edit_form_phone',
 													'required' => false,
@@ -137,6 +144,7 @@ class Users_Form_Admin extends Unwired_Form
 		$this->addDisplayGroup(array('firstname',
 									 'lastname',
 									 'email',
+									 'notification_scheme',
 									 'phone',
 									 'address',
 									 'city',
