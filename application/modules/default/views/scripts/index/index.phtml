@@ -64,7 +64,7 @@
 		$.ajax({
 			url: '<?php echo $this->url(array('module' => 'default',
 			                                  'controller' => 'index',
-			                                  'action' => 'stats'), 'default', true)?>/location/' + deviceData.mac,
+			                                  'action' => 'stats'), 'default', true)?>/location/' + parseInt(deviceData.node_id).toString(16),
 			success: function(data) {
 				if (lastDevice !== deviceData) {
 					return;
