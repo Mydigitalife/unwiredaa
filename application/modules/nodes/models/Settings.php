@@ -38,7 +38,7 @@ class Nodes_Model_Settings extends Unwired_Model_Generic
 
 	protected $_bandwidthdown = null;
 
-	protected $_trafficlimit = null;
+	protected $_trafficlimit = 0;
 
 	protected $_channel = 11;
 
@@ -234,7 +234,7 @@ class Nodes_Model_Settings extends Unwired_Model_Generic
 	 * @param field_type $trafficlimit
 	 */
 	public function setTrafficlimit($trafficlimit) {
-		$this->_trafficlimit = $trafficlimit;
+		$this->_trafficlimit = (int) $trafficlimit;
 
 		return $this;
 	}
