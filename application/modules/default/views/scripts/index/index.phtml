@@ -71,15 +71,16 @@
 				}
 
 				var  defaultData = {
-									"session_count": "N/A",
-									"internet_users": "N/A",
-									"total_kbps_up": "N/A",
-									"total_kbps_down": "N/A"
+									"session_count": "0",
+									"internet_users": "0",
+									"session_count": 0,
+									"total_kbps_up": "0",
+									"total_kbps_down": "0"
 									} ;
 
 				if (data) {
 
-					var garden_users = 'N/A';
+					var garden_users = '0';
 					if (data.session_count == -1) {
 						data = defaultData;
 					} else {
