@@ -15,27 +15,8 @@
  * @author B. Krastev <bkrastev@web-teh.net>
  */
 
-class Default_Job_UpdateTranslations {
-
-    protected $_view = null;
-
-    public function getView()
-    {
-        if (null === $this->_view) {
-            $this->setView(Zend_Controller_Action_HelperBroker::getStaticHelper('viewRenderer')->view);
-        }
-
-        return $this->_view;
-    }
-
-    public function setView(Zend_View_Interface $view)
-    {
-        $this->_view = $view;
-
-        $this->_view->addBasePath(APPLICATION_PATH . '/modules/report/views', 'Reports_View')
-                   /* ->setScriptPath(APPLICATION_PATH . '/report/views/scripts')*/;
-        return $this;
-    }
+class Default_Job_UpdateTranslations
+{
 
     public function run()
     {
@@ -104,13 +85,13 @@ class Default_Job_UpdateTranslations {
         $fromConfig = new Zend_Config_Ini($fromFile, null, true);
         $toConfig = new Zend_Config_Ini($toFile, null, true);
 
-        $fromConfig->merge($fromConfig);
+        $fromConfig->merge($toConfig);
 
         $writer = new Zend_Config_Writer_Ini();
 
 		$writer->setFilename($toFile)
 			   ->setConfig($fromConfig);
-			  
+
         $writer->write();
 		} catch (Exception $e) {
 			Zend_Debug::dump($fromFile);
