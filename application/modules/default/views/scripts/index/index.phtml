@@ -5,6 +5,7 @@
 	$nodes = array();
 	foreach ($this->nodes as $node) {
 		$nodeArray = $node->toArray();
+		$nodeArray['trafficlimit'] = $nodeArray['settings']['trafficlimit'];
 		unset($nodeArray['settings']);
 		$nodes[] = $nodeArray;
 	}
@@ -157,7 +158,6 @@
 			var formattedDate = formatDbDate(data.online_status_changed);
 
 
-
 			if (data.online_status > 0) {
 				onlinemsg = ''; // 'Online users: ' + data.online_users_count;
 	    		onlinemsg = onlinemsg + '</div><div>Online since: ' + formattedDate;
@@ -172,6 +172,10 @@
 
 			if (data.status == 'disabled') {
 				mimage = "<?php echo $this->baseUrl("themes/" . $this->theme . "/images/icons/32x32/marker-grey.png")?>";
+			}
+
+			if (data.trafficlimit >= 0 && data.monthly_traffic >= data.trafficlimit) {
+				mimage = "<?php echo $this->baseUrl("themes/" . $this->theme . "/images/icons/32x32/marker-yellow.png")?>";
 			}
 
 			<?php if (!isset($this->currentUser)) :?>
