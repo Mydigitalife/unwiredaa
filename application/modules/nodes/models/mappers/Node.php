@@ -182,7 +182,7 @@ class Nodes_Model_Mapper_Node extends Unwired_Model_Mapper
 							->getAdapter()
 								 ->select()
 								 	->from('acct_internet_interim', new Zend_Db_Expr('count(*) AS `online_users`'))
-								 	->where('node_id = ?' . $model->getNodeId())
+								 	->where('node_id = ?', $model->getNodeId())
 								 	->where('`time` > DATE_SUB(NOW(), INTERVAL 1 MINUTE)');
 
 		$onlineUsers = $this->getDbTable()
