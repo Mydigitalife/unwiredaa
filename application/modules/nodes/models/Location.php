@@ -121,7 +121,7 @@ class Nodes_Model_Location extends Unwired_Model_Generic
 	 * @param float $latitude
 	 */
 	public function setLatitude($latitude) {
-		$this->_latitude = $latitude;
+		$this->_latitude = empty($latitude) ? null : $latitude;
 
 		return $this;
 	}
@@ -137,7 +137,7 @@ class Nodes_Model_Location extends Unwired_Model_Generic
 	 * @param float $longitude
 	 */
 	public function setLongitude($longitude) {
-		$this->_longitude = $longitude;
+		$this->_longitude = empty($longitude) ? null : $longitude;
 
 		return $this;
 	}

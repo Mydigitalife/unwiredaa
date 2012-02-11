@@ -26,6 +26,8 @@ class Nodes_Model_Node extends Unwired_Model_Generic implements Zend_Acl_Resourc
 
 	protected $_status = 'planning';
 
+	protected $_statusExtended = null;
+
 	protected $_updateConfig = 0;
 
 	protected $_location = null;
@@ -36,7 +38,7 @@ class Nodes_Model_Node extends Unwired_Model_Generic implements Zend_Acl_Resourc
 
 	protected $_onlineStatus = 0;
 
-	protected $_onlineStatusChanged = 0;
+	protected $_onlineStatusChanged = '0000-00-00 00:00:00';
 
 	protected $_onlineUsersCount = 0;
 
@@ -59,6 +61,7 @@ class Nodes_Model_Node extends Unwired_Model_Generic implements Zend_Acl_Resourc
 
 		$this->getLocation()->setNodeId($this->_nodeId);
 		$this->getSettings()->setNodeId($this->_nodeId);
+		$this->getStatusExtended()->setNodeId($this->_nodeId);
 
 		return $this;
 	}
@@ -289,12 +292,42 @@ class Nodes_Model_Node extends Unwired_Model_Generic implements Zend_Acl_Resourc
 		return $this;
 	}
 
+	/**
+	 * @return Nodes_Model_Status $status
+	 */
+	public function getStatusExtended() {
+		if (null === $this->_statusExtended){
+			$this->_statusExtended = new Nodes_Model_Status();
+		}
+
+		return $this->_statusExtended;
+	}
+
+	/**
+	 * @param Nodes_Model_Status|array $status
+	 * @return Nodes_Model_Node
+	 */
+	public function setStatusExtended($status) {
+		if ($status instanceof Nodes_Model_Status) {
+			$this->_statusExtended = $status;
+		} elseif (is_array($status)) {
+			$this->getStatusExtended()->fromArray($status);
+		} else {
+			throw new Unwired_Exception('Trying to set invalid value for node extended status');
+		}
+
+		$this->getStatusExtended()->setNodeId($this->getNodeId());
+
+		return $this;
+	}
+
 	public function toArray()
 	{
 		$data = parent::toArray();
 
 		$data['settings'] = $data['settings']->toArray();
 		$data['location'] = $data['location']->toArray();
+		$data['status_extended'] = $data['status_extended']->toArray();
 
 		return $data;
 	}

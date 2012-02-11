@@ -161,4 +161,13 @@ $(document).ready(function(){
 		fade: true,
 		opacity: 0.8
 	});
+	
+	$('.datepicker').datepicker({
+		dateFormat: 'mm/dd/yy'
+		
+	});
+	$('.datetimeselector').datetimepicker({
+		dateFormat: 'mm/dd/yy',
+		timeFormat: 'h:m'
+	});
 });

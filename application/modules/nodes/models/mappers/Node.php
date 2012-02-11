@@ -22,6 +22,7 @@ class Nodes_Model_Mapper_Node extends Unwired_Model_Mapper
 
 	protected $_locationTable = null;
 	protected $_settingsTable = null;
+	protected $_statusTable = null;
 
 	public function getLocationTable()
 	{
@@ -39,6 +40,15 @@ class Nodes_Model_Mapper_Node extends Unwired_Model_Mapper
 		}
 
 		return $this->_settingsTable;
+	}
+
+	public function getStatusTable()
+	{
+		if (null ===  $this->_statusTable) {
+			$this->_statusTable = new Nodes_Model_DbTable_NodeStatus();
+		}
+
+		return $this->_statusTable;
 	}
 
 	public function find($id)
@@ -111,6 +121,10 @@ class Nodes_Model_Mapper_Node extends Unwired_Model_Mapper
 
 			parent::save($model->getSettings());
 
+			$this->setDbTable($this->getStatusTable());
+
+			parent::save($model->getStatusExtended());
+
 			$this->setDbTable($nodeTable);
 
 			$nodeTable->getAdapter()->commit();
@@ -118,6 +132,7 @@ class Nodes_Model_Mapper_Node extends Unwired_Model_Mapper
 			$data = $model->toArray();
 			$data['settings'] = $model->getSettings()->toArray();
 			$data['location'] = $model->getLocation()->toArray();
+			$data['status_extended'] = $model->getStatusExtended()->toArray();
 
 			/**
 			 * Fire our own event for node add/edit
@@ -150,24 +165,26 @@ class Nodes_Model_Mapper_Node extends Unwired_Model_Mapper
 			$model->setSettings($settingsRow->toArray());
 		}
 
+		$statusRow = $row->findDependentRowset($this->getStatusTable())->current();
+
+		if ($statusRow) {
+			$model->setStatusExtended($statusRow->toArray());
+		}
+
 		if (!$model->getOnlineStatus()) {
 			return $model;
 		}
 
-		/*$select = $this->getDbTable()
+		/**
+		 * @todo Fix wrong user count
+		 */
+		$select = $this->getDbTable()
 							->getAdapter()
 								 ->select()
 								 	->from('radacct', new Zend_Db_Expr('count(*) AS `online_users`'))
 								 	->where('location = 0x' . $model->getMac())
 								 	->where('acctterminatecause = ? OR acctterminatecause IS NULL', '')
-								 	->where('username != "" AND LOCATE(":", calledstationid) = 0'); */
-
-		$select = $this->getDbTable()
-		                ->getAdapter()
-		                    ->select()
-		                        ->from('acct_internet_interim', new Zend_Db_Expr('count(session_id) AS `online_users`'))
-		                        ->where('node_id =' . $model->getNodeId())
-		                        ->where('time > DATE_SUB(NOW(), INTERVAL 1 MINUTE)');
+								 	->where('username != "" AND LOCATE(":", calledstationid) = 0');
 
 		$onlineUsers = $this->getDbTable()
 								 ->getAdapter()
