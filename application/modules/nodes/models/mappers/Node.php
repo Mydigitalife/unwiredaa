@@ -181,10 +181,9 @@ class Nodes_Model_Mapper_Node extends Unwired_Model_Mapper
 		$select = $this->getDbTable()
 							->getAdapter()
 								 ->select()
-								 	->from('radacct', new Zend_Db_Expr('count(*) AS `online_users`'))
-								 	->where('location = 0x' . $model->getMac())
-								 	->where('acctterminatecause = ? OR acctterminatecause IS NULL', '')
-								 	->where('username != "" AND LOCATE(":", calledstationid) = 0');
+								 	->from('acct_internet_interim', new Zend_Db_Expr('count(*) AS `online_users`'))
+								 	->where('node_id = ?', $model->getNodeId())
+								 	->where('`time` > DATE_SUB(NOW(), INTERVAL 1 MINUTE)');
 
 		$onlineUsers = $this->getDbTable()
 								 ->getAdapter()
