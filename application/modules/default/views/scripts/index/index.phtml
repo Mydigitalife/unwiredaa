@@ -102,8 +102,7 @@
 					    '<li><strong><?php echo $this->translate('default_index_index_ap_users_online')?>: </strong>' + data.internet_users + '</li>' +
 					    '<li><strong><?php echo $this->translate('default_index_index_ap_users_garden')?>: </strong>' + (data.session_count - data.internet_users) + '</li></ul></div>' +
     					'<div><strong><?php echo $this->translate('default_index_index_ap_speed_up')?>:</strong> ' + data.total_kbps_up + '</div>' +
-    					'<div><strong><?php echo $this->translate('default_index_index_ap_speed_down')?>:</strong> ' + data.total_kbps_down + '</div>' +
-    					'<div><strong><?php echo $this->translate('default_index_index_ap_monthly_usage');?> </strong>' + data.status_extended.lastupdate + data.status_extended.monthly_traffic + 'MB</div>'
+    					'<div><strong><?php echo $this->translate('default_index_index_ap_speed_down')?>:</strong> ' + data.total_kbps_down + '</div>';
     				);
 				}
 
@@ -224,8 +223,8 @@
 									  '<li><strong><?php echo $this->translate('default_index_index_ap_users_garden')?>: </strong>0</li></ul></div>' +
 									  '<div><strong><?php echo $this->translate('default_index_index_ap_speed_up')?>: </strong> 0</div>' +
 									  '<div><strong><?php echo $this->translate('default_index_index_ap_speed_down')?>: </strong> 0</div>' +
-									  '<div><strong><?php echo $this->translate('default_index_index_ap_monthly_usage');?> </strong>0000-00-00 00:00:00: 0 MB</div>' +
 									  '</div>' +
+									  '<div><strong><?php echo $this->translate('default_index_index_ap_monthly_usage');?> </strong>' + data.status_extended.lastupdate +': ' + data.status_extended.monthly_traffic + 'MB</div>' +
 									  '</div>');
 				if (data.online_status > 0) {
 					loadStatistics(data);
