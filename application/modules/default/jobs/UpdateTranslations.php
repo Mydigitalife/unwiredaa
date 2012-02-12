@@ -65,10 +65,13 @@ class Default_Job_UpdateTranslations
                 continue;
             }
 
-            $targetPath = realpath($updatePath . '/' . $file->getBasename());
+            $targetPath = realpath($updatePath) . '/' . $file->getBasename();
+
 
             if (!file_exists($targetPath)) {
-                copy($file->getPathname(), $targetPath);
+                if (!copy($file->getPathname(), $targetPath)) {
+                    echo "Cannot copy {$file->getPathname()} to {$targetPath}\n";
+                }
                 continue;
             }
 
