@@ -1,6 +1,12 @@
 <?php
 	$this->headScript()->appendFile($this->baseUrl('scripts/jquery.sparkline.min.js'));
 	$this->headScript()->appendFile($this->httpScheme() . '://maps.googleapis.com/maps/api/js?sensor=false');
+	$markerClusteringLevel = 0;
+
+	if (isset($this->systemSettings['node_map_cluster_level']) && ($this->systemSettings['node_map_cluster_level']->getValue() > 0)) {
+	    $markerClusteringLevel = (int) $this->systemSettings['node_map_cluster_level']->getValue();
+	    $this->headScript()->appendFile($this->httpScheme() . '://google-maps-utility-library-v3.googlecode.com/svn/trunk/markerclusterer/src/markerclusterer_compiled.js');
+	}
 
 	$nodes = array();
 	foreach ($this->nodes as $node) {
@@ -154,6 +160,8 @@
 
 		infowindow = new google.maps.InfoWindow();
 
+		var markers = [];
+
 		$.each(nodes, function(idx, data) {
 			var mimage = "<?php echo $this->baseUrl("themes/" . $this->theme . "/images/icons/32x32/marker-red.png")?>";
 			var onlinemsg = '';
@@ -195,6 +203,8 @@
 
 			marker.setMap(map);
 
+			markers.push(marker);
+
 		    google.maps.event.addListener(marker, 'click', function(event) {
 		        if (statsTimer) {
 		        	clearTimeout(statsTimer);
@@ -226,8 +236,12 @@
 				infowindow.open(map, marker);
 		    });
 		});
-
-		<?php if (isset($this->currentUser)) :?>
+		<?php if ($markerClusteringLevel > 0) :?>
+		var markerClusterer = new MarkerClusterer(map, markers, {maxZoom: <?php echo $markerClusteringLevel; ?>});
+		<?php
+		     endif;
+		     if (isset($this->currentUser)) :
+		?>
 		loadNetworkStatistics();
 		<?php endif; ?>
 	});
