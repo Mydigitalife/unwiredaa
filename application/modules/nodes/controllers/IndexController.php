@@ -18,6 +18,21 @@ class Nodes_IndexController extends Unwired_Rest_Controller
 		$this->_defaultMapper = new Nodes_Model_Mapper_Node();
 	}
 
+	/**
+	 * Get the cache instance
+	 * @return Zend_Cache_Frontend_File
+	 */
+    protected function _getCache()
+    {
+        if (null === $this->_cache) {
+            $cacheMgr = $this->getInvokeArg('bootstrap')->getResource('Cachemanager');
+
+            $this->_cache = $cacheMgr->getCache('default');
+        }
+
+        return $this->_cache;
+    }
+
 	public function indexAction()
 	{
 
@@ -159,6 +174,8 @@ class Nodes_IndexController extends Unwired_Rest_Controller
 
 		$result = parent::_add($mapper, $entity, $form);
 		if ($result) {
+		    $this->_getCache()->clean('matchingTag', array('node'));
+
 			$nodeService = new Nodes_Service_Node();
 			if ($nodeService->writeUci($this->view->entity)) {
 				$this->_setAutoRedirect(true)
