@@ -162,12 +162,19 @@ $(document).ready(function(){
 		opacity: 0.8
 	});
 	
-	$('.datepicker').datepicker({
+	if (uiLanguage == 'en') {
+		$.datepicker.setDefaults($.datepicker.regional['']);
+		$.timepicker.setDefaults($.datepicker.regional['']);
+	} else if ($.datepicker.regional[uiLanguage]) {
+		$.datepicker.setDefaults($.datepicker.regional[uiLanguage]);
+		$.timepicker.setDefaults($.datepicker.regional[uiLanguage]);
+	}
+	$('.datepicker').datepicker(/*{
 		dateFormat: 'mm/dd/yy'
 		
-	});
-	$('.datetimeselector').datetimepicker({
+	}*/);
+	$('.datetimepicker').datetimepicker(/*{
 		dateFormat: 'mm/dd/yy',
-		timeFormat: 'h:m'
-	});
+		timeFormat: 'hh:mm'
+	}*/);
 });
