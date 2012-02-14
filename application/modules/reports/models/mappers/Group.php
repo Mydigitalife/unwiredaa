@@ -89,6 +89,10 @@ class Reports_Model_Mapper_Group extends Unwired_Model_Mapper
 
 		$model->setRecepients($recepients);
 
+		$mapperTemplate = new Reports_Model_Mapper_CodeTemplate();
+		$template = $mapperTemplate->find($model->getCodetemplateId());
+		$model->setCodeTemplate($template);
+
 		return $model;
 	}
 

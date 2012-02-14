@@ -10,12 +10,12 @@
 	$this->headLink()->appendStylesheet($this->baseUrl('scripts/jstree/themes/default/style.css'));
 
 	$groupsAssigned = $this->entity->getGroupsAssigned();
-	
+
 	if (empty($groupsAssigned)) {
 		$groupsAssigned = $this->currentUser->getGroupsAssigned();
 		$groupsAssigned = array_slice($groupsAssigned, 0, 1, true);
 	}
-	
+
 	$this->headScript()->captureStart();
 
 ?>
@@ -55,11 +55,11 @@ $(function () {
 
 				$(newRole).children('label').attr('for', 'selgrp' + groupId)
 											.html(data.rslt.obj.children('a:first').text() + ' ');
-											
+
 				$(newRole).children('input').attr('id', 'selgrp' + groupId)
 											 .attr('name', 'groups_assigned[' + groupId + ']')
-											 .val(groupId);											
-											
+											 .val(groupId);
+
 				$("label[for=available_roles]").parent().before(newRole);
 
 				newRole.show();
@@ -74,7 +74,77 @@ $(function () {
 				groupIds.splice(idx, 1);
 				$('#selgrp'+groupId).parent().remove();
 			}
-	     })
+	     });
+
+
+	  $('#date_relative').change(function(){
+        if ($(this).is(':checked')) {
+        	$(this).parent().next().show().find('select:first').change();
+        } else {
+        	$(this).parent().next().hide().next().show().next().show();
+        }
+	  });
+
+	  $('#timeframe').change(function() {
+	  	if ($(this).val() == 'custom') {
+	  		$(this).parent().next().show().next().show();
+	  	} else {
+	  		$(this).parent().next().hide().next().hide();
+
+			var dateFrom = new Date();
+			var dateTo = new Date();
+
+	  		switch ($(this).val()) {
+	  			case 'yesterday':
+	  				dateFrom = dateFrom.setTime(dateFrom.getTime()-24*3600);
+	  				dateTo = dateFrom;
+	  			break;
+
+	  			case 'currweek':
+					var dayOfWeek = dateFrom.getDay();
+
+	  			break;
+
+	  			case 'lastweek':
+
+	  			break;
+
+	  			case 'lastmonth':
+
+	  			break;
+
+	  			case 'currentmonth':
+
+	  			break;
+
+	  			case 'lastyear':
+
+	  			break;
+
+	  			case 'curryear':
+
+	  			break;
+	  		}
+
+		  	dateFrom.setHours(0);
+			dateFrom.setMinutes(0);
+			dateFrom.setSeconds(0);
+			dateTo.setHours(23);
+			dateTo.setMinutes(59);
+			dateTo.setSeconds(0);
+	  	}
+	  });
+
+	  $('#report_type').change(function(){
+	  	if ($(this).val() == 0) {
+	  		$(this).parent().next().hide();
+	  	} else {
+	  		$(this).parent().next().show();
+	  	}
+	  });
+
+	  $('#date_relative').change();
+	  $('#report_type').change();
 
 });
 <?php
@@ -82,8 +152,14 @@ $(function () {
 
 
 	echo $this->form;
+
+	if ($this->entity->getCodeTemplate()->isCapable(Reports_Model_CodeTemplate::CAP_GLOBAL)) :
 ?>
 
 <div class="grouptree span-8">
 	<?php echo $this->tree($this->rootGroup, null, array('prefix' => 'group_')); ?>
 </div>
+
+<?php
+    endif;
+?>

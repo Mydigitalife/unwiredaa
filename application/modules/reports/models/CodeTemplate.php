@@ -24,6 +24,39 @@ class Reports_Model_CodeTemplate extends Unwired_Model_Generic implements Zend_A
 	protected $_title = null;
 
 	/**
+	 * Report template capabilities
+	 * Supports CAP_GLOBAL by default
+	 * @var integer
+	 */
+	protected $_capabilites = 17;
+
+    /**
+     * Defines whether the report can handle selection of groups to run on,
+	 * if false no group selection tree should be visible when creating such a report
+     */
+    const CAP_GLOBAL = 1;
+
+    /**
+     * If depth limit capable, then provide maxDepth value
+     */
+    const CAP_DEPTH = 2;
+
+    /**
+     * Defines whether inner intervals are handled by this report
+     */
+    const CAP_INNER = 4;
+
+    /**
+     * Report is capable of producing chart results
+     */
+    const CAP_CHART = 8;
+
+    /**
+     * Report is capable of producing table data results
+     */
+    const CAP_DATA = 16;
+
+	/**
 	 * @return the $codeTemplateId
 	 */
 	public function getCodeTemplateId() {
@@ -81,7 +114,40 @@ class Reports_Model_CodeTemplate extends Unwired_Model_Generic implements Zend_A
 		return $this->getTitle();
 	}
 
-/* (non-PHPdoc)
+	public function setCapabilities($capabilities)
+	{
+	    $this->_capabilites = (int) $capabilities;
+	    return $this;
+	}
+
+	public function getCapabilities()
+	{
+	    return $this->_capabilities;
+	}
+
+	public function isCapable($capability)
+	{
+	    $capability = (int) $capability;
+
+	    return (bool) ($this->_capabilites & $capability);
+	}
+
+	public function addCapability($capability)
+	{
+	    $capability = (int) $capability;
+	    $this->_capabilites |= $capability;
+	    return $this;
+	}
+
+	public function removeCapability($capability)
+	{
+	    $capability = (int) $capability;
+	    $this->_capabilites &= ~$capability;
+	    return $this;
+	}
+
+
+	/* (non-PHPdoc)
 	 * @see Zend_Acl_Resource_Interface::getResourceId()
 	 */
 	public function getResourceId() {

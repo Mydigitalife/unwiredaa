@@ -14,26 +14,24 @@
  * Report group form
  * @author G. Sokolov <joro@web-teh.net>
  */
-class Reports_Form_Group extends Unwired_Form {
-	public function init() {
+class Reports_Form_Group extends Unwired_Form
+{
+	public function init()
+	{
 		parent::init ();
 
-		$this->addElement ( 'text', 'title', array ('label' => 'report_group_title', 'required' => true, 'class' => 'span-5', 'validators' => array ('len' => array ('validator' => 'StringLength', 'options' => array ('min' => 2 ) ) ) ) );
-		$this->addElement ( 'text', 'description', array ('label' => 'report_group_description', 'required' => true, 'class' => 'span-5', 'validators' => array ('len' => array ('validator' => 'StringLength', 'options' => array ('min' => 2 ) ) ) ) );
+		$this->addElement('text', 'title', array ('label' => 'report_group_title', 'required' => true, 'class' => 'span-5', 'validators' => array ('len' => array ('validator' => 'StringLength', 'options' => array ('min' => 2 ) ) ) ) );
+		$this->addElement('text', 'description', array ('label' => 'report_group_description', 'required' => true, 'class' => 'span-5', 'validators' => array ('len' => array ('validator' => 'StringLength', 'options' => array ('min' => 2 ) ) ) ) );
 
-		$this->addElement ( 'text', 'date_from', array ('label' => 'report_group_date_from', 'required' => true, 'class' => 'span-5', 'validators' => array ('len' => array ('validator' => 'Date' ) ) ) );
+		$this->addElement('date', 'date_from', array('label' => 'report_group_date_from',
+													 'required' => true,
+													 'class' => 'span-5 datetimepicker',
+													 'format' => Zend_Date::DATETIME_SHORT));
 
-		$this->addElement ( 'text', 'date_to', array ('label' => 'report_group_date_to', 'required' => true, 'class' => 'span-5', 'validators' => array ('len' => array ('validator' => 'Date' ) ) ) );
-
-		$dateTo = new Zend_Date();
-
-        $dateTo->setDay(1)
-               ->addMonth(1)
-               ->subDay(1);
-
-        $this->getElement('date_from')->setValue(date('Y-m-01'));
-
-        $this->getElement('date_to')->setValue($dateTo->toString('yyyy-MM-dd'));
+		$this->addElement('date', 'date_to', array('label' => 'report_group_date_to',
+												   'required' => true,
+												   'class' => 'span-5 datetimepicker',
+												   'format' => Zend_Date::DATETIME_SHORT));
 
 		$this->addElement('select', 'report_type', array('label' => 'report_group_report_type',
 				'required' => true,
@@ -66,20 +64,96 @@ class Reports_Form_Group extends Unwired_Form {
 		$this->getElement('email')->setDecorators($decorators)
 		                          ->setDescription('report_group_email_description');
 
-		$this->addElement('multiCheckbox', 'groups_assigned', array('label' => 'report_edit_form_group',
-											  	 			  'required' => true,
-															  'separator' => '',
-															  'registerInArrayValidator' => false));
+        /**
+         * Hide group tree if CAP_GLOBAL is not present
+         */
+		if ($this->getEntity()->getCodeTemplate()->isCapable(Reports_Model_CodeTemplate::CAP_GLOBAL)) {
+    		$this->addElement('multiCheckbox', 'groups_assigned', array('label' => 'report_edit_form_group',
+    											  	 			  'required' => true,
+    															  'separator' => '',
+    															  'registerInArrayValidator' => false));
 
 
 
-		$this->getElement ( 'groups_assigned' )->addErrorMessage ( 'report_edit_form_error_group' );
-		$this->addElement ( 'hidden', 'available_roles', array ('label' => 'report_edit_form_group_role', 'required' => false, 'class' => 'span-5', 'registerInArrayValidator' => false ) );
-		//$this->addElement ( 'select', 'available_roles', array ('label' => 'report_edit_form_group_role', 'required' => false, 'class' => 'span-5', 'registerInArrayValidator' => false ) );
+    		$this->getElement('groups_assigned')->addErrorMessage('report_edit_form_error_group');
 
-		$mapper = null;
+    		$this->addElement('hidden', 'available_roles', array('label' => 'report_edit_form_group_role',
+    															 'required' => false,
+    															 'class' => 'span-5',
+    															 'registerInArrayValidator' => false));
+		}
 
-		$this->addElement ( 'submit', 'form_element_submit', array ('label' => 'report_group_edit_form_save', 'tabindex' => 20, 'class' => 'button', 'decorators' => array ('ViewHelper', array (array ('span' => 'HtmlTag' ), array ('tag' => 'span', 'class' => 'button green' ) ) ) ) );
+		/**
+		 * Report supports depth limiting
+		 */
+		if ($this->getEntity()->getCodeTemplate()->isCapable(Reports_Model_CodeTemplate::CAP_DEPTH)) {
+		    $this->addElement('select', 'max_depth', array('label' => 'report_group_edit_depth',
+		                                                   'required' => true,
+		                                                   'value' => -1,
+		                                                   'multiOptions' => array(-1 => 'report_group_edit_depth_nolimit',
+		                                                                           0 => 'report_group_edit_depth_groups',
+		                                                                           1 => 'report_group_edit_depth_groups_1',
+		                                                                           2 => 'report_group_edit_depth_groups_2',
+		                                                                           3 => 'report_group_edit_depth_groups_3',
+		                                                                           4 => 'report_group_edit_depth_groups_4',
+		                                                                           5 => 'report_group_edit_depth_groups_5',
+		                                                                           )));
+		}
+
+		$this->addElement('checkbox', 'date_relative', array('label' => 'report_group_edit_date_relative',
+															 'required' => false));
+
+
+
+		$this->addElement('select', 'timeframe', array('label' => 'report_group_edit_timeframe',
+		                                               'required' => true,
+		                                               'value' => 'custom',
+		                                               'multiOptions' => array('custom' => 'report_group_edit_timeframe_custom',
+		                                                                       'today' => 'report_group_edit_timeframe_today',
+		                                                                       'yesterday' => 'report_group_edit_timeframe_yesterday',
+		                                                                       'currweek' => 'report_group_edit_timeframe_current_week',
+		                                                                       'lastweek' => 'report_group_edit_timeframe_last_week',
+		                                                                       'currmonth' => 'report_group_edit_timeframe_current_month',
+		                                                                       'lastmonth' => 'report_group_edit_timeframe_last_month',
+		                                                                       'curryear' => 'report_group_edit_timeframe_current_year',
+		                                                                       'lastyear' => 'report_group_edit_timeframe_last_year',
+		                                                                       )));
+
+        /**
+		 * Report supports inner interval
+		 */
+		if ($this->getEntity()->getCodeTemplate()->isCapable(Reports_Model_CodeTemplate::CAP_INNER)) {
+            $this->addElement('select', 'inner_interval', array('label' => 'report_group_edit_inner',
+        		                                               'required' => true,
+        		                                               'value' => 'custom',
+        		                                               'multiOptions' => array(0 => 'report_group_edit_inner_none',
+        		                                                                       5 => 'report_group_edit_inner_5min',
+        		                                                                       10 => 'report_group_edit_inner_10min',
+        		                                                                       30 => 'report_group_edit_inner_30min',
+        		                                                                       60 => 'report_group_edit_inner_1hour',
+        		                                                                       180 => 'report_group_edit_inner_3hours',
+        		                                                                       360 => 'report_group_edit_inner_6hours',
+        		                                                                       720 => 'report_group_edit_inner_12hours',
+        		                                                                       1440 => 'report_group_edit_inner_1day',
+        		                                                                       10080 => 'report_group_edit_inner_1week',
+        		                                                                       20160 => 'report_group_edit_inner_2weeks',
+        		                                                                       43200 => 'report_group_edit_inner_1month',
+        		                                                                       129600 => 'report_group_edit_inner_3months',
+        		                                                                       525600 => 'report_group_edit_inner_1year'
+        		                                                                       )));
+		}
+
+		$this->addElement('submit', 'form_element_submit', array('label' => 'report_group_edit_form_save',
+																 'tabindex' => 20,
+                                                        		 'class' => 'button',
+                                                        		 'decorators' => array('ViewHelper',
+                                                        		                       array(
+                                                        		                             array('span' => 'HtmlTag' ),
+                                                        		                             array('tag' => 'span',
+                                                        		                            	  'class' => 'button green')
+                                                        		                             )
+                                                        		                       )
+                                                        		 ));
 
 		$this->addElement('href',
 						  'form_element_cancel',
@@ -99,8 +173,18 @@ class Reports_Form_Group extends Unwired_Form {
                                 )
 		                 );
 
-		$this->addDisplayGroup ( array ('title', 'description', 'date_from', 'date_to', 'report_type', 'report_interval' ), 'personal' );
-		//$this->addDisplayGroup ( array ('title', 'description', 'date_from', 'date_to' ), 'personal' );
+		$this->addDisplayGroup(array(
+									'title',
+									'description',
+									'date_relative',
+									'timeframe',
+									'date_from',
+									'date_to',
+		                            'inner_interval',
+									'report_type',
+									'report_interval',
+									'max_depth' ),
+							   'report_preferences' );
 
 		$this->addDisplayGroup(array('email',
 				'groups_assigned',
@@ -119,6 +203,7 @@ class Reports_Form_Group extends Unwired_Form {
 				$this->getElement ( 'groups_assigned' )->addMultiOption ( $key, $value );
 			}
 		}
+
 		parent::populate ( $values );
 	}
 
