@@ -107,8 +107,8 @@ class Reports_Form_Group extends Unwired_Form
 
 		$this->addElement('select', 'timeframe', array('label' => 'report_group_edit_timeframe',
 		                                               'required' => true,
-		                                               'value' => 'custom',
-		                                               'multiOptions' => array('custom' => 'report_group_edit_timeframe_custom',
+		                                               'value' => 'today',
+		                                               'multiOptions' => array(/*'custom' => 'report_group_edit_timeframe_custom',*/
 		                                                                       'today' => 'report_group_edit_timeframe_today',
 		                                                                       'yesterday' => 'report_group_edit_timeframe_yesterday',
 		                                                                       'currweek' => 'report_group_edit_timeframe_current_week',
