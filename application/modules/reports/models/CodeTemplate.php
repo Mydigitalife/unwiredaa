@@ -28,7 +28,11 @@ class Reports_Model_CodeTemplate extends Unwired_Model_Generic implements Zend_A
 	 * Supports CAP_GLOBAL by default
 	 * @var integer
 	 */
-	protected $_capabilites = 17;
+	protected $_capabilites = 49;
+
+	protected $_innerCountMin = 0;
+
+	protected $_innerCountMax = 0;
 
     /**
      * Defines whether the report can handle selection of groups to run on,
@@ -55,6 +59,11 @@ class Reports_Model_CodeTemplate extends Unwired_Model_Generic implements Zend_A
      * Report is capable of producing table data results
      */
     const CAP_DATA = 16;
+
+    /**
+     * User can select output type
+     */
+    const CAP_OUTPUTSELECTABLE = 32;
 
 	/**
 	 * @return the $codeTemplateId
@@ -146,6 +155,27 @@ class Reports_Model_CodeTemplate extends Unwired_Model_Generic implements Zend_A
 	    return $this;
 	}
 
+	public function getInnerCountMin()
+	{
+	    return $this->_innerCountMin;
+	}
+
+	public function setInnerCountMin($min = 0)
+	{
+	    $this->_innerCountMin = (int) $min;
+	    return $this;
+	}
+
+	public function getInnerCountMax()
+	{
+	    return $this->_innerCountMax;
+	}
+
+	public function setInnerCountMax($max = 0)
+	{
+	    $this->_innerCountMax = (int) $max;
+	    return $this;
+	}
 
 	/* (non-PHPdoc)
 	 * @see Zend_Acl_Resource_Interface::getResourceId()

@@ -100,6 +100,12 @@ $(function () {
 	  				dateTo = dateFrom;
 	  			break;
 
+	  			case 'lastweek':
+					/**
+					 * @todo Fix if date is less than 7
+					 */
+					dateFrom.setDate(dateFrom.getDate()-7);
+
 	  			case 'currweek':
 					var dayOfWeek = dateFrom.getDay();
 
@@ -112,10 +118,6 @@ $(function () {
 
 					dateTo = dateFrom;
 					dateTo.setDate(dateFrom.getDate()+6);
-	  			break;
-
-	  			case 'lastweek':
-
 	  			break;
 
 	  			case 'lastmonth':
@@ -142,6 +144,9 @@ $(function () {
 			dateTo.setMinutes(59);
 			dateTo.setSeconds(0);
 	  	}
+
+	  	$('#date_from').datetimepicker('setDate', dateFrom);
+	  	$('#date_to').datetimepicker('setDate', dateTo);
 	  });
 
 	  $('#report_type').change(function(){

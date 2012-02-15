@@ -156,11 +156,25 @@ class Reports_Form_Group extends Unwired_Form
 		    $outputType->addMultiOption(2, 'report_group_edit_outputtype_chart');
 		}
 
-		if (count($outputType->getMultiOptions()) == 2) {
+		$multiOptions = $outputType->getMultiOptions();
+
+		if (count($multiOptions) == 2) {
 		    $outputType->addMultiOption(3, 'report_group_edit_outputtype_both')
 		               ->setValue(3);
 		}
 
+		if (!$this->getEntity()->getCodeTemplate()->isCapable(Reports_Model_CodeTemplate::CAP_OUTPUTSELECTABLE)) {
+		    $this->removeElement('output_type');
+		    $this->addElement('hidden', 'output_type');
+
+		    if (count($multiOptions) == 2) {
+		        $value = 3;
+		    } else {
+		        $value = key($multiOptions);
+		    }
+
+		    $this->getElement('output_type')->setValue($value);
+		}
 
 
 		$this->addElement('submit', 'form_element_submit', array('label' => 'report_group_edit_form_save',
