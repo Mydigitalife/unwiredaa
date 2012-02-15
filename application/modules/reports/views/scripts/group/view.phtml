@@ -71,13 +71,11 @@ $acl = Zend_Registry::get ( 'acl' );
 		data.addColumn(<?php if (isset($value->rows[0][$k]) && is_numeric($value->rows[0][$k])): ?>"number"<?php else: ?>"string"<?php endif; ?>, "<?=$this->translate($v)?>");
 		<?php endforeach; ?>
 
-   		data.addRows(<?php echo count($value->rows); ?>);
-   		<?php $j = 0; ?>
-		<?php foreach ($value->rows as $k => $v): ?>
-			<?php foreach ($v as $kk => $vv): ?>
-			data.setValue(<?php echo $k?>, <?php echo $kk?>, <?php if (is_numeric($vv)): ?><?php echo $vv;?><?php else: ?>"<?php echo $this->translate($vv); ?>"<?php endif; ?>);
-			<?php endforeach; ?>
-		<?php endforeach; ?>
+                data.addRows([
+                <?php foreach ($value->rows as $k => $v):
+			echo ($k==0?"":",").json_encode($v)."\n";
+		endforeach; ?>
+                ]);
 
 		var chart = new google.visualization.<?=isset($value->type)?$value->type:"PieChart"?>(document.getElementById("chart_div<?php echo $key ?>"));
 		chart.draw(data, {width: <?=isset($value->width)?$value->width:"350"?>, height: <?=isset($value->height)?$value->height:"300"?>, title: "<?php echo $this->translate($value->name) ?>"<?=isset($value->nativeOptions)?','.$value->nativeOptions:''?>});
