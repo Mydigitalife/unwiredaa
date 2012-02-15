@@ -143,6 +143,26 @@ class Reports_Form_Group extends Unwired_Form
         		                                                                       )));
 		}
 
+		$this->addElement('select', 'output_type', array('label' => 'report_group_edit_outputtype',
+    		                                               'required' => true));
+
+		$outputType = $this->getElement('output_type');
+
+		if ($this->getEntity()->getCodeTemplate()->isCapable(Reports_Model_CodeTemplate::CAP_DATA)) {
+		    $outputType->addMultiOption(1, 'report_group_edit_outputtype_data');
+		}
+
+		if ($this->getEntity()->getCodeTemplate()->isCapable(Reports_Model_CodeTemplate::CAP_CHART)) {
+		    $outputType->addMultiOption(2, 'report_group_edit_outputtype_chart');
+		}
+
+		if (count($outputType->getMultiOptions()) == 2) {
+		    $outputType->addMultiOption(3, 'report_group_edit_outputtype_both')
+		               ->setValue(3);
+		}
+
+
+
 		$this->addElement('submit', 'form_element_submit', array('label' => 'report_group_edit_form_save',
 																 'tabindex' => 20,
                                                         		 'class' => 'button',
@@ -183,7 +203,8 @@ class Reports_Form_Group extends Unwired_Form
 		                            'inner_interval',
 									'report_type',
 									'report_interval',
-									'max_depth' ),
+									'max_depth',
+		                            'output_type' ),
 							   'report_preferences' );
 
 		$this->addDisplayGroup(array('email',

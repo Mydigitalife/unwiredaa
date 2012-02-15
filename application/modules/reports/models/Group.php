@@ -49,6 +49,12 @@ class Reports_Model_Group extends Unwired_Model_Generic implements Zend_Acl_Role
 
 	protected $_recepients = array();
 
+	protected $_timeframe = 'custom';
+
+	protected $_innerInterval = 0;
+
+	protected $_outputType = 3;
+
 	/**
 	 * @return the $_recepients
 	 */
@@ -353,5 +359,94 @@ class Reports_Model_Group extends Unwired_Model_Generic implements Zend_Acl_Role
 	public function getResourceId() {
 		return 'reports_group';
 	}
+	/**
+     * @return the $_options
+     */
+    public function getOptions()
+    {
+        return $this->_options;
+    }
+
+	/**
+     * @param field_type $_options
+     */
+    public function setOptions($_options)
+    {
+        $this->_options = $_options;
+
+        return $this;
+    }
+
+	/**
+     * @return the $_timeframe
+     */
+    public function getTimeframe()
+    {
+        return $this->_timeframe;
+    }
+
+	/**
+     * @param field_type $_timeframe
+     */
+    public function setTimeframe($_timeframe)
+    {
+        $this->_timeframe = $_timeframe;
+
+        return $this;
+    }
+
+	/**
+     * @return the $_innerInterval
+     */
+    public function getInnerInterval()
+    {
+        return $this->_innerInterval;
+    }
+
+	/**
+     * @param field_type $_innerInterval
+     */
+    public function setInnerInterval($_innerInterval)
+    {
+        $this->_innerInterval = $_innerInterval;
+
+        return $this;
+    }
+
+	/**
+     * @return the $_outputType
+     */
+    public function getOutputType()
+    {
+        return $this->_outputType;
+    }
+
+	/**
+     * @param field_type $_outputType
+     */
+    public function setOutputType($_outputType)
+    {
+        $this->_outputType = $_outputType;
+
+        return $this;
+    }
+
+	/**
+     * @return the $_dateRelative
+     */
+    public function getDateRelative()
+    {
+        return $this->_dateRelative;
+    }
+
+    public function hasOutputChart()
+    {
+        return (bool) ($this->_outputType & 2);
+    }
+
+    public function hasOutputData()
+    {
+        return (bool) ($this->_outputType & 1);
+    }
 
 }

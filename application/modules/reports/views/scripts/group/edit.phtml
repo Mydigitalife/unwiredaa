@@ -103,6 +103,11 @@ $(function () {
 	  			case 'currweek':
 					var dayOfWeek = dateFrom.getDay();
 
+					if (dayOfWeek == 0) {
+						dateFrom.setDate(dateFrom.getDate()-6);
+					} else {
+
+					}
 	  			break;
 
 	  			case 'lastweek':

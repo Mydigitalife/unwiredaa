@@ -155,8 +155,11 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 		$className = $parent->getClassName();
 		$reportGenerator = new $className;
 
+        $reportGenerator->setReportGroup($report);
 
-		$result = $reportGenerator->getData(array_keys($report->getGroupsAssigned()), $report->getDateFrom(), $report->getDateTo());
+		$result = $reportGenerator->getData(array_keys($report->getGroupsAssigned()),
+		                                    $report->getDateFrom()->toString('yyyy-MM-dd HH:mm:ss'),
+		                                    $report->getDateTo()->toString('yyyy-MM-dd HH:mm:ss'));
 
 		$entity = new Reports_Model_Items();
 		$entity->setDateAdded(date('Y-m-d H:i:s'));
@@ -250,7 +253,11 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 		$className = $codeTemplate->getClassName();
 		$reportGenerator = new $className;
 
-		$result = $reportGenerator->getData(array_keys($report->getGroupsAssigned()), $report->getDateFrom(), $report->getDateTo());
+		$reportGenerator->setReportGroup($report);
+
+		$result = $reportGenerator->getData(array_keys($report->getGroupsAssigned()),
+		                                    $report->getDateFrom()->toString('yyyy-MM-dd HH:mm:ss'),
+		                                    $report->getDateTo()->toString('yyyy-MM-dd HH:mm:ss'));
 
 		$this->view->parent_parent = $codeTemplate;
 		$this->view->parent = $report;
