@@ -106,8 +106,12 @@ $(function () {
 					if (dayOfWeek == 0) {
 						dateFrom.setDate(dateFrom.getDate()-6);
 					} else {
-
+						dayOfWeek = dayOfWeek-1;
+						dateFrom.setDate(dateFrom.getDate()-6);
 					}
+
+					dateTo = dateFrom;
+					dateTo.setDate(dateFrom.getDate()+6);
 	  			break;
 
 	  			case 'lastweek':

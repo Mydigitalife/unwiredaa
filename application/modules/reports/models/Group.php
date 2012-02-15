@@ -431,14 +431,6 @@ class Reports_Model_Group extends Unwired_Model_Generic implements Zend_Acl_Role
         return $this;
     }
 
-	/**
-     * @return the $_dateRelative
-     */
-    public function getDateRelative()
-    {
-        return $this->_dateRelative;
-    }
-
     public function hasOutputChart()
     {
         return (bool) ($this->_outputType & 2);
