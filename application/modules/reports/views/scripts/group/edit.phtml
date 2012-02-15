@@ -21,6 +21,8 @@
 ?>
 var adminGroups = <?php echo Zend_Json::encode($this->currentUser->getGroupsAssigned());?>;
 var groupsAssigned = <?php echo Zend_Json::encode($groupsAssigned);?>;
+var innerCountMin = <?php echo $this->entity->getCodeTemplate()->getInnerCountMin();?>;
+var innerCountMax = <?php echo $this->entity->getCodeTemplate()->getInnerCountMax();?>;
 
 $(function () {
 	$("label[for=groups_assigned]").siblings('label').remove();
@@ -96,8 +98,8 @@ $(function () {
 
 	  		switch ($(this).val()) {
 	  			case 'yesterday':
-	  				dateFrom = dateFrom.setTime(dateFrom.getTime()-24*3600);
-	  				dateTo = dateFrom;
+	  				dateFrom = new Date(dateFrom.getTime()-24*3600*1000);
+	  				dateTo.setTime(dateFrom.getTime());
 	  			break;
 
 	  			case 'lastweek':
@@ -105,35 +107,50 @@ $(function () {
 					 * @todo Fix if date is less than 7
 					 */
 					dateFrom.setDate(dateFrom.getDate()-7);
-
 	  			case 'currweek':
 					var dayOfWeek = dateFrom.getDay();
 
 					if (dayOfWeek == 0) {
-						dateFrom.setDate(dateFrom.getDate()-6);
+						dateFrom.setTime(dateFrom.getTime()-6*24*3600*1000);
 					} else {
 						dayOfWeek = dayOfWeek-1;
-						dateFrom.setDate(dateFrom.getDate()-6);
+						dateFrom.setTime(dateFrom.getTime()-dayOfWeek*24*3600*1000);
 					}
 
-					dateTo = dateFrom;
-					dateTo.setDate(dateFrom.getDate()+6);
+					dateTo.setTime(dateFrom.getTime()+6*24*3600*1000);
+					//dateTo.setDate(dateFrom.getDate()+6);
 	  			break;
 
 	  			case 'lastmonth':
+					if (dateFrom.getMonth() == 0) {
+						dateFrom.setFullYear(dateFrom.getFullYear()-1);
+						dateFrom.setMonth(11);
+					} else {
+						dateFrom.setMonth(dateFrom.getMonth()-1);
+					}
 
-	  			break;
+	  			case 'currmonth':
+					dateFrom.setDate(1);
+					dateTo.setTime(dateFrom.getTime());
+					if (dateTo.getMonth() == 11) {
+						dateTo.setYear(dateTo.getYear()+1);
+						dateTo.setMonth(0);
+					} else {
+						dateTo.setMonth(dateTo.getMonth()+1);
+					}
 
-	  			case 'currentmonth':
-
+					dateTo.setTime(dateTo.getTime()-24*3600*1000);
 	  			break;
 
 	  			case 'lastyear':
-
-	  			break;
+					dateFrom.setFullYear(dateFrom.getFullYear()-1);
 
 	  			case 'curryear':
-
+					dateFrom.setDate(1);
+					dateFrom.setMonth(0);
+					dateTo.setTime(dateFrom.getTime());
+					dateTo.setMonth(11);
+					dateTo.setDate(31);
 	  			break;
 	  		}
 
@@ -160,7 +177,31 @@ $(function () {
 	  $('#date_relative').change();
 	  $('#report_type').change();
 
+	  $('#date_from').change(filterInnerInterval);
+	  $('#date_to').change(filterInnerInterval);
+
+	  $('#date_to').change();
 });
+
+function filterInnerInterval()
+{
+  	var timeDiff = ($('#date_to').datetimepicker('getDate').getTime()-$('#date_from').datetimepicker('getDate').getTime())/60000;
+
+  	$('#inner_interval option:gt(0)').each(function(){
+
+  		var innerCount = timeDiff / parseInt($(this).val());
+  		if (parseInt($(this).val()) > timeDiff || (innerCountMin > 0 && innerCount < innerCountMin) || (innerCountMax > 0 && innerCount > innerCountMax)) {
+  			$(this).attr('disabled','disabled');
+  		} else {
+  			$(this).removeAttr('disabled');
+  		}
+  	});
+
+  	if ($('#inner_interval option:selected').is(':disabled')) {
+  		$('#inner_interval').val(0);
+  	}
+}
+
 <?php
 	$this->headScript()->captureEnd();
 
