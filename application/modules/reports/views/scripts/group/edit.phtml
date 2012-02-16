@@ -183,19 +183,22 @@ $(function () {
 
 	  $('#date_to').change();
 
-	 /* $('#email').before('<input type="text" id="email_search" class="span-5" />');
+	  $('#email').before('<input type="text" id="email_search" class="span-5" />');
 	  $('#email_search').autocomplete({
-			source: "<?php echo $this->baseUrl($this->url(array('module' => 'users',
-			                                                    'controller' => 'admin',
-			                                                    'action' => 'autocomplete',
-			                                                    'field' => 'email')));?>",
+			source: "<?php echo $this->url(array('module' => 'users',
+			                                     'controller' => 'admin',
+			                                     'action' => 'autocomplete',
+			                                     'field' => 'email'));?>",
 			minLength: 3,
 			select: function( event, ui ) {
-				log( ui.item ?
-					"Selected: " + ui.item.value + " aka " + ui.item.id :
-					"Nothing selected, input was " + this.value );
+				if (!ui.item) {
+					return;
+				}
+
+				$('#email').val(($('#email').val() + ',' + ui.item.value).trim(','));
+				$('#email_search').val('');
 			}
-		});*/
+		});
 });
 
 function filterInnerInterval()

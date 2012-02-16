@@ -119,6 +119,10 @@ class Reports_Model_Group extends Unwired_Model_Generic implements Zend_Acl_Role
 
 	public function setCodeTemplate(Reports_Model_CodeTemplate $codeTemplate)
 	{
+	    if ($codeTemplate && !$this->getReportGroupId()) {
+	        $this->setMaxDepth($codeTemplate->getDefaultDepth());
+	    }
+
 	    $this->_codeTemplate = $codeTemplate;
 	    return $this;
 	}

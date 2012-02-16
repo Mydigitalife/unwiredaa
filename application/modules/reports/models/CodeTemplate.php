@@ -36,6 +36,10 @@ class Reports_Model_CodeTemplate extends Unwired_Model_Generic implements Zend_A
 
 	protected $_innerCountDefault = 0;
 
+	protected $_defaultDepth = -1;
+
+	protected $_options = array();
+
     /**
      * Defines whether the report can handle selection of groups to run on,
 	 * if false no group selection tree should be visible when creating such a report
@@ -187,6 +191,58 @@ class Reports_Model_CodeTemplate extends Unwired_Model_Generic implements Zend_A
 	public function setInnerCountDefault($count = 0)
 	{
 	    $this->_innerCountDefault = (int) $count;
+	    return $this;
+	}
+
+	public function getDefaultDepth()
+	{
+	    return $this->_defaultDepth;
+	}
+
+	public function setDefaultDepth($depth = -1)
+	{
+	    $this->_defaultDepth = (int) $depth;
+
+	    return $this;
+	}
+
+	public function setOptions($options = null)
+	{
+	    if (null === $options || empty($options)) {
+	        $options = array();
+	    }
+
+	    if (is_string($options)) {
+	        $options = @unserialize($options);
+	        if (!$options) {
+	            $options = array();
+	        }
+	    } elseif (!is_array($options)) {
+	        $options = array();
+	    }
+
+	    $this->_options = $options;
+	    return $this;
+	}
+
+	public function getOptions()
+	{
+	    return $this->_options;
+	}
+
+	public function hasOption($option)
+	{
+	    return isset($this->_options[$option]);
+	}
+
+	public function getOption($option)
+	{
+	    return $this->hasOption($option) ? $this->_options[$option] : null;
+	}
+
+	public function setOption($option, $value)
+	{
+	    $this->_options[$option] = $value;
 	    return $this;
 	}
 

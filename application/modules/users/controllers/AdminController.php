@@ -31,6 +31,33 @@ class Users_AdminController extends Unwired_Rest_Controller
 		$this->_index($adminMapper);
 	}
 
+	public function autocompleteAction()
+	{
+	    $this->_helper->layout->disableLayout();
+	    $this->_helper->viewRenderer->setNoRender();
+
+        $field = $this->getRequest()->getParam('field', 'email');
+
+        $term = $this->getRequest()->getParam('term', null);
+
+        if (!$term) {
+            echo $this->view->json(array());
+            return;
+        }
+
+        $this->getRequest()->setParam($field, $term);
+
+        $this->indexAction();
+
+        $results = array();
+        foreach ($this->view->paginator as $user) {
+            $results[] = array('id' => $user->getUserId(),
+                              'label' => $user->getFirstName() . ' ' . $user->getLastName() . '<' . $user->getEmail() . '>',
+                              'value' => $user->getEmail());
+        }
+        echo $this->view->json($results);
+	}
+
 	protected function _getFilters()
 	{
 		$filter = array();
