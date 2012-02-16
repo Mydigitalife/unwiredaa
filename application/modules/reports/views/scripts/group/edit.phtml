@@ -208,7 +208,9 @@ function filterInnerInterval()
 
 	var defaultInnerCountDiff = 9999999999999;
 
-  	$('#inner_interval option').each(function(){
+	var innerCount = 0;
+
+  	$('#inner_interval option').each(function() {
 
   		var innerCount = timeDiff / parseInt($(this).val());
   		if (parseInt($(this).val()) > timeDiff || (innerCountMin > 0 && innerCount < innerCountMin) || (innerCountMax > 0 && innerCount > innerCountMax)) {
@@ -223,6 +225,8 @@ function filterInnerInterval()
   			}
   		}
   	});
+
+	innerCountDefault = innerCount;
 
     if (innerCountMin > 0) {
     	$('#inner_interval option:first').removeAttr('disabled');
