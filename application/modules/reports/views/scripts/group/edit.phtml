@@ -88,6 +88,14 @@ $(function () {
         }
 	  });
 
+	  $('#inner_interval').change(function(){
+	  		if ($(this).val() > 0) {
+	  			var timeDiff = ($('#date_to').datetimepicker('getDate').getTime()-$('#date_from').datetimepicker('getDate').getTime())/60000;
+
+	  			innerCountDefault = Math.round(timeDiff / $(this).val());
+  			}
+	  });
+
 	  $('#timeframe').change(function() {
 	  	if ($(this).val() == 'custom') {
 	  		$(this).parent().next().show().next().show();
@@ -208,8 +216,6 @@ function filterInnerInterval()
 
 	var defaultInnerCountDiff = 9999999999999;
 
-	var innerCount = 0;
-
   	$('#inner_interval option').each(function() {
 
   		var innerCount = timeDiff / parseInt($(this).val());
@@ -226,9 +232,7 @@ function filterInnerInterval()
   		}
   	});
 
-	innerCountDefault = innerCount;
-
-    if (innerCountMin > 0) {
+    if (innerCountMin <= 0) {
     	$('#inner_interval option:first').removeAttr('disabled');
     	if ($('#inner_interval option:selected').is(':disabled')) {
   			$('#inner_interval').val(0);
