@@ -115,7 +115,7 @@ $(function () {
 					/**
 					 * @todo Fix if date is less than 7
 					 */
-					dateFrom.setDate(dateFrom.getDate()-7);
+					dateFrom.setTime(dateFrom.getTime()-7*24*3600*1000);
 	  			case 'currweek':
 					var dayOfWeek = dateFrom.getDay();
 
@@ -127,7 +127,6 @@ $(function () {
 					}
 
 					dateTo.setTime(dateFrom.getTime()+6*24*3600*1000);
-					//dateTo.setDate(dateFrom.getDate()+6);
 	  			break;
 
 	  			case 'lastmonth':
