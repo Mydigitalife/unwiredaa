@@ -34,6 +34,8 @@ class Reports_Model_CodeTemplate extends Unwired_Model_Generic implements Zend_A
 
 	protected $_innerCountMax = 0;
 
+	protected $_innerCountDefault = 0;
+
     /**
      * Defines whether the report can handle selection of groups to run on,
 	 * if false no group selection tree should be visible when creating such a report
@@ -174,6 +176,17 @@ class Reports_Model_CodeTemplate extends Unwired_Model_Generic implements Zend_A
 	public function setInnerCountMax($max = 0)
 	{
 	    $this->_innerCountMax = (int) $max;
+	    return $this;
+	}
+
+	public function getInnerCountDefault()
+	{
+	    return $this->_innerCountDefault;
+	}
+
+	public function setInnerCountDefault($count = 0)
+	{
+	    $this->_innerCountDefault = (int) $count;
 	    return $this;
 	}
 

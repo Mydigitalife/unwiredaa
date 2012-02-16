@@ -23,6 +23,7 @@ var adminGroups = <?php echo Zend_Json::encode($this->currentUser->getGroupsAssi
 var groupsAssigned = <?php echo Zend_Json::encode($groupsAssigned);?>;
 var innerCountMin = <?php echo $this->entity->getCodeTemplate()->getInnerCountMin();?>;
 var innerCountMax = <?php echo $this->entity->getCodeTemplate()->getInnerCountMax();?>;
+var innerCountDefault = <?php echo $this->entity->getCodeTemplate()->getInnerCountDefault();?>;
 
 $(function () {
 	$("label[for=groups_assigned]").siblings('label').remove();
@@ -80,7 +81,7 @@ $(function () {
 
 
 	  $('#date_relative').change(function(){
-        if ($(this).is(':checked')) {
+        if (!$(this).is(':checked')) {
         	$(this).parent().next().show().find('select:first').change();
         } else {
         	$(this).parent().next().hide().next().show().next().show();
@@ -181,25 +182,50 @@ $(function () {
 	  $('#date_to').change(filterInnerInterval);
 
 	  $('#date_to').change();
+
+	 /* $('#email').before('<input type="text" id="email_search" class="span-5" />');
+	  $('#email_search').autocomplete({
+			source: "<?php echo $this->baseUrl($this->url(array('module' => 'users',
+			                                                    'controller' => 'admin',
+			                                                    'action' => 'autocomplete',
+			                                                    'field' => 'email')));?>",
+			minLength: 3,
+			select: function( event, ui ) {
+				log( ui.item ?
+					"Selected: " + ui.item.value + " aka " + ui.item.id :
+					"Nothing selected, input was " + this.value );
+			}
+		});*/
 });
 
 function filterInnerInterval()
 {
   	var timeDiff = ($('#date_to').datetimepicker('getDate').getTime()-$('#date_from').datetimepicker('getDate').getTime())/60000;
 
-  	$('#inner_interval option:gt(0)').each(function(){
+	var defaultInnerCountDiff = 9999999999999;
+
+  	$('#inner_interval option').each(function(){
 
   		var innerCount = timeDiff / parseInt($(this).val());
   		if (parseInt($(this).val()) > timeDiff || (innerCountMin > 0 && innerCount < innerCountMin) || (innerCountMax > 0 && innerCount > innerCountMax)) {
   			$(this).attr('disabled','disabled');
   		} else {
   			$(this).removeAttr('disabled');
+
+  			if (innerCountDefault > 0 && defaultInnerCountDiff > Math.abs(defaultInnerCountDiff - innerCount)) {
+  				defaultInnerCountDiff = Math.abs(defaultInnerCountDiff - innerCount);
+  				$('#inner_interval').val($(this).val());
+  				$(this).attr('selected','selected');
+  			}
   		}
   	});
 
-  	if ($('#inner_interval option:selected').is(':disabled')) {
-  		$('#inner_interval').val(0);
-  	}
+    if (innerCountMin > 0) {
+    	$('#inner_interval option:first').removeAttr('disabled');
+    	if ($('#inner_interval option:selected').is(':disabled')) {
+  			$('#inner_interval').val(0);
+  		}
+    }
 }
 
 <?php

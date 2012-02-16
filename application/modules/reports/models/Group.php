@@ -33,7 +33,7 @@ class Reports_Model_Group extends Unwired_Model_Generic implements Zend_Acl_Role
 
 	protected $_maxDepth = -1;
 
-	protected $_dateRelative = 0;
+	protected $_dateRelative = 1;
 
 	protected $_dateFrom = null;
 
@@ -49,7 +49,7 @@ class Reports_Model_Group extends Unwired_Model_Generic implements Zend_Acl_Role
 
 	protected $_recepients = array();
 
-	protected $_timeframe = 'custom';
+	protected $_timeframe = 'today';
 
 	protected $_innerInterval = 0;
 

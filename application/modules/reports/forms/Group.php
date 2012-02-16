@@ -20,8 +20,15 @@ class Reports_Form_Group extends Unwired_Form
 	{
 		parent::init ();
 
-		$this->addElement('text', 'title', array ('label' => 'report_group_title', 'required' => true, 'class' => 'span-5', 'validators' => array ('len' => array ('validator' => 'StringLength', 'options' => array ('min' => 2 ) ) ) ) );
-		$this->addElement('text', 'description', array ('label' => 'report_group_description', 'required' => true, 'class' => 'span-5', 'validators' => array ('len' => array ('validator' => 'StringLength', 'options' => array ('min' => 2 ) ) ) ) );
+		$this->addElement('text', 'title', array('label' => 'report_group_title',
+												 'required' => true,
+												 'class' => 'span-5',
+												 'validators' => array('len' => array('validator' => 'StringLength',
+																					  'options' => array('min' => 3)))));
+
+		$this->addElement('text', 'description', array('label' => 'report_group_description',
+													   'required' => false,
+													   'class' => 'span-5'));
 
 		$this->addElement('date', 'date_from', array('label' => 'report_group_date_from',
 													 'required' => true,
@@ -52,12 +59,18 @@ class Reports_Form_Group extends Unwired_Form
 						'4' => 'year',
 				)
 		));
-		$this->addElement ( 'textarea', 'email', array ('label' => 'report_group_email', 'required' => false, 'class' => 'span-5', 'rows' => 5, 'style' => 'height: auto !important;', 'validators' => array ('len' => array ('validator' => 'StringLength', 'options' => array ('min' => 2 ) ) ) ) );
+		$this->addElement('textarea', 'email', array('label' => 'report_group_email',
+													 'required' => false,
+													 'class' => 'span-9',
+													 'rows' => 5, 'style' => 'height: auto !important;',
+													 'validators' => array('len' => array('validator' => 'StringLength',
+																						  'options' => array('min' => 6)))));
 
 		$decorators = $this->getElement('email')->getDecorators();
 
 		$firstDecorators = array_slice($decorators, 0, 2, true);
-		$firstDecorators[] = 'Description';
+		$firstDecorators[] = array('validator' => 'Description',
+		                           'options' => array('class' => 'span-9'));
 
 		$decorators = array_merge($firstDecorators, $decorators);
 
@@ -101,6 +114,9 @@ class Reports_Form_Group extends Unwired_Form
 		}
 
 		$this->addElement('checkbox', 'date_relative', array('label' => 'report_group_edit_date_relative',
+		                                                     'checkedValue' => 0,
+		                                                     'uncheckedValue' => 1,
+		                                                     'value' => 1,
 															 'required' => false));
 
 
