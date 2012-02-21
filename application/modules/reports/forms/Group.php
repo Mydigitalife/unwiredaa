@@ -42,21 +42,23 @@ class Reports_Form_Group extends Unwired_Form
 
 		$this->addElement('select', 'report_type', array('label' => 'report_group_report_type',
 				'required' => true,
-				'class' => 'span-5',
-				'multiOptions' => array(
-						'0' => 'report_group_report_type_manual',
-						'1' => 'report_group_report_type_interval',
-						)
+				'class' => 'span-5'
 				));
+
+		if ($this->getEntity()->getCodeTemplate()->getTimeframeLiveMax() !== 0) {
+		    $this->getElement('report_type')->addMultiOption('manual', 'report_group_report_type_manual');
+		}
+
+		$this->getElement('report_type')->addMultiOption('interval', 'report_group_report_type_interval');
 
 		$this->addElement('select', 'report_interval', array('label' => 'report_group_report_interval',
 				'required' => true,
 				'class' => 'span-5',
 				'multiOptions' => array(
-						'1' => 'day',
-						'2' => 'week',
-						'3' => 'month',
-						'4' => 'year',
+						'day' => 'day',
+						'week' => 'week',
+						'month' => 'month',
+						'year' => 'year',
 				)
 		));
 		$this->addElement('textarea', 'email', array('label' => 'report_group_email',
@@ -78,9 +80,9 @@ class Reports_Form_Group extends Unwired_Form
 		                          ->setDescription('report_group_email_description');
 
         /**
-         * Hide group tree if CAP_GLOBAL is not present
+         * Show group tree if report template supports group selection
          */
-		if ($this->getEntity()->getCodeTemplate()->isCapable(Reports_Model_CodeTemplate::CAP_GLOBAL)) {
+		if ($this->getEntity()->getCodeTemplate()->isGroupSelectionSupported()) {
     		$this->addElement('multiCheckbox', 'groups_assigned', array('label' => 'report_edit_form_group',
     											  	 			  'required' => true,
     															  'separator' => '',
@@ -94,12 +96,16 @@ class Reports_Form_Group extends Unwired_Form
     															 'required' => false,
     															 'class' => 'span-5',
     															 'registerInArrayValidator' => false));
+		} else {
+		    $this->addElement('hidden', 'groups_assigned', array( 'required' => true,
+    															  'isArray' => false,
+		                                                          'value' => key(Zend_Auth::getInstance()->getIdentity()->getGroupsAssigned())));
 		}
 
 		/**
 		 * Report supports depth limiting
 		 */
-		if ($this->getEntity()->getCodeTemplate()->isCapable(Reports_Model_CodeTemplate::CAP_DEPTH)) {
+		if ($this->getEntity()->getCodeTemplate()->isGroupDepthSupported()) {
 		    $this->addElement('select', 'max_depth', array('label' => 'report_group_edit_depth',
 		                                                   'required' => true,
 		                                                   'value' => -1,
@@ -113,18 +119,11 @@ class Reports_Form_Group extends Unwired_Form
 		                                                                           )));
 		}
 
-		$this->addElement('checkbox', 'date_relative', array('label' => 'report_group_edit_date_relative',
-		                                                     'checkedValue' => 0,
-		                                                     'uncheckedValue' => 1,
-		                                                     'value' => 1,
-															 'required' => false));
-
-
 
 		$this->addElement('select', 'timeframe', array('label' => 'report_group_edit_timeframe',
 		                                               'required' => true,
 		                                               'value' => 'today',
-		                                               'multiOptions' => array(/*'custom' => 'report_group_edit_timeframe_custom',*/
+		                                               'multiOptions' => array('manual' => 'report_group_edit_timeframe_manual',
 		                                                                       'today' => 'report_group_edit_timeframe_today',
 		                                                                       'yesterday' => 'report_group_edit_timeframe_yesterday',
 		                                                                       'currweek' => 'report_group_edit_timeframe_current_week',
@@ -138,7 +137,7 @@ class Reports_Form_Group extends Unwired_Form
         /**
 		 * Report supports inner interval
 		 */
-		if ($this->getEntity()->getCodeTemplate()->isCapable(Reports_Model_CodeTemplate::CAP_INNER)) {
+		if ($this->getEntity()->getCodeTemplate()->isInnerIntervalSupported()) {
             $this->addElement('select', 'inner_interval', array('label' => 'report_group_edit_inner',
         		                                               'required' => true,
         		                                               'value' => 'custom',
@@ -159,39 +158,18 @@ class Reports_Form_Group extends Unwired_Form
         		                                                                       )));
 		}
 
-		$this->addElement('select', 'output_type', array('label' => 'report_group_edit_outputtype',
-    		                                               'required' => true));
-
-		$outputType = $this->getElement('output_type');
-
-		if ($this->getEntity()->getCodeTemplate()->isCapable(Reports_Model_CodeTemplate::CAP_DATA)) {
-		    $outputType->addMultiOption(1, 'report_group_edit_outputtype_data');
+		if ($this->getEntity()->getCodeTemplate()->getFormatDefault() != 'NotUserDefineable') {
+    		$this->addElement('select', 'format_selected', array('label' => 'report_group_edit_outputtype',
+    		                                                     'required' => true,
+    		                                                     'value' => $this->getEntity()->getCodeTemplate()->getFormatDefault(),
+    		                                                     'multiOptions' => array(
+        		                                                     'Graph' => 'report_group_edit_format_graph',
+        		                                                     'Table' => 'report_group_edit_format_table',
+        		                                                     'Both'  => 'report_group_edit_format_both'
+    		                                                     )));
+		} else {
+            $this->addElement('hidden', 'format_selected', array('value' => $this->getEntity()->getCodeTemplate()->getFormatDefault()));
 		}
-
-		if ($this->getEntity()->getCodeTemplate()->isCapable(Reports_Model_CodeTemplate::CAP_CHART)) {
-		    $outputType->addMultiOption(2, 'report_group_edit_outputtype_chart');
-		}
-
-		$multiOptions = $outputType->getMultiOptions();
-
-		if (count($multiOptions) == 2) {
-		    $outputType->addMultiOption(3, 'report_group_edit_outputtype_both')
-		               ->setValue(3);
-		}
-
-		if (!$this->getEntity()->getCodeTemplate()->isCapable(Reports_Model_CodeTemplate::CAP_OUTPUTSELECTABLE)) {
-		    $this->removeElement('output_type');
-		    $this->addElement('hidden', 'output_type');
-
-		    if (count($multiOptions) == 2) {
-		        $value = 3;
-		    } else {
-		        $value = key($multiOptions);
-		    }
-
-		    $this->getElement('output_type')->setValue($value);
-		}
-
 
 		$this->addElement('submit', 'form_element_submit', array('label' => 'report_group_edit_form_save',
 																 'tabindex' => 20,
@@ -249,9 +227,9 @@ class Reports_Form_Group extends Unwired_Form
 	}
 
 	public function populate(array $values) {
-		if (isset ( $values ['groups_assigned'] ) && count ( $values ['groups_assigned'] )) {
-			foreach ( $values ['groups_assigned'] as $key => $value ) {
-				$this->getElement ( 'groups_assigned' )->addMultiOption ( $key, $value );
+		if (isset($values['groups_assigned']) && count($values['groups_assigned']) && $this->getElement('groups_assigned') instanceof Zend_Form_Element_MultiCheckbox) {
+			foreach ($values['groups_assigned'] as $key => $value) {
+				$this->getElement('groups_assigned')->addMultiOption($key, $value);
 			}
 		}
 
@@ -269,10 +247,10 @@ class Reports_Form_Group extends Unwired_Form
 	}
 
 	public function getValues($suppressArrayNotation = false) {
-		$values = parent::getValues ( $suppressArrayNotation );
+		$values = parent::getValues($suppressArrayNotation );
 
-		if (! isset ( $values ['groups_assigned'] ) && $values ['groups_assigned'] == null) {
-			$values ['groups_assigned'] = array ();
+		if (!isset($values['groups_assigned']) && $values['groups_assigned'] == null) {
+			$values['groups_assigned'] = array();
 		}
 
 		return $values;

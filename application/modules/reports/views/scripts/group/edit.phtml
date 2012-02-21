@@ -24,6 +24,9 @@ var groupsAssigned = <?php echo Zend_Json::encode($groupsAssigned);?>;
 var innerCountMin = <?php echo $this->entity->getCodeTemplate()->getInnerCountMin();?>;
 var innerCountMax = <?php echo $this->entity->getCodeTemplate()->getInnerCountMax();?>;
 var innerCountDefault = <?php echo $this->entity->getCodeTemplate()->getInnerCountDefault();?>;
+var timeframeLiveMax = <?php echo $this->entity->getCodeTemplate()->getTimeframeLiveMax() ?
+                                        $this->entity->getCodeTemplate()->getTimeframeLiveMax() :
+                                        527040; ?>;
 
 $(function () {
 	$("label[for=groups_assigned]").siblings('label').remove();
@@ -79,15 +82,6 @@ $(function () {
 			}
 	     });
 
-
-	  $('#date_relative').change(function(){
-        if (!$(this).is(':checked')) {
-        	$(this).parent().next().show().find('select:first').change();
-        } else {
-        	$(this).parent().next().hide().next().show().next().show();
-        }
-	  });
-
 	  $('#inner_interval').change(function(){
 	  		if ($(this).val() > 0) {
 	  			var timeDiff = ($('#date_to').datetimepicker('getDate').getTime()-$('#date_from').datetimepicker('getDate').getTime())/60000;
@@ -97,8 +91,9 @@ $(function () {
 	  });
 
 	  $('#timeframe').change(function() {
-	  	if ($(this).val() == 'custom') {
+	  	if ($(this).val() == 'manual') {
 	  		$(this).parent().next().show().next().show();
+	  		return;
 	  	} else {
 	  		$(this).parent().next().hide().next().hide();
 
@@ -170,8 +165,14 @@ $(function () {
 			dateTo.setSeconds(0);
 	  	}
 
+		$('#date_from').unbind('change');
+		$('#date_to').unbind('change');
+
 	  	$('#date_from').datetimepicker('setDate', dateFrom);
 	  	$('#date_to').datetimepicker('setDate', dateTo);
+
+	  	$('#date_from').change(filterInnerInterval);
+	  	$('#date_to').change(filterInnerInterval).change();
 	  });
 
 	  $('#report_type').change(function(){
@@ -182,13 +183,25 @@ $(function () {
 	  	}
 	  });
 
-	  $('#date_relative').change();
 	  $('#report_type').change();
 
 	  $('#date_from').change(filterInnerInterval);
 	  $('#date_to').change(filterInnerInterval);
 
-	  $('#date_to').change();
+	 // $('#date_to').change();
+	  $('#timeframe').change();
+
+
+	  if (timeframeLiveMax < 527040) {
+	  	$('#timeframe option:gt(6)').remove();
+	  }
+	  if (timeframeLiveMax < 10080) {
+	  	$('#timeframe option:gt(2)').remove();
+	  }
+
+	  if (timeframeLiveMax < 44640) {
+	  	$('#timeframe option:gt(4)').remove();
+	  }
 
 	  $('#email').before('<input type="text" id="email_search" class="span-5" />');
 	  $('#email_search').autocomplete({
@@ -211,7 +224,14 @@ $(function () {
 
 function filterInnerInterval()
 {
-  	var timeDiff = ($('#date_to').datetimepicker('getDate').getTime()-$('#date_from').datetimepicker('getDate').getTime())/60000;
+	if (!$('#date_to').val().length || !$('#date_from').val().length) {
+		return true;
+	}
+	var timeDiff = ($('#date_to').datetimepicker('getDate').getTime()-$('#date_from').datetimepicker('getDate').getTime())/60000;
+	if (timeDiff > timeframeLiveMax) {
+		alert('<?php echo $this->translate('reports_group_edit_timeframe_overlimit'); ?>');
+		return true;
+	}
 
 	var defaultInnerCountDiff = 9999999999999;
 
@@ -237,6 +257,23 @@ function filterInnerInterval()
   			$('#inner_interval').val(0);
   		}
     }
+/*
+	$('#report_interval option').removeAttr('disabled').removeAttr('selected');
+
+    if (timeDiff > 1440) {
+    		$('#report_interval option:first').attr('disabled','disabled');
+	}
+
+    if (timeDiff > 10080) {
+    		$('#report_interval option:eq(1)').attr('disabled','disabled');
+	}
+
+    if (timeDiff > 44640) {
+    		$('#report_interval option:eq(2)').attr('disabled','disabled');
+	}
+
+    $('#report_interval option:not(:disabled):first').attr('selected','selected');
+*/
 }
 
 <?php
@@ -245,7 +282,7 @@ function filterInnerInterval()
 
 	echo $this->form;
 
-	if ($this->entity->getCodeTemplate()->isCapable(Reports_Model_CodeTemplate::CAP_GLOBAL)) :
+	if ($this->entity->getCodeTemplate()->isGroupSelectionSupported()) :
 ?>
 
 <div class="grouptree span-8">

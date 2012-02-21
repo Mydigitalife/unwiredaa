@@ -23,12 +23,13 @@ class Reports_Model_CodeTemplate extends Unwired_Model_Generic implements Zend_A
 
 	protected $_title = null;
 
-	/**
-	 * Report template capabilities
-	 * Supports CAP_GLOBAL by default
-	 * @var integer
-	 */
-	protected $_capabilites = 49;
+	protected $_groupSelectionSupported = 1;
+
+	protected $_groupDepthSupported = 0;
+
+	protected $_groupDepthDefault = -1;
+
+	protected $_innerIntervalSupported = 0;
 
 	protected $_innerCountMin = 0;
 
@@ -36,40 +37,13 @@ class Reports_Model_CodeTemplate extends Unwired_Model_Generic implements Zend_A
 
 	protected $_innerCountDefault = 0;
 
-	protected $_defaultDepth = -1;
+	protected $_timeframeDefault = 0;
+
+	protected $_timeframeLiveMax = null;
+
+	protected $_formatDefault = 'NotUserDefineable';
 
 	protected $_options = array();
-
-    /**
-     * Defines whether the report can handle selection of groups to run on,
-	 * if false no group selection tree should be visible when creating such a report
-     */
-    const CAP_GLOBAL = 1;
-
-    /**
-     * If depth limit capable, then provide maxDepth value
-     */
-    const CAP_DEPTH = 2;
-
-    /**
-     * Defines whether inner intervals are handled by this report
-     */
-    const CAP_INNER = 4;
-
-    /**
-     * Report is capable of producing chart results
-     */
-    const CAP_CHART = 8;
-
-    /**
-     * Report is capable of producing table data results
-     */
-    const CAP_DATA = 16;
-
-    /**
-     * User can select output type
-     */
-    const CAP_OUTPUTSELECTABLE = 32;
 
 	/**
 	 * @return the $codeTemplateId
@@ -194,14 +168,14 @@ class Reports_Model_CodeTemplate extends Unwired_Model_Generic implements Zend_A
 	    return $this;
 	}
 
-	public function getDefaultDepth()
+	public function getGroupDepthDefault()
 	{
-	    return $this->_defaultDepth;
+	    return $this->_groupDepthDefault;
 	}
 
-	public function setDefaultDepth($depth = -1)
+	public function setGroupDepthDefault($depth = -1)
 	{
-	    $this->_defaultDepth = (int) $depth;
+	    $this->_groupDepthDefault = (int) $depth;
 
 	    return $this;
 	}
@@ -252,4 +226,116 @@ class Reports_Model_CodeTemplate extends Unwired_Model_Generic implements Zend_A
 	public function getResourceId() {
 		return 'reports_index';
 	}
+
+	/**
+     * @return the $groupSelectionSupported
+     */
+    public function isGroupSelectionSupported()
+    {
+        return $this->_groupSelectionSupported;
+    }
+
+	/**
+     * @param field_type $groupSelectionSupported
+     */
+    public function setGroupSelectionSupported($groupSelectionSupported)
+    {
+        $this->_groupSelectionSupported = $groupSelectionSupported;
+
+        return $this;
+    }
+
+	/**
+     * @return the $groupDepthSupported
+     */
+    public function isGroupDepthSupported()
+    {
+        return $this->_groupDepthSupported;
+    }
+
+	/**
+     * @param field_type $groupDepthSupported
+     */
+    public function setGroupDepthSupported($groupDepthSupported)
+    {
+        $this->_groupDepthSupported = $groupDepthSupported;
+
+        return $this;
+    }
+
+	/**
+     * @return the $innerIntervalSupported
+     */
+    public function isInnerIntervalSupported()
+    {
+        return $this->_innerIntervalSupported;
+    }
+
+	/**
+     * @param field_type $innerIntervalSupported
+     */
+    public function setInnerIntervalSupported($innerIntervalSupported)
+    {
+        $this->_innerIntervalSupported = $innerIntervalSupported;
+
+        return $this;
+    }
+
+	/**
+     * @return the $timeframeDefault
+     */
+    public function getTimeframeDefault()
+    {
+        return $this->_timeframeDefault;
+    }
+
+	/**
+     * @param field_type $timeframeDefault
+     */
+    public function setTimeframeDefault($timeframeDefault)
+    {
+        $this->_timeframeDefault = $timeframeDefault;
+
+        return $this;
+    }
+
+	/**
+     * @return the $timeframeLiveMax
+     */
+    public function getTimeframeLiveMax()
+    {
+        return $this->_timeframeLiveMax;
+    }
+
+	/**
+     * @param field_type $timeframeLiveMax
+     */
+    public function setTimeframeLiveMax($timeframeLiveMax = null)
+    {
+        if (null !== $timeframeLiveMax) {
+            $timeframeLiveMax = (int) $timeframeLiveMax;
+        }
+
+        $this->_timeframeLiveMax = $timeframeLiveMax;
+
+        return $this;
+    }
+
+	/**
+     * @return the $formatDefault
+     */
+    public function getFormatDefault()
+    {
+        return $this->_formatDefault;
+    }
+
+	/**
+     * @param field_type $formatDefault
+     */
+    public function setFormatDefault($formatDefault)
+    {
+        $this->_formatDefault = $formatDefault;
+
+        return $this;
+    }
 }

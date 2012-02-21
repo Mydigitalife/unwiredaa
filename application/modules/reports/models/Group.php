@@ -31,9 +31,7 @@ class Reports_Model_Group extends Unwired_Model_Generic implements Zend_Acl_Role
 
 	protected $_options = array();
 
-	protected $_maxDepth = -1;
-
-	protected $_dateRelative = 1;
+	protected $_groupDepthMax = -1;
 
 	protected $_dateFrom = null;
 
@@ -41,7 +39,7 @@ class Reports_Model_Group extends Unwired_Model_Generic implements Zend_Acl_Role
 
 	protected $_reportType = null;
 
-	protected $_reportInterval = 'day';
+	protected $_reportInterval = 'none';
 
 	protected $_description = null;
 
@@ -53,7 +51,7 @@ class Reports_Model_Group extends Unwired_Model_Generic implements Zend_Acl_Role
 
 	protected $_innerInterval = 0;
 
-	protected $_outputType = 3;
+	protected $_formatSelected = 'Both';
 
 	/**
 	 * @return the $_recepients
@@ -120,7 +118,7 @@ class Reports_Model_Group extends Unwired_Model_Generic implements Zend_Acl_Role
 	public function setCodeTemplate(Reports_Model_CodeTemplate $codeTemplate)
 	{
 	    if ($codeTemplate && !$this->getReportGroupId()) {
-	        $this->setMaxDepth($codeTemplate->getDefaultDepth());
+	        $this->setGroupDepthMax($codeTemplate->getGroupDepthDefault());
 	    }
 
 	    $this->_codeTemplate = $codeTemplate;
@@ -240,17 +238,6 @@ class Reports_Model_Group extends Unwired_Model_Generic implements Zend_Acl_Role
 		return $this;
 	}
 
-	public function isDateRelative()
-	{
-	    return (int) (bool) $this->_dateRelative;
-	}
-
-	public function setDateRelative($relative = 1)
-	{
-	    $this->_dateRelative = (int) (bool) $relative;
-	    return $this;
-	}
-
 	/**
 	 * @return Zend_Date
 	 */
@@ -320,14 +307,14 @@ class Reports_Model_Group extends Unwired_Model_Generic implements Zend_Acl_Role
 		return $this;
 	}
 
-	public function getMaxDepth()
+	public function getGroupDepthMax()
 	{
-	    return $this->_maxDepth;
+	    return $this->_groupDepthMax;
 	}
 
-	public function setMaxDepth($depth)
+	public function setGroupDepthMax($depth)
 	{
-	    $this->_maxDepth = (int) $depth;
+	    $this->_groupDepthMax = (int) $depth;
 	    return $this;
 	}
 
@@ -418,31 +405,31 @@ class Reports_Model_Group extends Unwired_Model_Generic implements Zend_Acl_Role
     }
 
 	/**
-     * @return the $_outputType
+     * @return the $_formatSelected
      */
-    public function getOutputType()
+    public function getFormatSelected()
     {
-        return $this->_outputType;
+        return $this->_formatSelected;
     }
 
 	/**
-     * @param field_type $_outputType
+     * @param field_type $format
      */
-    public function setOutputType($_outputType)
+    public function setFormatSelected($format)
     {
-        $this->_outputType = $_outputType;
+        $this->_formatSelected = $format;
 
         return $this;
     }
 
-    public function hasOutputChart()
+    public function hasOutputGraph()
     {
-        return (bool) ($this->_outputType & 2);
+        return (bool) ($this->_formatSelected == 'Graph' || $this->_formatSelected == 'Both');
     }
 
-    public function hasOutputData()
+    public function hasOutputTable()
     {
-        return (bool) ($this->_outputType & 1);
+        return (bool) ($this->_formatSelected == 'Table' || $this->_formatSelected == 'Both');
     }
 
 }
