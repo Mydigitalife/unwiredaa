@@ -13,6 +13,37 @@
 class Reports_Service_CodeTemplate_Sample extends Reports_Service_CodeTemplate_Abstract {
 
 	public function getData($groupIds, $dateFrom, $dateTo) {
+
+
+//die(serialize($this->getReportGroup()->getCodeTemplate()));
+echo "<pre>";
+print_r($this->getReportGroup());
+echo "\n";
+echo "\n";
+print_r($this->getReportGroup()->getTitle());
+echo "\n";
+print_r($this->getReportGroup()->getOptions());
+echo "\n";
+print_r($this->getReportGroup()->getDateFrom());
+echo "\n";
+print_r($this->getReportGroup()->getDateTo());
+echo "\n";
+print_r($this->getReportGroup()->getReportType());
+echo "\n";
+print_r($this->getReportGroup()->getReportInterval());
+echo "\n";
+print_r($this->getReportGroup()->getDescription());
+echo "\n";
+print_r($this->getReportGroup()->getGroupsAssigned());
+echo "\n";
+print_r($this->getReportGroup()->getTimeFrame());
+echo "\n";
+print_r($this->getReportGroup()->getInnerInterval());
+echo "\n";
+print_r($this->getReportGroup()->getFormatSelected());
+die("</pre>");
+
+
 		$db = Zend_Db_Table_Abstract::getDefaultAdapter ();
 
 		$row=array(array('data'=>array('a','b'),'class'=>array('bold','')));
