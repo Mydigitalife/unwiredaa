@@ -31,7 +31,7 @@ class Reports_Model_Group extends Unwired_Model_Generic implements Zend_Acl_Role
 
 	protected $_options = array();
 
-	protected $_groupDepthMax = -1;
+	protected $_groupDepthMax = null;
 
 	protected $_dateFrom = null;
 
@@ -47,11 +47,11 @@ class Reports_Model_Group extends Unwired_Model_Generic implements Zend_Acl_Role
 
 	protected $_recepients = array();
 
-	protected $_timeframe = 'today';
+	protected $_timeframe = null;
 
 	protected $_innerInterval = 0;
 
-	protected $_formatSelected = 'Both';
+	protected $_formatSelected = null;
 
 	/**
 	 * @return the $_recepients
@@ -309,6 +309,15 @@ class Reports_Model_Group extends Unwired_Model_Generic implements Zend_Acl_Role
 
 	public function getGroupDepthMax()
 	{
+	    if (null == $this->_groupDepthMax) {
+	        $codeTemplate = $this->getCodeTemplate();
+            if (null === $codeTemplate) {
+                $this->_groupDepthMax = -1;
+            } else {
+                $this->_groupDepthMax = $codeTemplate->getGroupDepthDefault();
+            }
+	    }
+
 	    return $this->_groupDepthMax;
 	}
 
@@ -373,6 +382,15 @@ class Reports_Model_Group extends Unwired_Model_Generic implements Zend_Acl_Role
      */
     public function getTimeframe()
     {
+        if (null == $this->_timeframe) {
+            $codeTemplate = $this->getCodeTemplate();
+
+            if (null === $codeTemplate) {
+                $this->_timeframe = 'today';
+            } else {
+                $this->_timeframe = $codeTemplate->getTimeframeDefault();
+            }
+        }
         return $this->_timeframe;
     }
 
@@ -409,6 +427,15 @@ class Reports_Model_Group extends Unwired_Model_Generic implements Zend_Acl_Role
      */
     public function getFormatSelected()
     {
+        if (null == $this->_formatSelected) {
+            $codeTemplate = $this->getCodeTemplate();
+            if (null === $codeTemplate) {
+                $this->_formatSelected = 'Both';
+            } else {
+                $this->_formatSelected = $codeTemplate->getFormatDefault();
+            }
+        }
+
         return $this->_formatSelected;
     }
 

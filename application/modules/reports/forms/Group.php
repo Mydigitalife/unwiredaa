@@ -106,7 +106,7 @@ class Reports_Form_Group extends Unwired_Form
 		 * Report supports depth limiting
 		 */
 		if ($this->getEntity()->getCodeTemplate()->isGroupDepthSupported()) {
-		    $this->addElement('select', 'max_depth', array('label' => 'report_group_edit_depth',
+		    $this->addElement('select', 'group_depth_max', array('label' => 'report_group_edit_depth',
 		                                                   'required' => true,
 		                                                   'value' => -1,
 		                                                   'multiOptions' => array(-1 => 'report_group_edit_depth_nolimit',
@@ -159,9 +159,9 @@ class Reports_Form_Group extends Unwired_Form
 		}
 
 		if ($this->getEntity()->getCodeTemplate()->getFormatDefault() != 'NotUserDefineable') {
-    		$this->addElement('select', 'format_selected', array('label' => 'report_group_edit_outputtype',
+    		$this->addElement('select', 'format_selected', array('label' => 'report_group_edit_format',
     		                                                     'required' => true,
-    		                                                     'value' => $this->getEntity()->getCodeTemplate()->getFormatDefault(),
+    		                                                     'value' => $this->getEntity()->getFormatSelected(),
     		                                                     'multiOptions' => array(
         		                                                     'Graph' => 'report_group_edit_format_graph',
         		                                                     'Table' => 'report_group_edit_format_table',
@@ -204,15 +204,14 @@ class Reports_Form_Group extends Unwired_Form
 		$this->addDisplayGroup(array(
 									'title',
 									'description',
-									'date_relative',
 									'timeframe',
 									'date_from',
 									'date_to',
 		                            'inner_interval',
 									'report_type',
 									'report_interval',
-									'max_depth',
-		                            'output_type' ),
+									'group_depth_max',
+		                            'format_selected' ),
 							   'report_preferences' );
 
 		$this->addDisplayGroup(array('email',
