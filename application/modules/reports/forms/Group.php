@@ -122,7 +122,7 @@ class Reports_Form_Group extends Unwired_Form
 
 		$this->addElement('select', 'timeframe', array('label' => 'report_group_edit_timeframe',
 		                                               'required' => true,
-		                                               'value' => 'today',
+		                                               'value' => $this->getEntity()->getCodeTemplate()->getTimeframeDefault(),
 		                                               'multiOptions' => array('manual' => 'report_group_edit_timeframe_manual',
 		                                                                       'today' => 'report_group_edit_timeframe_today',
 		                                                                       'yesterday' => 'report_group_edit_timeframe_yesterday',
