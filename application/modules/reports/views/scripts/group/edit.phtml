@@ -229,11 +229,12 @@ function filterInnerInterval()
 	}
 	var timeDiff = ($('#date_to').datetimepicker('getDate').getTime()-$('#date_from').datetimepicker('getDate').getTime())/60000;
 	if (timeDiff > timeframeLiveMax) {
-		alert('<?php echo $this->translate('reports_group_edit_timeframe_overlimit'); ?>');
+		alert('<?php echo $this->translate('reports_group_edit_timeframe_overlimit',
+		                                   round($this->entity->getCodeTemplate()->getTimeframeLiveMax() / 24 / 60)); ?>');
 		return true;
 	}
 
-	var defaultInnerCountDiff = 9999999999999;
+	var lastCount = 9999999999999;
 
   	$('#inner_interval option').each(function() {
 
@@ -243,8 +244,8 @@ function filterInnerInterval()
   		} else {
   			$(this).removeAttr('disabled');
 
-  			if (innerCountDefault > 0 && defaultInnerCountDiff > Math.abs(defaultInnerCountDiff - innerCount)) {
-  				defaultInnerCountDiff = Math.abs(defaultInnerCountDiff - innerCount);
+  			if (innerCountDefault > 0 && Math.abs(innerCountDefault - lastCount) > Math.abs(innerCountDefault - innerCount)) {
+  				lastCount = innerCount;
   				$('#inner_interval').val($(this).val());
   				$(this).attr('selected','selected');
   			}
