@@ -16,6 +16,7 @@ class Reports_Service_CodeTemplate_Sample extends Reports_Service_CodeTemplate_A
 
 
 //die(serialize($this->getReportGroup()->getCodeTemplate()));
+/*
 echo "<pre>";
 print_r($this->getReportGroup());
 echo "\n";
@@ -42,7 +43,7 @@ print_r($this->getReportGroup()->getInnerInterval());
 echo "\n";
 print_r($this->getReportGroup()->getFormatSelected());
 die("</pre>");
-
+*/
 
 		$db = Zend_Db_Table_Abstract::getDefaultAdapter ();
 
