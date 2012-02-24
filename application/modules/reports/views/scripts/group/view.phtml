@@ -4,7 +4,7 @@
 <a href="<?php echo $this->url(array('module' => 'reports',
                                      'controller' => 'group',
                                      'id' => $this->parent->getCodetemplateId()), null, true);
-        ?>">Reports for <?php echo $this->parent->getCodeTemplate()->getTitle();?> </a>
+        ?>">Reports for <?php echo $this->parent->getTitle();?> </a>
     <?php if (!isset($this->instant)) :?>
      &raquo;
     <a href="<?php echo $this->url(array('module' => 'reports',
@@ -16,11 +16,11 @@
                                      'controller' => 'group',
                                      'action' => 'view',
                                      'id' => $this->report->getItemId()), null, true);
-        ?>"><?php echo $this->translate('report_group_heading_result'); ?>  at <?php echo $this->report->getDateAdded(); ?></a>
+        ?>"><?php echo $this->translate('report_group_heading_result'); ?>  at <?php echo $this->parent->getDateAdded(); ?></a>
     <?php endif; // instant?>
 <?php endif; // pdf?>
 <br /><br />
-<h1><?php echo $this->translate('report_group_heading_result'); ?> <?php echo $this->parent->getTitle(); ?> at <?php echo $this->report->getDateAdded(); ?></h1>
+<h1><?php echo $this->translate('report_group_heading_result'); ?> <?php echo $this->parent->getTitle(); ?> at <?php echo $this->parent->getDateAdded(); ?></h1>
 <?php
     if (!isset($this->pdf)) :
     $request = Zend_Controller_Front::getInstance()->getRequest();
@@ -71,16 +71,14 @@ $acl = Zend_Registry::get ( 'acl' );
 		data.addColumn(<?php if (isset($value->rows[0][$k]) && is_numeric($value->rows[0][$k])): ?>"number"<?php else: ?>"string"<?php endif; ?>, "<?=$this->translate($v)?>");
 		<?php endforeach; ?>
 
-   		data.addRows(<?php echo count($value->rows); ?>);
-   		<?php $j = 0; ?>
-		<?php foreach ($value->rows as $k => $v): ?>
-			<?php foreach ($v as $kk => $vv): ?>
-			data.setValue(<?php echo $k?>, <?php echo $kk?>, <?php if (is_numeric($vv)): ?><?php echo $vv;?><?php else: ?>"<?php echo $this->translate($vv); ?>"<?php endif; ?>);
-			<?php endforeach; ?>
-		<?php endforeach; ?>
+                data.addRows([
+                <?php foreach ($value->rows as $k => $v):
+                        echo ($k==0?"":",").json_encode($v)."\n";
+                endforeach; ?>
+                ]);
 
 		var chart = new google.visualization.<?=isset($value->type)?$value->type:"PieChart"?>(document.getElementById("chart_div<?php echo $key ?>"));
-		chart.draw(data, {width: <?=isset($value->width)?$value->width:"350"?>, height: <?=isset($value->height)?$value->height:"300"?>, title: "<?php echo $this->translate($value->name) ?>"<?=isset($value->nativeOptions)?','.$value->nativeOptions:''?>});
+		chart.draw(data, {width: <?=isset($value->width)?$value->width:"350"?>, height: <?=isset($value->height)?$value->height:"300"?>, title: "<?=$this->translate($value->name).' '.$depth?>"<?=isset($value->nativeOptions)?','.$value->nativeOptions:''?>});
 	}
 	<?php endforeach; ?>
 	</script>
@@ -92,45 +90,88 @@ $acl = Zend_Registry::get ( 'acl' );
 <?php endif; ?>
 
 <?php if (isset($this->data->tables) && (is_array($this->data->tables) || is_object($this->data->tables))): ?>
-	<?php foreach ($this->data->tables as $key => $value): ?>
-		<table class="listing">
-		<?php foreach ($value->colDefs as $kk => $vv): ?>
-		<tr>
-				<?php foreach ($value->colDefs[$kk] as $k => $v): ?>
-				<?php if (is_object($v)):?>
-					<th
-						<?php if (isset($v->width)): ?>width="<?php echo $v->width?>"<?php endif; ?>
-						<?php if (isset($v->rowspan)): ?>rowspan="<?php echo $v->rowspan?>"<?php endif; ?>
-						<?php if (isset($v->colspan)): ?>colspan="<?php echo $v->colspan?>"<?php endif; ?>
-					><?=(isset($v->translatable) && $v->translatable)?$this->translate($vv->data):$v->name?></th>
-				<?php else: ?>
-					<th><?php echo $this->translate($v); ?></th>
-				<?php endif; ?>
-				<?php endforeach; ?>
-		</tr>
-		<?php endforeach; ?>
-		<?php if (isset($value->rows)): ?>
-			<?php foreach ($value->rows as $k => $v): ?>
-			<tr class="<?php echo $this->cycle(array('odd', 'even'))->next(); ?>">
-				<?php
-				    foreach ($v->data as $kk => $vv):
+	<?php foreach ($this->data->tables as $key => $value): 
+		$ttype=$value->type;
+		if (!$ttype) $ttype="table"; ?>
+		<?php if (($ttype=="both") || ($ttype=="graph")):
+			$name=(isset($value->name)?$value->name:'unnamed');
+			//prepare chartoptions array
+			if (isset($value->chartOptions)) $opt=$value->chartOptions;
+			else $opt=array();
+			if (!isset($opt->depths)) $depth_list=array(false);
+			else if (is_array($opt->depths)) $depth_list=$opt->depths;
+			else $depth_list=array($opt->depths);
+			$ccnt=0;
+			foreach ($depth_list as $depth):
+				$ccnt++;
+			?>
+			<script type="text/javascript">
+			google.load("visualization", "1", {packages:["corechart"]});
+			google.setOnLoadCallback(drawChart_<?=$ccnt?>_<?php echo $key?>);
+	    		function drawChart_<?=$ccnt?>_<?php echo $key?>() {
+				var data = new google.visualization.DataTable();
 
-				    if (isset($v->class) && is_object($v->class)) {
-				        $v->class = (array) $v->class;
-				    }
+				<?php foreach ($value->colDefs[count($value->colDefs)-1] as $k => $v):
+					$cname=(isset($v->name)?$v->name:'unnamed');
 				?>
-
-				<td class="<?php echo (isset($v->class[$kk]))? $v->class[$kk]:'';?>" <?php if (is_object($vv) && isset($vv->rowspan)): ?>rowspan="<?php echo $vv->rowspan?>"<?php endif; ?> <?php if (is_object($vv) && isset($vv->colspan)): ?>colspan="<?php echo $vv->colspan?>"<?php endif; ?>>
-				<?php if (is_object($vv)):?>
-					<?php echo (isset($vv->translatable) && $vv->translatable)?$this->translate($vv->data):$vv->data?>
-				<?php else: ?>
-					<?php echo $vv?>
-				<?php endif; ?>
-				</td>
+				data.addColumn(<?php if ( isset($value->rows) && isset($value->rows[0]) && isset($value->rows[0]->data) &&  isset($value->rows[0]->data[$k]) && is_numeric($value->rows[0]->data[$k])): ?>"number"<?php else: ?>"string"<?php endif; ?>, "<?=$this->translate($cname)?>");
 				<?php endforeach; ?>
+
+	                	data.addRows([
+        	        	<?php $rii=0; foreach ($value->rows as $k => $v):?>
+					<?php if (!$depth||!isset($v->depth)||($v->depth==$depth)):?>
+	                        		<?=($rii++==0?"":",")?>[<?php foreach ($v->data as $kk => $vv): echo ($kk==0?"":",").($vv==""?0:(is_numeric($vv)?$vv:'"'.$vv.'"')); endforeach; ?>]
+					<?php endif; ?>
+                		<?php endforeach; ?>
+                		]);
+
+				var chart = new google.visualization.<?=isset($opt->type)?$opt->type:"PieChart"?>(document.getElementById("chart_div_<?=$ccnt?>_<?php echo $key ?>"));
+				chart.draw(data, {width: <?=isset($opt->width)?$opt->width:"350"?>, height: <?=isset($opt->height)?$opt->height:"300"?>, title: "<?=$this->translate($name).' '.$depth?>"<?=isset($opt->nativeOptions)?','.$opt->nativeOptions:''?>});
+			}
+			</script>
+			<div id="chart_div_<?=$ccnt?>_<?php echo $key; ?>" style="float: left;"></div>
+			<?php endforeach; /*depth_list*/?>
+		<?php endif; /*chart*/?>
+		<?php if (($ttype=="both") || ($ttype=="table")):?>
+			<table class="listing">
+			<?php foreach ($value->colDefs as $kk => $vv): ?>
+			<tr>
+					<?php foreach ($value->colDefs[$kk] as $k => $v): ?>
+					<?php if (is_object($v)):?>
+						<th
+							<?php if (isset($v->width)): ?>width="<?php echo $v->width?>"<?php endif; ?>
+							<?php if (isset($v->rowspan)): ?>rowspan="<?php echo $v->rowspan?>"<?php endif; ?>
+							<?php if (isset($v->colspan)): ?>colspan="<?php echo $v->colspan?>"<?php endif; ?>
+						><?=(isset($v->translatable) && $v->translatable)?$this->translate($vv->data):$v->name?></th>
+					<?php else: ?>
+						<th><?php echo $this->translate($v); ?></th>
+					<?php endif; ?>
+					<?php endforeach; ?>
 			</tr>
 			<?php endforeach; ?>
+			<?php if (isset($value->rows)): ?>
+				<?php foreach ($value->rows as $k => $v): ?>
+				<tr class="<?php echo $this->cycle(array('odd', 'even'))->next(); ?>">
+					<?php
+				    	foreach ($v->data as $kk => $vv):
+
+				    	if (isset($v->class) && is_object($v->class)) {
+					        $v->class = (array) $v->class;
+				    	}
+					?>
+
+					<td class="<?php echo (isset($v->class[$kk]))? $v->class[$kk]:'';?>" <?php if (is_object($vv) && isset($vv->rowspan)): ?>rowspan="<?php echo $vv->rowspan?>"<?php endif; ?> <?php if (is_object($vv) && isset($vv->colspan)): ?>colspan="<?php echo $vv->colspan?>"<?php endif; ?>>
+					<?php if (is_object($vv)):?>
+						<?php echo (isset($vv->translatable) && $vv->translatable)?$this->translate($vv->data):$vv->data?>
+					<?php else: ?>
+						<?php echo $vv?>
+					<?php endif; ?>
+					</td>
+					<?php endforeach; ?>
+				</tr>
+				<?php endforeach; ?>
+			<?php endif; ?>
+			</table>
 		<?php endif; ?>
-		</table>
 	<?php endforeach; ?>
 <?php endif; ?>
