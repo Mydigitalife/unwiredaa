@@ -22,7 +22,6 @@ class Reports_Form_Instant extends Reports_Form_Group {
 
 		$this->removeElement('title');
 		$this->removeElement('description');
-		$this->removeElement('email');
 		$this->removeElement('report_type');
 		$this->removeElement('report_interval');
 	}

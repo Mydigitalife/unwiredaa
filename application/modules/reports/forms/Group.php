@@ -96,11 +96,11 @@ class Reports_Form_Group extends Unwired_Form
     															 'required' => false,
     															 'class' => 'span-5',
     															 'registerInArrayValidator' => false));
-		} else {
+		}/* else {
 		    $this->addElement('hidden', 'groups_assigned', array( 'required' => true,
     															  'isArray' => false,
 		                                                          'value' => key(Zend_Auth::getInstance()->getIdentity()->getGroupsAssigned())));
-		}
+		}*/
 
 		/**
 		 * Report supports depth limiting
@@ -242,6 +242,40 @@ class Reports_Form_Group extends Unwired_Form
 			return false;
 		}
 
+		if ($data['report_type'] == 'interval') {
+		    return true;
+		}
+
+		$testEntity = clone $this->getEntity();
+
+		$testEntity->fromArray($this->getValues());
+
+		$fromDate = $testEntity->getDateFrom();
+
+		$endDate = $testEntity->getDateTo();
+
+		$liveMax = $testEntity->getCodeTemplate()->getTimeframeLiveMax();
+
+		if (!$liveMax) {
+		    $liveMax = 527040;
+		}
+
+		$testEntity = null;
+
+		if ($endDate->isEarlier($fromDate)) {
+		    $this->getElement('date_to')->addError('reports_group_edit_timeframe_end_before_start');
+		    $this->markAsError();
+		    return false;
+		}
+
+		$fromDate->addMinute($liveMax);
+
+		if ($fromDate->isEarlier($endDate)) {
+		    $this->getElement('date_to')->addError('reports_group_edit_timeframe_overlimit_error');
+		    $this->markAsError();
+		    return false;
+		}
+
 		return true;
 	}
 
@@ -249,7 +283,12 @@ class Reports_Form_Group extends Unwired_Form
 		$values = parent::getValues($suppressArrayNotation );
 
 		if (!isset($values['groups_assigned']) && $values['groups_assigned'] == null) {
-			$values['groups_assigned'] = array();
+		    if (!$this->getEntity()->getCodeTemplate()->isGroupSelectionSupported()) {
+		        $adminUserGroups = Zend_Auth::getInstance()->getIdentity()->getGroupsAssigned();
+			    $values['groups_assigned'] = array(key($adminUserGroups));
+		    } else {
+		        $values['groups_assigned'] = array();
+		    }
 		}
 
 		return $values;

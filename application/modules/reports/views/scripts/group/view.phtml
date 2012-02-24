@@ -4,7 +4,7 @@
 <a href="<?php echo $this->url(array('module' => 'reports',
                                      'controller' => 'group',
                                      'id' => $this->parent->getCodetemplateId()), null, true);
-        ?>">Reports for <?php echo $this->parent->getTitle();?> </a>
+        ?>">Reports for <?php echo $this->parent->getCodeTemplate()->getTitle();?> </a>
     <?php if (!isset($this->instant)) :?>
      &raquo;
     <a href="<?php echo $this->url(array('module' => 'reports',
@@ -16,11 +16,11 @@
                                      'controller' => 'group',
                                      'action' => 'view',
                                      'id' => $this->report->getItemId()), null, true);
-        ?>"><?php echo $this->translate('report_group_heading_result'); ?>  at <?php echo $this->parent->getDateAdded(); ?></a>
+        ?>"><?php echo $this->translate('report_group_heading_result'); ?>  at <?php echo $this->report->getDateAdded(); ?></a>
     <?php endif; // instant?>
 <?php endif; // pdf?>
 <br /><br />
-<h1><?php echo $this->translate('report_group_heading_result'); ?> <?php echo $this->parent->getTitle(); ?> at <?php echo $this->parent->getDateAdded(); ?></h1>
+<h1><?php echo $this->translate('report_group_heading_result'); ?> <?php echo $this->parent->getTitle(); ?> at <?php echo $this->report->getDateAdded(); ?></h1>
 <?php
     if (!isset($this->pdf)) :
     $request = Zend_Controller_Front::getInstance()->getRequest();

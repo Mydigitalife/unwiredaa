@@ -86,6 +86,9 @@ $acl = Zend_Registry::get('acl');
 					continue;
 				}
 
+				if ($action == 'generate' && $reportGroup->getReportType() == 'interval') {
+				    continue;
+				}
 				?>
 					<a
 					href="<?php

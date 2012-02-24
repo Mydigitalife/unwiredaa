@@ -160,8 +160,8 @@ $(function () {
 		  	dateFrom.setHours(0);
 			dateFrom.setMinutes(0);
 			dateFrom.setSeconds(0);
-			dateTo.setHours(23);
-			dateTo.setMinutes(59);
+			dateTo.setHours(24);
+			dateTo.setMinutes(0);
 			dateTo.setSeconds(0);
 	  	}
 
@@ -228,7 +228,7 @@ function filterInnerInterval()
 		return true;
 	}
 	var timeDiff = ($('#date_to').datetimepicker('getDate').getTime()-$('#date_from').datetimepicker('getDate').getTime())/60000;
-	if (timeDiff > timeframeLiveMax) {
+	if ($('#report_type').val() == 'manual' && timeDiff > timeframeLiveMax) {
 		alert('<?php echo $this->translate('reports_group_edit_timeframe_overlimit',
 		                                   round($this->entity->getCodeTemplate()->getTimeframeLiveMax() / 24 / 60)); ?>');
 		return true;
