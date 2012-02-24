@@ -86,7 +86,20 @@ $acl = Zend_Registry::get('acl');
 					continue;
 				}
 
-				if ($action == 'generate' && $reportGroup->getReportType() == 'interval') {
+			    $dateFrom = $reportGroup->getDateFrom();
+                $dateTo = $reportGroup->getDateTo();
+
+                $liveMax = $reportGroup->getCodeTemplate()->getTimeframeLiveMax();
+
+            	if (!$liveMax) {
+            	    $liveMax = 527040;
+            	}
+
+            	$dateFrom->addMinute($liveMax);
+
+            	$allowedGenerate = $dateFrom->isLater($dateTo);
+
+				if (!$allowedGenerate && $action == 'generate' && $reportGroup->getReportType() == 'interval') {
 				    continue;
 				}
 				?>
