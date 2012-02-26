@@ -89,7 +89,12 @@
 			var cloned = $(this).parents(".formelement:first").prev().clone();
 
 			$(cloned).find('.devicelink:gt(0)').remove();
-			$(cloned).find('.devicelink').find('input').val('');
+			var elemNumber = $(cloned).find('.devicelink').find('input:first').attr('name').replace(/content\[\d+\]\[content\]\[links\]\[(\d+)\].*/gi,
+																								    '$1');
+			$(cloned).find('.devicelink').find('input').each(function(){
+				$(this).attr('name', $(this).attr('name').replace(/(content\[\d+\]\[content\]\[links\])\[\d+\](.*)/gi,
+																  '$1[' + (parseInt(elemNumber)+1) +']$2'));
+			})
 
 			$(this).parent().before(cloned);
 		});
@@ -172,6 +177,15 @@
 	<input type="hidden" name="<?php echo $this->prefix; ?>[widget]" value="Links"/>
 </div>
 <div class="formelement span-17">
+	<label><?php echo $this->translate('widget_links_admin_showtitle'); ?>* :</label>
+	<input type="hidden" name="<?php echo $this->prefix; ?>[content][showtitle]" value="0"/>
+	<input type="checkbox" name="<?php echo $this->prefix; ?>[content][showtitle]" value="1" <?php
+	    if ($this->linksShowTitle) {
+	        echo 'checked="checked"';
+	    }
+	?>/>
+</div>
+<div class="formelement span-17">
 	<label><?php echo $this->translate('widget_links_admin_decorate'); ?>* :</label>
 	<input type="hidden" name="<?php echo $this->prefix; ?>[content][decorate]" value="0"/>
 	<input type="checkbox" name="<?php echo $this->prefix; ?>[content][decorate]" value="1" <?php
@@ -179,6 +193,10 @@
 	        echo 'checked="checked"';
 	    }
 	?>/>
+</div>
+<div class="formelement span-17">
+	<label><?php echo $this->translate('widget_links_admin_class'); ?> :</label>
+	<input type="text" name="<?php echo $this->prefix; ?>[content][class]" value="<?php echo $this->linksWidgetClass; ?>"/>
 </div>
 <?php
     $linkCounter = 0;

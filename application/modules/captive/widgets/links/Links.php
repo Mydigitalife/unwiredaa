@@ -2,7 +2,7 @@
 
 class Widget_Links extends Unwired_Widget_Abstract
 {
-    protected $_config = array('decorate' => true);
+    protected $_config = array('decorate' => true, 'showtitle' => false, 'class' => '');
 
     public function render($content)
     {
@@ -25,6 +25,7 @@ class Widget_Links extends Unwired_Widget_Abstract
         $view = Zend_Layout::getMvcInstance()->getView();
 
         $templatePath = $view->baseUrl('data/templates/' . $view->splashPage->getTemplateId());
+        $splashpagePath = $view->baseUrl('data/splashpages/' . $view->splashPage->getSplashId());
 
         foreach ($data as $linkProperties) {
             $link = null;
@@ -35,11 +36,12 @@ class Widget_Links extends Unwired_Widget_Abstract
                 $link = $linkProperties['other'];
             }
 
-            if (!$link) {
+            if (!$link || empty($link['href']) || empty($link['content'])) {
                 continue;
             }
 
             $link['content'] = str_replace(':templatePath:', $templatePath, $link['content']);
+            $link['content'] = str_replace(':splashpagePath:', $splashpagePath, $link['content']);
 
             $deviceLinks[] = $link;
         }
@@ -54,7 +56,11 @@ class Widget_Links extends Unwired_Widget_Abstract
             }
 
             if (file_exists("{$viewPath}/views/scripts/{$viewScript}")) {
+
+                $this->getView()->content = $content;
                 $this->getView()->deviceLinks = $deviceLinks;
+                $this->getView()->linksConfig = $this->_config;
+
                 return $this->getView()->render($viewScript);
             }
         }
@@ -96,6 +102,8 @@ class Widget_Links extends Unwired_Widget_Abstract
 
         $this->getView()->linksData = $data['links'];
         $this->getView()->linksDecorate = $data['decorate'];
+        $this->getView()->linksShowTitle = $data['showtitle'];
+        $this->getView()->linksWidgetClass = $data['class'];
 
         $this->getView()->content = $content;
 
