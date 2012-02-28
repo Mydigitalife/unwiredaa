@@ -24,6 +24,8 @@ class Reports_Form_Instant extends Reports_Form_Group {
 		$this->removeElement('description');
 		$this->removeElement('report_type');
 		$this->removeElement('report_interval');
+
+		$this->getElement('form_element_submit')->setLabel('report_group_edit_form_generate');
 	}
 
 }
