@@ -23,8 +23,8 @@ class Reports_View_Helper_CanGenerateManual extends Zend_View_Helper_Abstract
             return false;
         }
 
-        $dateFrom = $report->getDateFrom();
-        $dateTo = $report->getDateTo();
+        $dateFrom = clone $report->getDateFrom();
+        $dateTo = clone $report->getDateTo();
 
         $liveMax = $report->getCodeTemplate()->getTimeframeLiveMax();
 

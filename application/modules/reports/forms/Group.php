@@ -251,9 +251,9 @@ class Reports_Form_Group extends Unwired_Form
 
 		$testEntity->fromArray($this->getValues());
 
-		$fromDate = $testEntity->getDateFrom();
+		$fromDate = clone $testEntity->getDateFrom();
 
-		$endDate = $testEntity->getDateTo();
+		$endDate = clone $testEntity->getDateTo();
 
 		$liveMax = $testEntity->getCodeTemplate()->getTimeframeLiveMax();
 
