@@ -43,16 +43,32 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 		$reportMapper = new Reports_Model_Mapper_Group();
 		$reportCodeTemplateMapper = new Reports_Model_Mapper_CodeTemplate();
 
+		$parentId = (int) $this->getRequest()->getParam('id');
+
+		if (!$parentId) {
+		    $this->view->uiMessage('reports_index_codetemplate_not_found');
+		    $this->_helper->redirector->gotoRouteAndExit(array('module' => 'reports',
+		                                                       'controller' => 'index',
+		                                                       'action' => 'index'),
+		                                                 'default',
+		                                                 true);
+		}
+
+		$parent = $reportCodeTemplateMapper->find($parentId);
+		if (!$parent) {
+		    $this->view->uiMessage('reports_index_codetemplate_not_found');
+		    $this->_helper->redirector->gotoRouteAndExit(array('module' => 'reports',
+		                                                       'controller' => 'index',
+		                                                       'action' => 'index'),
+		                                                 'default',
+		                                                 true);
+		}
 		$filter = $this->_getFilters ();
 
-		$filter['codetemplate_id'] = $this->getRequest()->getParam('id');
+		$filter['codetemplate_id'] = $parentId;
 
 		$groupService->prepareMapperListingByAdmin($reportMapper, null, false, $filter);
 		//$reportMapper->findby(array('codetemplate_id' => $this->getRequest()->getParam('id')), 0, 'date_added DESC');
-
-		$parentId = $this->getRequest()->getParam('id');
-
-		$parent = $reportCodeTemplateMapper->find($parentId);
 
 		$this->view->parent = $parent;
 
