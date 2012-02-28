@@ -242,7 +242,8 @@ class Reports_Form_Group extends Unwired_Form
 			return false;
 		}
 
-		if ($data['report_type'] == 'interval') {
+		if (isset($data['report_type']) && $data['report_type'] == 'interval'
+		    && $this->getEntity()->getCodeTemplate()->getTimeframeLiveMax() === 0) {
 		    return true;
 		}
 

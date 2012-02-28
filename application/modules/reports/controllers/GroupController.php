@@ -152,6 +152,11 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 
 		$parent = $ctMapper->find($report->getCodetemplateId());
 
+		if (!$this->view->canGenerateManual($report)) {
+		    $this->view->uiMessage('reports_group_report_cannot_generate_manual','error');
+
+		    $this->_helper->redirector->gotoUrlAndExit('/reports/group/reports/id/'.$report->getReportGroupId());
+		}
 		$className = $parent->getClassName();
 		$reportGenerator = new $className;
 
@@ -182,6 +187,10 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 			$this->_gotoIndex();
 	    }
 
+	    if ($codeTemplate->getTimeframeLiveMax() === 0) {
+	        $this->view->uiMessage('reports_group_report_cannot_generate_manual', 'error');
+			$this->_gotoIndex();
+	    }
 	    $groupService = new Groups_Service_Group();
 
 		$rootGroup = $groupService->getGroupTreeByAdmin();
