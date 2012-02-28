@@ -31,7 +31,22 @@ echo $this->paginationControl ( $this->paginator, 'Sliding', 'partial/pagination
 $acl = Zend_Registry::get ( 'acl' );
 
 ?>
-<?php if ($this->parent->getReportType() == 'manual' && $acl->isAllowed($this->currentUser, 'reports_items', 'add')) :?>
+<?php
+    $dateFrom = $this->parent->getDateFrom();
+    $dateTo = $this->parent->getDateTo();
+
+    $liveMax = $this->parent->getCodeTemplate()->getTimeframeLiveMax();
+
+	if (null === $liveMax) {
+	    $liveMax = 527040;
+	}
+
+	$dateFrom->addMinute($liveMax);
+
+	$allowedGenerate = $dateFrom->isLater($dateTo);
+
+    if (($allowedGenerate || $this->parent->getReportType() == 'manual') && $acl->isAllowed($this->currentUser, 'reports_items', 'add')) :
+ ?>
 <div class="buttons span-18">
 
 	<a id="addlink" class="button small green"
@@ -139,19 +154,6 @@ $acl = Zend_Registry::get ( 'acl' );
 <?php echo $this->paginationControl($this->paginator, 'Sliding', 'partial/pagination.phtml'); ?>
 
 <?php
-    $dateFrom = $this->parent->getDateFrom();
-    $dateTo = $this->parent->getDateTo();
-
-    $liveMax = $this->parent->getCodeTemplate()->getTimeframeLiveMax();
-
-	if (!$liveMax) {
-	    $liveMax = 527040;
-	}
-
-	$dateFrom->addMinute($liveMax);
-
-	$allowedGenerate = $dateFrom->isLater($dateTo);
-
     if (($allowedGenerate || $this->parent->getReportType() == 'manual') && $acl->isAllowed($this->currentUser, 'reports_items', 'add')) :?>
 <div class="buttons span-18">
 

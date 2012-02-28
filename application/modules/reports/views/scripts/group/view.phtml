@@ -91,7 +91,7 @@ $acl = Zend_Registry::get ( 'acl' );
 
 <?php if (isset($this->data->tables) && (is_array($this->data->tables) || is_object($this->data->tables))): ?>
 	<?php foreach ($this->data->tables as $key => $value):
-		$ttype=$value->type;
+		$ttype= isset($value->type) ? $value->type : "table";
 		if (!$ttype) $ttype="table"; ?>
 		<?php if (($ttype=="both") || ($ttype=="graph")):
 			$name=(isset($value->name)?$value->name:'unnamed');

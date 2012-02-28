@@ -91,7 +91,7 @@ $acl = Zend_Registry::get('acl');
 
                 $liveMax = $reportGroup->getCodeTemplate()->getTimeframeLiveMax();
 
-            	if (!$liveMax) {
+            	if (null === $liveMax) {
             	    $liveMax = 527040;
             	}
 
@@ -99,7 +99,7 @@ $acl = Zend_Registry::get('acl');
 
             	$allowedGenerate = $dateFrom->isLater($dateTo);
 
-				if (!$allowedGenerate && $action == 'generate' && $reportGroup->getReportType() == 'interval') {
+				if ($action == 'generate' && (!$allowedGenerate || $reportGroup->getReportType() == 'interval')) {
 				    continue;
 				}
 				?>
