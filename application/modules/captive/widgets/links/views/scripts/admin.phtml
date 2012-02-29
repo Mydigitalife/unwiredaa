@@ -52,7 +52,7 @@
 
 		$('select.contenttype').change();
 
-		$('select.deviceSelect').change(function(){
+		$('select.deviceSelect').live('change',function(){
 			var inputs = $(this).parents(".devicelink:first").find('input');
 			var select = this;
 			$(inputs).each(function(){
