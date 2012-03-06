@@ -10,7 +10,7 @@
  * license available at http://www.unwired.at/license.html
  */
 
-class Reports_Service_CodeTemplate_Virus extends Reports_Service_CodeTemplate_Abstract {
+class Reports_Service_CodeTemplate_Proxy extends Reports_Service_CodeTemplate_Abstract {
 
 	private function getTable($rows,$cat)
 	{
