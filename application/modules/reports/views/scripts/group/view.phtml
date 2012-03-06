@@ -78,7 +78,7 @@ $acl = Zend_Registry::get ( 'acl' );
                 ]);
 
 		var chart = new google.visualization.<?=isset($value->type)?$value->type:"PieChart"?>(document.getElementById("chart_div<?php echo $key ?>"));
-		chart.draw(data, {width: <?=isset($value->width)?$value->width:"350"?>, height: <?=isset($value->height)?$value->height:"300"?>, title: "<?=$this->translate($value->name).' '.$depth?>"<?=isset($value->nativeOptions)?','.$value->nativeOptions:''?>});
+		chart.draw(data, {width: <?=isset($value->width)?$value->width:"350"?>, height: <?=isset($value->height)?$value->height:"300"?>, title: "<?=$this->translate($value->name).' '.(isset($depth)?$depth:"")?>"<?=isset($value->nativeOptions)?','.$value->nativeOptions:''?>});
 	}
 	<?php endforeach; ?>
 	</script>
