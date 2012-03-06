@@ -61,7 +61,7 @@ class Reports_Service_CodeTemplate_APCountStructured extends Reports_Service_Cod
 	{
 		//$this->summable=true;
 		//this->getReportGroup()->getCodeTemplate()->getOptions does not work!?
-		if (strpos($this->getReportGroup()->getCodeTemplate()->getTitle())),"Bill") $this->billingreport=true;
+		if (strpos($this->getReportGroup()->getCodeTemplate()->getTitle(),"Bill")!==false) $this->billingreport=true;
 	}
 
 /*reportspecific query (column 2++ can be reportspecific)*/

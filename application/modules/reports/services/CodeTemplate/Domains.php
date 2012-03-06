@@ -90,7 +90,6 @@ class Reports_Service_CodeTemplate_Domains extends Reports_Service_CodeTemplate_
 			'tables' => $tables
 		);
 		
-		
 		return $result;
        
     }
