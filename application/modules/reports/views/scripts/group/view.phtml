@@ -119,7 +119,7 @@ $acl = Zend_Registry::get ( 'acl' );
 
 	                	data.addRows([
         	        	<?php $rii=0; foreach ($value->rows as $k => $v):?>
-					<?php if (!$depth||!isset($v->depth)||($v->depth==$depth)):?>
+					<?php if ((!$depth||!isset($v->depth)||($v->depth==$depth)) && (!isset($v->device)||$v->device==0) ):?>
 	                        		<?=($rii++==0?"":",")?>[<?php foreach ($v->data as $kk => $vv): echo ($kk==0?"":",").($vv==""?0:(is_numeric($vv)?$vv:'"'.$vv.'"')); endforeach; ?>]
 					<?php endif; ?>
                 		<?php endforeach; ?>
@@ -155,7 +155,7 @@ $acl = Zend_Registry::get ( 'acl' );
 				<?php foreach ($value->rows as $k => $v): ?>
 				<tr class="<?php echo $this->cycle(array('odd', 'even'))->next(); ?>">
 					<?php
-				    	foreach ($v->data as $kk => $vv):
+					/*if (is_array($v->data)) */foreach ($v->data as $kk => $vv):
 
 				    	if (isset($v->class) && is_object($v->class)) {
 					        $v->class = (array) $v->class;
