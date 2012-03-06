@@ -114,7 +114,7 @@ $acl = Zend_Registry::get ( 'acl' );
 				<?php foreach ($value->colDefs[count($value->colDefs)-1] as $k => $v):
 					$cname=(isset($v->name)?$v->name:'unnamed');
 				?>
-				data.addColumn(<?php if ( isset($value->rows) && isset($value->rows[0]) && isset($value->rows[0]->data) &&  isset($value->rows[0]->data[$k]) && is_numeric($value->rows[0]->data[$k])): ?>"number"<?php else: ?>"string"<?php endif; ?>, "<?=$this->translate($cname)?>");
+				data.addColumn(<?php if ( isset($value->rows) && isset($value->rows[0]) && isset($value->rows[0]->data) && is_array($value->rows[0]->data) && isset($value->rows[0]->data[$k]) && is_numeric($value->rows[0]->data[$k])): ?>"number"<?php else: ?>"string"<?php endif; ?>, "<?=/*$this->translate*/($cname)?>");
 				<?php endforeach; ?>
 
 	                	data.addRows([
@@ -139,10 +139,12 @@ $acl = Zend_Registry::get ( 'acl' );
 					<?php foreach ($value->colDefs[$kk] as $k => $v): ?>
 					<?php if (is_object($v)):?>
 						<th
+							<?php if (isset($v->class)): ?>class="<?php echo $v->class?>"<?php endif; ?>
 							<?php if (isset($v->width)): ?>width="<?php echo $v->width?>"<?php endif; ?>
+							<?php if (isset($v->height)): ?>height="<?php echo $v->height?>"<?php endif; ?>
 							<?php if (isset($v->rowspan)): ?>rowspan="<?php echo $v->rowspan?>"<?php endif; ?>
 							<?php if (isset($v->colspan)): ?>colspan="<?php echo $v->colspan?>"<?php endif; ?>
-						><?=(isset($v->translatable) && $v->translatable)?$this->translate($vv->data):$v->name?></th>
+						><div <?php if (isset($v->iclass)): ?>class="<?php echo $v->iclass?>"<?php endif; ?>><?=(isset($v->translatable) && $v->translatable)?$this->translate($vv->data):$v->name?></div></th>
 					<?php else: ?>
 						<th><?php echo $this->translate($v); ?></th>
 					<?php endif; ?>
