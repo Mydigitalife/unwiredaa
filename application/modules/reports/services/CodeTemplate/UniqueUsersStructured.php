@@ -67,6 +67,15 @@ if (($plimit++)>10) {$path.="/[ploop!]";break;}
 		/*verify if groupdepth is activated for this report!!??*/
 		if ($this->getReportGroup()->getCodeTemplate()->isGroupDepthSupported()) $this->maxdepth=$this->getReportGroup()->getGroupDepthMax();
 		else $this->maxdepth=2;
+		$this->startTime=$this->duration=$this->getReportGroup()->getDateTo()->getTimestamp();
+		$this->duration=$this->startTime-$this->getReportGroup()->getDateFrom()->getTimestamp();
+		$this->innerCount=0;//means no inner interval
+		if ($this->getReportGroup()->getCodeTemplate()->isInnerIntervalSupported()) {
+			$this->innerInterval=$this->getReportGroup()->getInnerInterval()*60;
+			if (($this->innerInterval)&&($this->innerInterval>0)) $this->innerCount=ceil($this->duration/$this->innerInterval);
+			else $this->innerInterval=$this->duration;
+		}
+		else $this->innerInterval=$this->duration;
 		$this->prepareTemporaryTable($groupIds);
 		$tables=array();
 /*
@@ -76,21 +85,79 @@ die("</pre>");
 */
 
 		/*use the temporary table for our own query (hmm count is timmer 0) DISTINCT s.user_mac*/
-		$res=$this->db->fetchall("SELECT rg.reportgroup, GROUP_CONCAT(rg.node_id), COUNT(DISTINCT s.user_mac)
+
+                /*prepare temporary table*/
+                $this->db->query("CREATE TEMPORARY TABLE unique_session
+ (session_id BIGINT NOT NULL, node_id INT NOT NULL, intv INT NOT NULL)");
+//hmm none of this keys show speed miproves on smaller sets (at least with < 1k unique sessions)
+//, KEY `main` (session_id))");
+//, UNIQUE KEY `main` (node_id, `intv`, session_id))");
+//echo microtime()." 1<hr>";
+
+$ids=array();
+$resi=$this->db->fetchall("SELECT DISTINCT node_id from node_reportgroup");//GROUP_CONCAT(DISTINCT macht desweilen zuviele "," *G
+foreach ($resi as $line) if ($line[0]) $ids[]=$line[0];
+
+		$this->db->query("INSERT INTO unique_session
+SELECT DISTINCT i.session_id, i.node_id, ( (UNIX_TIMESTAMP(time)-UNIX_TIMESTAMP('$dateFrom') ) DIV $this->innerInterval) as intv
+FROM acct_internet_interim i
+WHERE i.time >= '$dateFrom' AND i.time < '$dateTo' AND i.node_id IN (".implode(",",$ids).")");
+//!!??unix_timestamp might need an offset if starttime is not correctly aligned to interval!?
+//innerinterval grouping: UNIX_TIMESTAMP(time) DIV @intv
+
+//echo microtime()." 2<hr>";
+//die();//test large: 47 seconds
+//echo serialize($this->db->fetchall("SELECT count(*) FROM unique_session"));
+
+//test speed of simpler join
+$this->db->query("CREATE TEMPORARY TABLE unique_mac
+ (user_mac BIGINT NOT NULL, node_id INT NOT NULL, intv INT NOT NULL, KEY `node` (node_id))");
+
+$resi=$this->db->query("INSERT INTO unique_mac SELECT DISTINCT s.user_mac, us.node_id, us.intv
 FROM acct_internet_session s
-INNER JOIN acct_internet_roaming r ON s.session_id=r.session_id
-INNER JOIN node_reportgroup rg ON r.node_id = rg.node_id
-WHERE
-(       r.start_time BETWEEN '$dateFrom' AND '$dateTo'
-        OR r.stop_time BETWEEN '$dateFrom' AND '$dateTo'
-        OR ( r.start_time < '$dateFrom' AND ( r.stop_time > '$dateFrom' OR ISNULL(r.stop_time)))
-)
-GROUP BY rg.reportgroup");
+INNER JOIN unique_session us ON s.session_id=us.session_id");
+//echo microtime()." 3<hr>";
+
+//prepare same table-"size" result for inner interval counts, as for total counts
+if ($this->innerCount>1)
+$resi=$this->db->fetchall("SELECT i.reportgroup, GROUP_CONCAT(i.intv), GROUP_CONCAT(i.cnt) FROM
+(SELECT rg.reportgroup, um.intv, COUNT(DISTINCT um.user_mac) as cnt
+FROM unique_mac um
+INNER JOIN node_reportgroup rg ON um.node_id = rg.node_id
+GROUP BY reportgroup, um.intv) i
+GROUP BY i.reportgroup");
+/*old query deprecated
+$resi=$this->db->fetchall("SELECT i.reportgroup, GROUP_CONCAT(i.intv), GROUP_CONCAT(i.cnt) FROM
+(SELECT rg.reportgroup, us.intv, COUNT(DISTINCT s.user_mac) as cnt
+FROM acct_internet_session s
+INNER JOIN unique_session us ON s.session_id=us.session_id
+INNER JOIN node_reportgroup rg ON us.node_id = rg.node_id
+GROUP BY reportgroup, us.intv) i
+GROUP BY i.reportgroup");*/
+//echo microtime()." 4<hr>";
+
+//for summable reports, we could calc this query in php, but it shoudl be quite fast anyways
+$res=$this->db->fetchall("SELECT rg.reportgroup, -1 as intv, COUNT(DISTINCT um.user_mac)
+FROM unique_mac um
+INNER JOIN node_reportgroup rg ON um.node_id = rg.node_id
+GROUP BY reportgroup");
+/*old query deprecated
+$res=$this->db->fetchall("SELECT rg.reportgroup, -1 as intv, COUNT(DISTINCT s.user_mac)
+FROM acct_internet_session s
+INNER JOIN unique_session us ON s.session_id=us.session_id
+INNER JOIN node_reportgroup rg ON us.node_id = rg.node_id
+GROUP BY reportgroup");*/
+
+/*echo "<pre>";
+print_r($resi);
+die("</pre>".microtime());*/
 		$last_rid=-1;/*-1 to indicate first appendStructureRange() that there is no previous sum*/
 		$last_depth=0;
 		$rows=array();
 		$this->ncache=array(0=>0);
+		$ri=-1;
                 foreach ($res as $line) {
+			$ri++;
 //echo serialize($line)."<br>";
 			if ($line[0]!=$last_rid) {
 				//print missing headers since last group
@@ -98,6 +165,21 @@ GROUP BY rg.reportgroup");
 				/*instead of running sum give db result -> !!! causes value to be lost!!*/
 				else $path=$this->appendStructureRange(&$rows,&$line[2],$last_rid,$line[0],&$last_depth);
 				$last_rid=$line[0];
+//experimental inner count append 
+//!!?? append structure range does not fill with zeros !!??
+				if ((!$this->summable) && ($this->innerCount>1)) {
+					$idx=explode(",",$resi[$ri][1]);
+					$vals=explode(",",$resi[$ri][2]);
+					//precreate cells (to be able to access them over their numeric index)
+					//if ($this->innerCount>1)
+					for ($x=1;$x<=$this->innerCount;$x++) $rows[count($rows)-1]['data'][]=0;
+					$ii=-1;
+					foreach ($idx as $idt) {
+						$ii++;
+						$idxt=($idt*1)+2;
+						$rows[count($rows)-1]['data'][$idxt]=$vals[$ii];
+					}
+				}
 			}
 			//do the running_sum (if applicable)
 			if ($this->summable) $running_sum+=$line[2];
@@ -133,6 +215,17 @@ else {
 if ($this->maxdepth==1) $cdepths=array(1);
 else $cdepths=array(1,2);
 
+$innerColumns=array();
+if ($this->innerCount>0) {
+  for ($x=0;$x<$this->innerCount;$x++) {
+    $s=($this->startTime*1)+($this->innerInterval*($x))+(3600);
+    $e=$s+$this->innerInterval;
+    $n=date("Y/m/d H:i",$s)."-<br/>".date("Y/m/d H:i",$e);
+    $innerColumns[]=array('name'=>$n,'height'=>100,'width'=>30,'iclass'=>'bold" style="white-space:nowrap; position:absolute; margin-top:-20px; margin-left:-33px; -webkit-transform: rotate(-85deg);');
+  }
+//!!?? calculate date
+}
+
 	        return array(
 			'tables'=>array(/*array of tables*/
                                 'main'=>array( /*table 1*/
@@ -146,18 +239,27 @@ else $cdepths=array(1,2);
 						,'depths'=>$cdepths/*either single value, or an array -> multiple charts*/
 						,'nativeOptions'=>"legend:{position :'none'}")/*passed 1:1 to googleCharts options*/
                                         ,'colDefs'=>array(/*array of coldefs*/
-                                                array(/*first coldef*/
-                                                        array( /*advanced column def as array*/
+/*                                                array(//first coldef
+                                                        array( //advanced column def as array
 								'name'=>'name'
                                                                 ,'translatable'=>false
                                                                 ,'class'=>'bold'
                                                         )
-                                                        ,array( /*advanced column def as array*/
+                                                        ,array( //advanced column def as array
 								'name'=>'unique users'
                                                                 ,'translatable'=>false
                                                                 ,'class'=>'bold'
+								,'colspan'=>(1+$this->innerCount)
                                                         )
-                                                ) /* end of first coldef*/
+                                                ) // end of first coldef
+						,*/
+						array_merge(
+							array(
+								array('name'=>'Unique Sessions of','translatable'=>false,'class'=>'bold')
+								,array('name'=>'Total','translatable'=>false,'class'=>'bold')
+							)
+							,$innerColumns
+						)
                                         ) /*end of coldefs*/
                                         ,'rows'=>$rows
                                 ) /*end of table*/
