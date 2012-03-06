@@ -12,6 +12,12 @@
 class Reports_Service_CodeTemplate_APCountStructured extends Reports_Service_CodeTemplate_AbstractStructured {/*!!?? base on _Structured after moving && sanitzing all structure/helper functions into it*/
 /*todo: support inner interval i.e. run multiple rounds over the group structure*/
 
+/*reportspecific options (called after defaults and db options got evaluated)*/
+	private function setReportOptions()
+	{
+		//$this->summable=true;
+	}
+
 /*reportsspecific chart and table headers/options*/
 	private function getResult($rows)
 	{
@@ -39,32 +45,6 @@ class Reports_Service_CodeTemplate_APCountStructured extends Reports_Service_Cod
 		);
 	}
 
-/*reportspecific options (called after defaults and db options got evaluated)*/
-	private function setReportOptions()
-	{
-		//$this->summable=true;
-	}
-
-/*reportspecific line sum handler*/
-	private function sumLine(&$value,$line)
-	{
-		$value+=$line[2];
-	}
-
-/*reportspecific line handler*/
-	private function handleLine($groupname,$value,$depth,$path,$is_device)
-	{
-		/*mis-using the class field for style and title is not the finest,..**/
-		$c1style='" style="padding-left:'.$depth.'0px;" title="'.$path.$groupname;
-		return array(
-			'data'=>array($groupname,$value)
-//			'data'=>array_merge(array($groupname),$values)
-			,'translatable'=>false
-			,'depth'=>$depth
-			,'class'=>($is_device?array(''.$c1style,'right'):array('bold'.$c1style,'right bold'))
-		);
-	}
-
 /*reportspecific query (column 2++ can be reportspecific)*/
 	private function doQuery($groupIds, $dateFrom, $dateTo)
 	{
@@ -75,21 +55,49 @@ class Reports_Service_CodeTemplate_APCountStructured extends Reports_Service_Cod
 		GROUP BY reportgroup");
 	}
 
+/*reportspecific line data array initialize*/
+	private function initLine()
+	{
+		return array(0);
+	}
+
+/*reportspecific line sum handler*/
+	private function sumLine(&$value,$line)
+	{
+		$value[0]+=$line[2];
+	}
+
+/*reportspecific line handler*/
+	private function handleLine($groupname,$values,$depth,$path,$is_device)
+	{
+		/*mis-using the class field for style and title is not the finest,..**/
+		$c1style='" style="padding-left:'.$depth.'0px;" title="'.$path.$groupname;
+		return array(
+			'data'=>array_merge(array($groupname),$values)
+			,'translatable'=>false
+			,'depth'=>$depth
+			,'class'=>($is_device?array(''.$c1style,'right'):array('bold'.$c1style,'right bold'))
+		);
+	}
+
 /*add parameter to leave empty leaves -> not needed!!*/
 /*add parameter to adapt to various columns, or add a callback function to style the line, or calculate the sums*/
-	private function appendStructureRange(&$rows,&$running_sum,$rid,$last_rid,&$last_depth)
+	private function appendStructureRange(&$rows,&$values,$rid,$last_rid,&$last_depth)
 	{
-//echo "appendStructureRange running_sum:".$running_sum.",rid: ".$rid.",lastrid: ".$last_rid.",last_depth: ".$last_depth." <hr>";
 		/*use ncache to find all parent lines and calc there sums if applicable*/
 $limit=0;
 		if ($this->summable) {
 			if ($last_depth && ($rid>=0)) while ($last_depth>=0) {
 if (($limit++)>100) {die("/[dloop!]".$last_depth);}
-				$rows[$this->ncache[$last_depth]]['data'][1]+=$running_sum;
+				$v=1;
+				foreach ($values as $value) {
+					$rows[$this->ncache[$last_depth]]['data'][$v]+=$value;
+					$v++;
+				}
 				$last_depth--;
 			}
 			$last_depth=0;
-			$running_sum=0;
+			$values=$this->initLine();
 		}
 		$rid++;
 $limit=0;
@@ -112,7 +120,7 @@ if (($plimit++)>100) {$path.="/[ploop!]";break;}
 
 			$rows[count($rows)]=$this->handleLine($this->rgroup[$rid][0]
 			/*initialize sum with 0 (if summable) else take actual value (for actual row, else 0 (for missing rows))*/
-			,($this->summable?0:(($rid!=$last_rid)?0:($running_sum?$running_sum:0)))
+			,($this->summable?$this->initLine():(($rid!=$last_rid)?$this->initLine():(is_array($values)?$values:$this->initLine())))
                         ,$last_depth,$path,$this->rgroup[$rid][3]);
 			$rid++;
 		}
@@ -150,17 +158,18 @@ if (($plimit++)>100) {$path.="/[ploop!]";break;}
 		$rows=array();
 		$this->ncache=array(0=>0);
 		$ri=-1;
+		$values=$this->initLine();
                 foreach ($this->res as $line) {
 			$ri++;
 			if ($line[0]!=$last_rid) {
 				//print missing headers since last group
-				if ($this->summable) $path=$this->appendStructureRange(&$rows,&$running_sum,$last_rid,$line[0],&$last_depth);
+				if ($this->summable) $path=$this->appendStructureRange(&$rows,&$values,$last_rid,$line[0],&$last_depth);
 				/*instead of running sum give db result -> !!! causes value to be lost!!*/
 				else $path=$this->appendStructureRange(&$rows,&$line[2],$last_rid,$line[0],&$last_depth);
 				$last_rid=$line[0];
 			}
-			//do the running_sum (if applicable)
-			if ($this->summable) $this->sumLine(&$running_sum,$line);
+			//do the running sums on the values (if applicable)
+			if ($this->summable) $this->sumLine(&$values,$line);
 			//print line
 			/*at this depth level printing the single resultlines of this node list report is pointless*/
 			/*and if not summable, every group has its own result presented with structure anyways*/
@@ -169,7 +178,7 @@ if (($plimit++)>100) {$path.="/[ploop!]";break;}
 				$rows[]=$this->handleLine($this->rgroup[$line[0]][0],$line[2],($last_depth+1),$path,true);
                 }
 		/*if ($last_rid >= (count($this->rgroup)-1) )*/
-		$this->appendStructureRange(&$rows,&$running_sum,$last_rid,count($this->rgroup)-1,&$last_depth); /*sometimes causes a endless loop*/
+		$this->appendStructureRange(&$rows,&$values,$last_rid,count($this->rgroup)-1,&$last_depth); /*sometimes causes a endless loop*/
 
 		$dtype=strtolower($this->getReportGroup()->getCodeTemplate()->getFormatDefault());
 		if ($dtype=='notuserdefineable') $type='both'; /*our own hardcoded default*/
