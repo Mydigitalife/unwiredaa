@@ -23,21 +23,32 @@ class Reports_Service_CodeTemplate_APCountStructured extends Reports_Service_Cod
 					'type'=>$type
 					,name=>'AP Count'/*!!?? move to chartOptions?*/
 					,'chartOptions'=>array(
-						'type'=>'BarChart'
+						'type'=>($this->billingreport?'PieChart':'BarChart')
 						,'width'=>780 /*max 370 for 2 charts sidebyside*/
 						,'height'=>500
 						,'depths'=>1/*either single value, or an array -> multiple charts*/
 						/*nativeOptions are passed 1:1 to googleCharts options*/
-						,'nativeOptions'=>"legend:{position :'right'}
-							, isStacked:true
-							, colors:['#44ff44','#ff4444','#4444ff','#aaaaaa']")
+						,'nativeOptions'=>($this->billingreport?
+							"legend:{position :'rigth'}"
+							:"legend:{position :'right'}
+								, isStacked:true
+								, colors:['#44ff44','#ff4444','#4444ff','#aaaaaa']"
+							)
+						)
                                         ,'colDefs'=>array(/*array of coldefs*/
-						array(
-							array('name'=>'Group','translatable'=>false,'class'=>'bold')
-							,array('name'=>'online','translatable'=>false,'class'=>'bold')
-							,array('name'=>'offline','translatable'=>false,'class'=>'bold')
-							,array('name'=>'planning','translatable'=>false,'class'=>'bold')
-							,array('name'=>'disabled','translatable'=>false,'class'=>'bold')
+						($this->billingreport?
+							array(
+                                                                array('name'=>'Group','translatable'=>false,'class'=>'bold')
+                                                                ,array('name'=>'billable','translatable'=>false,'class'=>'bold')
+							)
+							:array(
+								array('name'=>'Group','translatable'=>false,'class'=>'bold')
+								,array('name'=>'online','translatable'=>false,'class'=>'bold')
+								,array('name'=>'offline','translatable'=>false,'class'=>'bold')
+								,array('name'=>'planning','translatable'=>false,'class'=>'bold')
+								,array('name'=>'disabled','translatable'=>false,'class'=>'bold')
+								//,array('name'=>'billable','translatable'=>false,'class'=>'bold')
+							)
 						)
                                         ) /*end of coldefs*/
                                         ,'rows'=>$rows
@@ -49,18 +60,22 @@ class Reports_Service_CodeTemplate_APCountStructured extends Reports_Service_Cod
 	private function setReportOptions()
 	{
 		//$this->summable=true;
+		//this->getReportGroup()->getCodeTemplate()->getOptions does not work!?
+		if (strpos($this->getReportGroup()->getCodeTemplate()->getTitle())),"Bill") $this->billingreport=true;
 	}
 
 /*reportspecific query (column 2++ can be reportspecific)*/
 	private function doQuery($groupIds, $dateFrom, $dateTo)
 	{
-/*		$this->res=$this->db->fetchall("SELECT rg.reportgroup, 0 as intv, COUNT(n.node_id) as cnt
-		FROM node n
-		INNER JOIN node_reportgroup rg ON n.node_id = rg.node_id
-		WHERE n.status='enabled' AND n.online_status=0 AND deleted=0
-		GROUP BY reportgroup");*/
-
+		if ($this->billingreport) /*billable*/
 		$this->res=$this->db->fetchall("SELECT rg.reportgroup, 0 as intv
+                , count(*) as billable
+                FROM node n
+                INNER JOIN node_reportgroup rg ON n.node_id = rg.node_id
+                WHERE deleted=0 AND billable=1
+                GROUP BY reportgroup");
+
+		else $this->res=$this->db->fetchall("SELECT rg.reportgroup, 0 as intv
 		, SUM(IF(n.status='enabled',IF(n.online_status=1,1,0),0)) as online
 		, SUM(IF(n.status='enabled',IF(n.online_status=0,1,0),0)) as offline
 		, SUM(IF(n.status='planning',1,0)) as planning
@@ -69,21 +84,26 @@ class Reports_Service_CodeTemplate_APCountStructured extends Reports_Service_Cod
 		INNER JOIN node_reportgroup rg ON n.node_id = rg.node_id
 		WHERE deleted=0
 		GROUP BY reportgroup");
+		//, SUM(IF(n.billable=1,1,0)) as billable
 	}
 
 /*reportspecific line data array initialize*/
 	private function initLine()
 	{
-		return array(0,0,0,0);
+		if ($this->billingreport) return array(0);
+		else return array(0,0,0,0);
 	}
 
 /*reportspecific line sum handler*/
 	private function sumLine(&$value,$line)
 	{
 		$value[0]+=$line[2];
-		$value[1]+=$line[3];
-		$value[2]+=$line[4];
-		$value[3]+=$line[5];
+		if (!$this->billingreport) {
+			$value[1]+=$line[3];
+			$value[2]+=$line[4];
+			$value[3]+=$line[5];
+			//$value[4]+=$line[6];
+		}
 	}
 
 /*reportspecific line handler*/
