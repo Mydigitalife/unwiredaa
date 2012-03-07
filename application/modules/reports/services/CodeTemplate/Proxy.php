@@ -37,6 +37,11 @@ class Reports_Service_CodeTemplate_Proxy extends Reports_Service_CodeTemplate_Ab
                         	                                ,'translatable'=>false
                                 	                        ,'class'=>''
                                         	        )
+        	                                        ,array( /*advanced column def as array*/
+                	                                        'name'=>'Percentage'
+                        	                                ,'translatable'=>false
+                                	                        ,'class'=>''
+                                        	        )
 	                                        ) /* end of first coldef*/
         	                        ) /*end of coldefs*/
                 	                ,'rows'=>$rows
@@ -44,13 +49,13 @@ class Reports_Service_CodeTemplate_Proxy extends Reports_Service_CodeTemplate_Ab
 	}
 
 /*abstractable default line handler!?*/
-	private function handleLine($name,$value,$bold,$hide)
+	private function handleLine($name,$value,$perc,$bold,$hide)
 	{
 		return array(/*data row*/
-			'data'=>array($name,$value)
+			'data'=>array($name,$value,$perc."%")
 			,'translatable'=>false
 			,'device'=>$hide
-			,'class'=>array(($bold?'bold':''),($bold?'bold right':'right'))
+			,'class'=>array(($bold?'bold':''),($bold?'bold right':'right'),($bold?'bold right':'right'))
 		); /*end of data row*/
 	}
 
@@ -73,11 +78,11 @@ FROM proxy_log WHERE stamp BETWEEN '$dateFrom' AND '$dateTo' GROUP BY category O
 			$empty=false;
 			$rows=array();
 			if (!$virus) {
-				$ttotal[]=$this->handleLine($row[0],$row[1],true,false);
+				$ttotal[$row[0]]=$row[1];
 				$totaltotal+=$row[1];
 			}
 			$total=array();
-			$total[]=$this->handleLine('Total '.$row[0],$row[1],true,true);
+			$total[]=$this->handleLine('Total '.$row[0],$row[1],100,true,true);
 
 			/*query top 50 virus threats*/
 			if ($virus) $tstmt=$db->query("SELECT virusname, count(*) AS cnt
@@ -87,22 +92,26 @@ GROUP BY virusname ORDER BY cnt DESC limit 50;");
 FROM proxy_log WHERE category='$row[0]' and stamp BETWEEN '$dateFrom' AND '$dateTo' GROUP BY tld ORDER BY cnt DESC limit 20;");
 
 			while ($trow=$tstmt->fetch()){
-				$rows[]=$this->handleLine($trow[0],$trow[1],false,false);
+				$rows[]=$this->handleLine($trow[0],$trow[1],round($trow[1]*1000/$row[1])/10,false,false);
 			}
-			$tables[$row[0]]=$this->getTable(array_merge($total,$rows,$total),($virus?'Top 50 virus':'Top 20 '.$row[0].' domains'));
+
+			$tables[str_replace(",","_",str_replace(" ","",$row[0]))]=$this->getTable(array_merge($total,$rows,$total),($virus?'Top 50 virus':'Top 20 '.$row[0]));
 		}
 		if ($empty) {
 		// no virus found
-			$total=array();
-			$rows[]=$this->handleLine("[No Data!]",0,true,false);
-			$tables[]=$this->getTable(array_merge($total,$rows,$total),'No Data!');
+			$rows[]=$this->handleLine("[No Data!]",0,0,true,false);
+			$tables[]=$this->getTable($rows,'No Data!');
 		}
 		//add overview chart(and table) based on totals ?
 		if ($virus) $overview=array();
 		else {
+			//build total with perc
+			foreach ($ttotal as $name=>$value)
+                        $tltotal[]=$this->handleLine($name,$value,round($value*1000/$totaltotal)/10,false,false);
+
 			$total=array();
-                        $total[]=$this->handleLine('Total',$totaltotal,true,true);
-			$overview['overview']=$this->getTable(array_merge($total,$ttotal,$total),'Thread Overview');
+                        $total[]=$this->handleLine('Total',$totaltotal,100,true,true);
+			$overview['overview']=$this->getTable(array_merge($total,$tltotal,$total),'Thread Overview');
 		}
 
 		return array('tables'=>array_merge($overview,$tables));
