@@ -23,13 +23,13 @@ class Reports_Service_CodeTemplate_Language extends Reports_Service_CodeTemplate
                 ->join(array('c' => 'acct_internet_roaming'), 'b.session_id = c.session_id')
                 ->join(array('d' => 'node'), 'c.node_id = d.node_id', array('node_name' => 'name', 'node_mac' => 'mac'))
                 ->join(array('e' => 'group'), 'd.group_id = e.group_id', array('group_id', 'group_name' => 'name'))
-                ->join(array('f' => 'network_user'), 'b.user_id = f.user_id', array('username'))
+//                ->join(array('f' => 'network_user'), 'b.user_id = f.user_id', array('username'))
                 ->where('d.group_id IN (?)', $groupRel)
         		->where('a.accept_language != ""')
-                ->where('DATE(a.time) >= ?', $dateFrom)
-                ->where('DATE(a.time) <= ?', $dateTo)                  
+                ->where('a.time >= ?', $dateFrom)
+                ->where('a.time <= ?', $dateTo)
                 ->group('a.username');
-		
+//die($select->__tostring());
         $result = $db->fetchAll($select);
    
         $data = array();

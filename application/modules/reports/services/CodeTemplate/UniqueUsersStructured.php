@@ -30,6 +30,7 @@ if (($limit++)>10) {die("/[dloop!]".$last_depth);}
 		}
 		$rid++;
 $limit=0;
+		$path="";
 		/*print out missing structures*/
 		while ($rid<=$last_rid)
 		{
@@ -231,13 +232,14 @@ if ($this->innerCount>0) {
                                 'main'=>array( /*table 1*/
 /*use title specifed by user?*/
 					'type'=>$type
-					,name=>'Unique Users'/*!!?? move to chartOptions?*/
+					,'name'=>'Unique Users'/*!!?? move to chartOptions?*/
 					,'chartOptions'=>array(
-						'type'=>'ColumnChart'
-						,'width'=>360 /*max 370 for 2 charts sidebyside*/
-						,'height'=>350
+						'type'=>'LineChart'
+						,'width'=>760 /*max 370 for 2 charts sidebyside*/
+						,'height'=>400
+						,'switchAxes'=>true
 						,'depths'=>$cdepths/*either single value, or an array -> multiple charts*/
-						,'nativeOptions'=>"legend:{position :'none'}")/*passed 1:1 to googleCharts options*/
+						,'nativeOptions'=>"legend:{position :'right'}")/*passed 1:1 to googleCharts options*/
                                         ,'colDefs'=>array(/*array of coldefs*/
 /*                                                array(//first coldef
                                                         array( //advanced column def as array
