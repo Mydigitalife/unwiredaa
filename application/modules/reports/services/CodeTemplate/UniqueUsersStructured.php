@@ -234,10 +234,10 @@ if ($this->innerCount>0) {
 					'type'=>$type
 					,'name'=>'Unique Users'/*!!?? move to chartOptions?*/
 					,'chartOptions'=>array(
-						'type'=>'LineChart'
+						'type'=>(($this->innerCount>1)?'LineChart':'ColumnChart')
 						,'width'=>760 /*max 370 for 2 charts sidebyside*/
 						,'height'=>400
-						,'switchAxes'=>true
+						,'switchAxes'=>($this->innerCount>1)
 						,'depths'=>$cdepths/*either single value, or an array -> multiple charts*/
 						,'nativeOptions'=>"legend:{position :'right'}")/*passed 1:1 to googleCharts options*/
                                         ,'colDefs'=>array(/*array of coldefs*/
