@@ -78,7 +78,7 @@ $acl = Zend_Registry::get ( 'acl' );
                 ]);
 
 		var chart = new google.visualization.<?=isset($value->type)?$value->type:"PieChart"?>(document.getElementById("chart_div<?php echo $key ?>"));
-		chart.draw(data, {width: <?=isset($value->width)?$value->width:"350"?>, height: <?=isset($value->height)?$value->height:"300"?>, title: "<?=$this->translate($value->name).' '.(isset($depth)?$depth:"")?>"<?=isset($value->nativeOptions)?','.$value->nativeOptions:''?>});
+		chart.draw(data, {width: <?=isset($value->width)?$value->width:"750"?>, height: <?=isset($value->height)?$value->height:"500"?>, title: "<?=$this->translate($value->name).' '.(isset($depth)?$depth:"")?>"<?=isset($value->nativeOptions)?','.$value->nativeOptions:''?>});
 	}
 	<?php endforeach; ?>
 	</script>
@@ -111,19 +111,47 @@ $acl = Zend_Registry::get ( 'acl' );
 	    		function drawChart_<?=$ccnt?>_<?php echo $key?>() {
 				var data = new google.visualization.DataTable();
 
-				<?php foreach ($value->colDefs[count($value->colDefs)-1] as $k => $v):
-					$cname=(isset($v->name)?$v->name:'unnamed');
-				?>
-				data.addColumn(<?php if ( isset($value->rows) && isset($value->rows[0]) && isset($value->rows[0]->data) && is_array($value->rows[0]->data) && isset($value->rows[0]->data[$k]) && is_numeric($value->rows[0]->data[$k])): ?>"number"<?php else: ?>"string"<?php endif; ?>, "<?=/*$this->translate*/($cname)?>");
-				<?php endforeach; ?>
+				<?php if ($opt->switchAxes) {
+					$x=1;$cells="";$Y=0;
+					echo "data.addColumn('string','name');\n";
+					foreach ($value->rows as $k => $v) {
+						if ((!$depth||!isset($v->depth)||($v->depth==$depth)) && (!isset($v->device)||$v->device==0) ) {
+							$y=0;
+	                	        		foreach ($v->data as $kk => $vv) {
+								if ($y==0) {
+									echo "data.addColumn('number','".$vv."');\n";
+								}
+								else if ($y>=2) $cells.="data.setCell(".($y-2).",$x,".(1*$vv).");\n";
+								$y++;
+							}
+							if ($y>$Y) $Y=$y;
+							$x++;
+						}
+					}
+					echo "data.addRows(".($Y-2).");\n".$cells;
+					$x=0;
 
-	                	data.addRows([
-        	        	<?php $rii=0; foreach ($value->rows as $k => $v):?>
-					<?php if ((!$depth||!isset($v->depth)||($v->depth==$depth)) && (!isset($v->device)||$v->device==0) ):?>
-	                        		<?=($rii++==0?"":",")?>[<?php foreach ($v->data as $kk => $vv): echo ($kk==0?"":",").($vv==""?0:(is_numeric($vv)?$vv:'"'.$vv.'"')); endforeach; ?>]
-					<?php endif; ?>
-                		<?php endforeach; ?>
-                		]);
+					foreach ($value->colDefs[count($value->colDefs)-1] as $k => $v) {
+						if ($x>1) echo "data.setCell(".($x-2).",0,'".(isset($v->name)?str_replace("<br/>","",$v->name):'unnamed')."');\n";
+						$x++;
+					}
+				}
+				else { ?>
+					<?php foreach ($value->colDefs[count($value->colDefs)-1] as $k => $v):
+						$cname=(isset($v->name)?$v->name:'unnamed');
+					?>
+					data.addColumn(<?php if ( isset($value->rows) && isset($value->rows[0]) && isset($value->rows[0]->data) && is_array($value->rows[0]->data) && isset($value->rows[0]->data[$k]) && is_numeric($value->rows[0]->data[$k])): ?>"number"<?php else: ?>"string"<?php endif; ?>, "<?=/*$this->translate*/($cname)?>");
+					<?php endforeach; ?>
+
+
+		                	data.addRows([
+        		        	<?php $rii=0; foreach ($value->rows as $k => $v):?>
+						<?php if ((!$depth||!isset($v->depth)||($v->depth==$depth)) && (!isset($v->device)||$v->device==0) ):?>
+	                	        		<?=($rii++==0?"":",")?>[<?php foreach ($v->data as $kk => $vv): echo ($kk==0?"":",").($vv==""?0:(is_numeric($vv)?$vv:'"'.$vv.'"')); endforeach; ?>]
+						<?php endif; ?>
+	                		<?php endforeach; ?>
+        	        		]);
+				<?php } ?>
 
 				var chart = new google.visualization.<?=isset($opt->type)?$opt->type:"PieChart"?>(document.getElementById("chart_div_<?=$ccnt?>_<?php echo $key ?>"));
 				chart.draw(data, {width: <?=isset($opt->width)?$opt->width:"350"?>, height: <?=isset($opt->height)?$opt->height:"300"?>, title: "<?=$this->translate($name).' '.$depth?>"<?=isset($opt->nativeOptions)?','.$opt->nativeOptions:''?>});
