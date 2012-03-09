@@ -73,42 +73,85 @@ class Reports_Service_CodeTemplate_AuthLog extends Reports_Service_CodeTemplate_
 		$db->setFetchMode(Zend_Db::FETCH_NUM);
 
 		/*get list of nodes*/
-		$res=$db->fetchAll($node_id_query);
+		$res=$db->fetchAll($node_id_query); $node_ids=array();
 		foreach ($res as $value) $node_ids[]=$value[0];
 		$node_id_str="node_id IN (".implode(",",$node_ids).") AND";
 
 		/*query auth_log*/
+		$from="FROM auth_log";
+		$where="WHERE $node_id_str time BETWEEN '$dateFrom' AND '$dateTo'";
+		$limit="LIMIT 50";
 		switch ($mode) {
 			case "lang":
 //filter strange accept_languages, or language-variations!?
-				$stmt=$db->query("SELECT accept_language, count(*) as cnt FROM auth_log
-WHERE $node_id_str time BETWEEN '$dateFrom' AND '$dateTo' GROUP BY accept_language ORDER BY cnt desc");
+				$where.="AND type='guest'";
+				$total=$db->fetchAll("SELECT count(*) $from $where");
+				$stmt=$db->query("SELECT accept_language, count(*) as cnt $from $where GROUP BY accept_language ORDER BY cnt desc $limit");
 				break;
 			case "os":
 //extract os from user_agent!?
-				$stmt=$db->query("SELECT user_agent, count(*) as cnt FROM auth_log
-WHERE $node_id_str time BETWEEN '$dateFrom' AND '$dateTo' GROUP BY user_agent ORDER BY cnt desc");
+				//$where.="AND type='guest'";
+				$total=$db->fetchAll("SELECT count(*) $from $where");
+				$stmt=$db->query("SELECT LEFT(user_agent,60) as os, count(*) as cnt $from $where GROUP BY os ORDER BY cnt desc $limit");
+/*typical OS searchstrings
+  Linux
+    Android 2.x.y
+    Android 2.3.x
+    Android 3.x
+    Android
+  Bada Samsung
+  BlackBerry
+    (RIM Tablet OS)
+  SymbOS
+  (Symbian)
+  SymbianOS/9.x
+    Serie 60/x.y
+  MeeGo
+  Windows
+    CE
+    Phone OS 7
+    NT 6.0
+    NT 6.1
+    NT 5.1
+    WOW64
+  iPhone|iPad|iPod
+    OS 3-5_x_y
+    OS 5_0
+  Macintosh
+    Intel Mac OS X x_y_z
+    Intel Mac OS X 10.5
+  Samsung
+*/
+
 				break;
 			case "vendor":
-//die("under construction");
+//auch nur guest zählen (45% apple), oder eben alles (inclusive mac-auths (65% apple))
 //use user_id and vendor table
-				$stmt=$db->query("SELECT LEFT(username,8), count(*) as cnt FROM auth_log
-WHERE type='guest' AND $node_id_str time BETWEEN '$dateFrom' AND '$dateTo' GROUP BY LEFT(username,8) ORDER BY cnt desc");
+				$where.="AND type='guest'";
+				$total=$db->fetchAll("SELECT count(*) $from $where");
+				$stmt=$db->query("SELECT v.name, count(*) as cnt $from l
+INNER JOIN vendors v ON v.prefix = LEFT(l.username,8) $where GROUP BY v.name ORDER BY cnt desc LIMIT 20");//$limit
 				break;
 			case "start":
 //only use domain of userurl!?
-				$stmt=$db->query("SELECT user_url, count(*) as cnt FROM auth_log
-WHERE $node_id_str time BETWEEN '$dateFrom' AND '$dateTo' GROUP BY user_url ORDER BY cnt desc");
+				$where.="AND type='guest'";
+				$total=$db->fetchAll("SELECT count(*) $from $where");
+				$stmt=$db->query("SELECT LEFT(user_url,LOCATE('/',user_url,9)) as domain, count(*) as cnt $from $where GROUP BY domain HAVING domain<>'' ORDER BY cnt desc $limit");
 				break;
 		}
+		$other=$totalcount=$total[0][0];
+		if ($other>0) $rows[]=$this->handleLine("Total",$other,round($other*1000/$totalcount)/10,true,true);
 
-/*collect lines, calc total, and create lines later!?*/
 		while ($row=$stmt->fetch()) {
 			$empty=false;
-			$rows[]=$this->handleLine($row[0],$row[1],"-"/*round($trow[1]*1000/$row[1])/10*/,false,false);
+			$other-=$row[1];
+			$rows[]=$this->handleLine($row[0],$row[1],round($row[1]*1000/$totalcount)/10,false,false);
 		}
 		if ($empty) {// nothing found
 			$rows[]=$this->handleLine("[No Data!]",0,0,true,false);
+		}
+		else if ($other>0) {
+			$rows[]=$this->handleLine("Other",$other,round($other*1000/$totalcount)/10,true,false);
 		}
 		$names=array('lang'=>'Most Frequent browser language'
 		,'os'=>'Most frequent operating system'
