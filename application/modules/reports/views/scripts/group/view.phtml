@@ -111,7 +111,7 @@ $acl = Zend_Registry::get ( 'acl' );
 	    		function drawChart_<?=$ccnt?>_<?php echo $key?>() {
 				var data = new google.visualization.DataTable();
 
-				<?php if ($opt->switchAxes) {
+				<?php if (isset($opt->switchAxes) && $opt->switchAxes) {
 					$x=1;$cells="";$Y=0;
 					echo "data.addColumn('string','name');\n";
 					foreach ($value->rows as $k => $v) {
