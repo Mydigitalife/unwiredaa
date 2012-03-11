@@ -4,21 +4,11 @@ class Captive_Model_Content extends Unwired_Model_Generic
 {
     protected $_contentId = null;
 
-    protected $_languageId = null;
-
     protected $_splashId = null;
 
     protected $_templateId = null;
 
-    protected $_title = null;
-
-    protected $_content = null;
-
     protected $_type = null;
-
-    protected $_orderWeb = 1;
-
-    protected $_orderMobile = 1;
 
     protected $_column = 1;
 
@@ -27,6 +17,10 @@ class Captive_Model_Content extends Unwired_Model_Generic
     protected $_templateContent = null;
 
     protected $_editable = 1;
+
+    protected $_restricted = 0;
+
+    protected $_data = array();
 
 	/**
      * @return the $contentId
@@ -42,6 +36,10 @@ class Captive_Model_Content extends Unwired_Model_Generic
     public function setContentId($contentId)
     {
         $this->_contentId = $contentId;
+
+        foreach ($this->_data as $data) {
+            $data->setContentId($contentId);
+        }
 
         return $this;
     }
@@ -100,6 +98,31 @@ class Captive_Model_Content extends Unwired_Model_Generic
         return $this;
     }
 
+    public function getData()
+    {
+        return $this->_data;
+    }
+
+    public function setData(array $data)
+    {
+        $this->_data = array();
+
+        foreach ($data as $contentData) {
+            $this->addData($contentData);
+        }
+        return $this;
+    }
+
+    public function addData(Captive_Model_ContentData $data)
+    {
+        $data->setContentId($this->getContentId())
+             ->setParent($this);
+
+        $this->_data[] = $data;
+
+        return $this;
+    }
+
 	/**
      * @return the $title
      */
@@ -114,27 +137,6 @@ class Captive_Model_Content extends Unwired_Model_Generic
     public function setTitle($title)
     {
         $this->_title = $title;
-
-        return $this;
-    }
-	/**
-     * @return the $content
-     */
-    public function getContent()
-    {
-        return $this->_content;
-    }
-
-	/**
-     * @param field_type $content
-     */
-    public function setContent($content)
-    {
-        if (is_array($content)) {
-            $content = serialize($content);
-        }
-
-        $this->_content = $content;
 
         return $this;
     }
@@ -158,19 +160,33 @@ class Captive_Model_Content extends Unwired_Model_Generic
     }
 
 	/**
-     * @return the $orderWeb
+     * @return the desktop layout order $order
      */
-    public function getOrderWeb()
+    public function getOrder()
     {
-        return $this->_orderWeb;
+        foreach ($this->getData() as $contentData) {
+            if ($contentData->isMobile()) {
+                continue;
+            }
+
+            return $contentData->getOrder();
+        }
+
+        return 1;
     }
 
 	/**
-     * @param field_type $orderWeb
+     * @param field_type $order
      */
-    public function setOrderWeb($orderWeb)
+    public function setOrder($order)
     {
-        $this->_orderWeb = $orderWeb;
+        foreach ($this->getData() as $contentData) {
+            if ($contentData->isMobile()) {
+                continue;
+            }
+
+            $contentData->setOrder($order);
+        }
 
         return $this;
     }
@@ -180,15 +196,29 @@ class Captive_Model_Content extends Unwired_Model_Generic
      */
     public function getOrderMobile()
     {
-        return $this->_orderMobile;
+        foreach ($this->getData() as $contentData) {
+            if (!$contentData->isMobile()) {
+                continue;
+            }
+
+            return $contentData->getOrder();
+        }
+
+        return $this;
     }
 
 	/**
      * @param field_type $orderMobile
      */
-    public function setOrderMobile($orderMobile)
+    public function setOrderMobile($order)
     {
-        $this->_orderMobile = $orderMobile;
+        foreach ($this->getData() as $contentData) {
+            if (!$contentData->isMobile()) {
+                continue;
+            }
+
+            $contentData->setOrder($order);
+        }
 
         return $this;
     }
@@ -255,6 +285,17 @@ class Captive_Model_Content extends Unwired_Model_Generic
     public function setEditable($editable = true)
     {
         $this->_editable = (int)(bool) $editable;
+        return $this;
+    }
+
+    public function isRestricted()
+    {
+        return $this->_restricted;
+    }
+
+    public function setRestricted($restricted = true)
+    {
+        $this->_restricted = (int)(bool) $restricted;
         return $this;
     }
 

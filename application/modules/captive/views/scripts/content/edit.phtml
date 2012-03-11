@@ -1,0 +1,16 @@
+<form method="post" action="<?php echo $_SERVER['REQUEST_URI']; ?>">
+	<div class="span-18">
+		<!-- start content edit -->
+
+		<?php
+		    echo $this->widgetAdmin($this->content, array('splashPage' => $this->splashPage, 'template' => $this->template));
+		?>
+
+		<!-- end content edit -->
+
+		<div class="buttons">
+			<a href="javascript:;" class="button green save"><span><?php echo $this->translate('captive_content_edit_content_save'); ?></span></a>
+			<a href="javascript:;" class="button blue cancel"><span><?php echo $this->translate('captive_content_edit_content_cancel'); ?></span></a>
+		</div>
+	</div>
+</form>

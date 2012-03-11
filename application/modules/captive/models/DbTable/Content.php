@@ -4,14 +4,9 @@ class Captive_Model_DbTable_Content extends Zend_Db_Table_Abstract
 {
     protected $_name = 'content';
 
-    protected $_dependentTables = array('Captive_Model_DbTable_Content');
+    protected $_dependentTables = array('Captive_Model_DbTable_Content','Captive_Model_DbTable_ContentData');
 
     protected $_referenceMap = array(
-                'Language' => array(
-        			'columns'           => 'language_id',
-                    'refTableClass'     => 'Captive_Model_DbTable_Language',
-                    'refColumns'        => 'language_id'
-                    ),
                 'Splash' => array(
         			'columns'           => 'splash_id',
                     'refTableClass'     => 'Captive_Model_DbTable_SplashPage',

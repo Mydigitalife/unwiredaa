@@ -22,15 +22,7 @@ class Widget_Html extends Unwired_Widget_Abstract
     {
         $this->getView()->assign($params);
 
-        $data = @unserialize($content->getContent());
-
-        if (!is_array($data)) {
-            $data = array('desktop' => $content->getContent(),
-                          'mobile' => $content->getContent());
-        }
-
         $this->getView()->content = $content;
-        $this->getView()->contentData = $data;
 
         return $this->getView()->render('admin.phtml');
     }
