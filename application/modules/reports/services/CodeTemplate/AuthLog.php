@@ -90,39 +90,71 @@ class Reports_Service_CodeTemplate_AuthLog extends Reports_Service_CodeTemplate_
 				break;
 			case "os":
 //extract os from user_agent!?
-				//$where.="AND type='guest'";
+				$where.="AND type='guest'";
 				$total=$db->fetchAll("SELECT count(*) $from $where");
-				$stmt=$db->query("SELECT LEFT(user_agent,60) as os, count(*) as cnt $from $where GROUP BY os ORDER BY cnt desc $limit");
-/*typical OS searchstrings
-  Linux
-    Android 2.x.y
-    Android 2.3.x
-    Android 3.x
-    Android
-  Bada Samsung
-  BlackBerry
-    (RIM Tablet OS)
-  SymbOS
-  (Symbian)
-  SymbianOS/9.x
-    Serie 60/x.y
-  MeeGo
-  Windows
-    CE
-    Phone OS 7
-    NT 6.0
-    NT 6.1
-    NT 5.1
-    WOW64
-  iPhone|iPad|iPod
-    OS 3-5_x_y
-    OS 5_0
-  Macintosh
-    Intel Mac OS X x_y_z
-    Intel Mac OS X 10.5
-  Samsung
-*/
+				$stmt=$db->query("SELECT
+IF( (@pos:=LOCATE('iPhone',user_agent)) > 0
+	,IF( (@pos1:=LOCATE(' OS ',user_agent,@pos+6)) > 0
+		,IF( (@pos2:=LOCATE(' ',user_agent,@pos1+4)) > 0
+	                ,CONCAT('iOS|iPhone iOS ',REPLACE(SUBSTRING(user_agent,@pos1+4,@pos2-@pos1-4),'_','.'))
+	        	,'iOS|iPhone Unknown')
+        	,'iOS|iPhone Other')
+,IF(user_agent like '%Linux%'
+	,IF( (@pos1:=LOCATE('Android ',user_agent)) > 0
+		,IF( (@pos2:=LOCATE('=',user_agent,@pos1+8)) > 0
+			,CONCAT('Linux|',SUBSTRING(user_agent,@pos1,@pos2-@pos1))
+			,'Linux|Android Other')
+		,'Linux|Other')
+,IF(user_agent like '%Blackberry%'
+	,IF( (@pos1:=LOCATE(' Blackberry ',user_agent)) > 0
+		,IF( (@pos2:=LOCATE('=',user_agent,@pos1+12)) > 0
+			,CONCAT('Blackberry|Blackberry ',SUBSTRING(user_agent,@pos1+12,@pos2-@pos1-12))
+			,'Blackberry|Blackberry Other')
+		,'Blackberry|Blackberry Other')
+,IF(user_agent like '%Windows %'
+	,IF( (@pos1:=LOCATE('Windows NT',user_agent)) > 0
+		,CONCAT('Windows|NT ',SUBSTRING(user_agent,@pos1+11,3),IF(user_agent like '%WOW64%','64bit',''))
+		,IF( (@pos1:=LOCATE('Windows Phone',user_agent)) > 0
+			,IF( (@pos2:=LOCATE('=',user_agent,@pos1+17)) > 0
+				,CONCAT('Windows|Phone ',SUBSTRING(user_agent,@pos1+17,@pos2-@pos1-17))
+				,'Windows|Phone Other')
+			,'Windows Other')
+		)
+,IF(user_agent like '%Macintosh%'
+	,IF( (@pos1:=LOCATE(' Mac OS X ',user_agent)) > 0
+		,IF( (@pos2:=LOCATE('=',user_agent,@pos1+10)) > 0
+			,CONCAT('Macintosh|Mac OS X ',REPLACE(SUBSTRING(user_agent,@pos1+10,@pos2-@pos1-10),'_','.'))
+			,'Macintosh|Mac OS X Other')
+		,'Macintosh Other')
+,IF( (@pos:=LOCATE('iPad',user_agent)) > 0
+	,IF( (@pos1:=LOCATE(' OS ',user_agent,@pos+4)) > 0
+		,IF( (@pos2:=LOCATE(' ',user_agent,@pos1+4)) > 0
+	                ,CONCAT('iOS|iPad iOS ',REPLACE(SUBSTRING(user_agent,@pos1+4,@pos2-@pos1-4),'_','.'))
+	        	,'iOS|iPad Unknown')
+        	,'iOS|iPad Other')
+,IF(user_agent like '%iPod%','iOS|iPod'
+,IF(user_agent like '%MeeGo%','Linux|MeeGo'
+,IF(user_agent like '%Bada%','Samsung|Bada'
+,IF(user_agent like '%RIM Tablet%','Blackberry|RIM Tablet OS'
+,IF(user_agent like '%Symb%'
+	,IF( (@pos1:=LOCATE('SymbianOS',user_agent)) > 0
+		,IF( (@pos2:=LOCATE('=',user_agent,@pos1+9)) > 0
+			,CONCAT('Symbian|SymbianOS ',SUBSTRING(user_agent,@pos1+9,@pos2-@pos1-9))
+			,'Symbian|SymbianOS Other')
+		,'Symbian|Other')
+,IF(user_agent like '%SAMSUNG%','Samsung|Other'
+,IF(user_agent like '%Nokia%','Nokia'
+,IF(user_agent like '%SonyEricsson%','SonyEricsson'
+,IF(user_agent like '%webOS%','HP WebOs'
+,IF(user_agent like '%=28LG%','LG'
+,IF(user_agent like 'LG-%','LG'
+,'Other|'
+))))))))))))))))) as os
+,count(*) as cnt $from $where GROUP BY os ORDER BY cnt desc");//$limit
 
+/*
+,CONCAT('Other|',user_agent)
+*/
 				break;
 			case "vendor":
 //auch nur guest zählen (45% apple), oder eben alles (inclusive mac-auths (65% apple))
