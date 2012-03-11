@@ -12,11 +12,11 @@
 
 class Reports_Service_CodeTemplate_AuthLog extends Reports_Service_CodeTemplate_Abstract {
 
-	private function getTable($rows,$cat)
+	private function getTable($rows,$name)
 	{
 		return 		array(/*table definition*/
 					'type'=>strtolower($this->getReportGroup()->getCodeTemplate()->getFormatDefault())
-                                        ,'name'=>$cat
+                                        ,'name'=>$name
                                         ,'chartOptions'=>array(
                                                 'type'=>'PieChart'
                                                 ,'width'=>780 /*max 370 for 2 charts sidebyside*/
@@ -27,7 +27,7 @@ class Reports_Service_CodeTemplate_AuthLog extends Reports_Service_CodeTemplate_
         		        	,'colDefs'=>array(/*array of coldefs*/
                 	                        array(/*coldef*/
                         	                        array( /*advanced column def as array*/
-                                	                        'name'=>$cat
+                                	                        'name'=>$name
                                         	                ,'translatable'=>false
                                                 	        ,'width'=>'80%'
                                                         	,'class'=>''
@@ -46,6 +46,86 @@ class Reports_Service_CodeTemplate_AuthLog extends Reports_Service_CodeTemplate_
         	                        ) /*end of coldefs*/
                 	                ,'rows'=>$rows
 				); /*end of table*/
+	}
+
+	private function getTables($rows,$mode)
+	{
+		$names=array('lang'=>'Most Frequent browser language'
+		,'os'=>'Most frequent operating system'
+		,'vendor'=>'Most frequent device vendor'
+		,'start'=>'Most frequent startpages');
+		$windowsnames=array('NT 6.2'=>'8'/*probybly*/
+		,'NT 6.1'=>'7'
+		,'NT 6.0'=>'Vista'
+		,'NT 5.1'=>'XP'
+		,'NT 5.0'=>'2000');
+		if ($mode=='os') {
+/*			echo "<pre>";
+			print_r($this->OSoverview);
+			die("<pre>");*/
+			$tables=array();
+			$orows=array();
+			arsort($this->OSoverview);
+			//generate multiple tables and charts
+			foreach ($this->OSoverview as $cat => $sum) {
+				if (count($this->OSrows[$cat])==1) {
+					if ($this->OSrows[$cat][0][0]) $cat=$this->OSrows[$cat][0][0];
+					$details=false;
+				} else {
+					//do detail table
+					$rows=array();
+					foreach ($this->OSrows[$cat] as $row) {
+						$appendix='';
+						if ($cat=='Windows') {
+							$wname=str_replace(' 64bit','',$row[0]);
+							if (isset($windowsnames[$wname])) $appendix=' (e.g. Windows '.$windowsnames[$wname].')';
+						}
+						$rows[]=$this->handleLine($row[0].$appendix,$row[1]
+						,round($row[1]*1000/$sum)/10,false,false);
+					}
+//add category total!?
+					$tables[$cat]=$this->getTable($rows
+					,'Details: '.$cat.' ('.(round($sum*1000/$this->OStotal)/10).'%)');
+
+					$details=true;
+				}
+				$orows[]=$this->handleLine($cat.($details?' *':''),$sum
+				,round($sum*1000/$this->OStotal)/10,false,false);
+
+			/*legacy: $rows[]=$this->handleLine(str_replace('|',', ',$row[0]),$row[1]
+				,round($row[1]*1000/$this->OStotal)/10,false,false);*/
+			}
+//add total total!?
+			$otable=array('overview'=>$this->getTable($orows,$names[$mode]." ( * Details available )"));
+			return array('tables'=>array_merge($otable,$tables));
+		}
+		return array('tables'=>array('main'=>$this->getTable($rows,$names[$mode])));
+	}
+
+	private function handleOSLine($line)
+	{
+		$cats=explode("|",$line[0]);
+		$cat=$cats[0];
+		if (count($cats)>1 && $cats[1]) $name=$cats[1]; else $name=$cats[0];
+		$value=$line[1];
+		if (isset($this->OSoverview[$cat])) {
+			$this->OSoverview[$cat]+=$value;
+			$this->OSrows[$cat][]=array($name,$value);
+		}
+		else {
+			$this->OSoverview[$cat]=$line[1];
+			$this->OSrows[$cat]=array();
+			$this->OSrows[$cat][]=array($name,$value);
+		}
+		$this->OStotal+=$line[1];
+		//legacy: $this->OSrows[]=$line;
+	}
+
+	private function OSInit()
+	{
+		$this->OSrows=array();
+		$this->OSoverview=array();
+		$this->OStotal=0;
 	}
 
 /*abstractable default line handler!?*/
@@ -91,7 +171,7 @@ class Reports_Service_CodeTemplate_AuthLog extends Reports_Service_CodeTemplate_
 			case "os":
 //extract os from user_agent!?
 				$where.="AND type='guest'";
-				$total=$db->fetchAll("SELECT count(*) $from $where");
+				//$total=$db->fetchAll("SELECT count(*) $from $where");
 				$stmt=$db->query("SELECT
 IF( (@pos:=LOCATE('iPhone',user_agent)) > 0
 	,IF( (@pos1:=LOCATE(' OS ',user_agent,@pos+6)) > 0
@@ -113,19 +193,19 @@ IF( (@pos:=LOCATE('iPhone',user_agent)) > 0
 		,'Blackberry|Blackberry Other')
 ,IF(user_agent like '%Windows %'
 	,IF( (@pos1:=LOCATE('Windows NT',user_agent)) > 0
-		,CONCAT('Windows|NT ',SUBSTRING(user_agent,@pos1+11,3),IF(user_agent like '%WOW64%','64bit',''))
+		,CONCAT('Windows|NT ',SUBSTRING(user_agent,@pos1+11,3),IF(user_agent like '%WOW64%',' 64bit',''))
 		,IF( (@pos1:=LOCATE('Windows Phone',user_agent)) > 0
 			,IF( (@pos2:=LOCATE('=',user_agent,@pos1+17)) > 0
 				,CONCAT('Windows|Phone ',SUBSTRING(user_agent,@pos1+17,@pos2-@pos1-17))
 				,'Windows|Phone Other')
-			,'Windows Other')
+			,'Windows|Other')
 		)
 ,IF(user_agent like '%Macintosh%'
 	,IF( (@pos1:=LOCATE(' Mac OS X ',user_agent)) > 0
 		,IF( (@pos2:=LOCATE('=',user_agent,@pos1+10)) > 0
 			,CONCAT('Macintosh|Mac OS X ',REPLACE(SUBSTRING(user_agent,@pos1+10,@pos2-@pos1-10),'_','.'))
 			,'Macintosh|Mac OS X Other')
-		,'Macintosh Other')
+		,'Macintosh|Other')
 ,IF( (@pos:=LOCATE('iPad',user_agent)) > 0
 	,IF( (@pos1:=LOCATE(' OS ',user_agent,@pos+4)) > 0
 		,IF( (@pos2:=LOCATE(' ',user_agent,@pos1+4)) > 0
@@ -171,28 +251,29 @@ INNER JOIN vendors v ON v.prefix = LEFT(l.username,8) $where GROUP BY v.name ORD
 				$stmt=$db->query("SELECT LEFT(user_url,LOCATE('/',user_url,9)) as domain, count(*) as cnt $from $where GROUP BY domain HAVING domain<>'' ORDER BY cnt desc $limit");
 				break;
 		}
-		$other=$totalcount=$total[0][0];
-		if ($other>0) $rows[]=$this->handleLine("Total",$other,round($other*1000/$totalcount)/10,true,true);
+		$rows=array();
+		if ($mode=='os') $this->OSInit();
+		else {
+			$other=$totalcount=$total[0][0];
+			if ($other>0) $rows[]=$this->handleLine("Total",$other,round($other*1000/$totalcount)/10,true,true);
+		}
 
 		while ($row=$stmt->fetch()) {
-			$empty=false;
-			$other-=$row[1];
-			$rows[]=$this->handleLine($row[0],$row[1],round($row[1]*1000/$totalcount)/10,false,false);
+			if ($mode!='os') {
+				$empty=false;
+				$other-=$row[1];
+				$rows[]=$this->handleLine($row[0],$row[1],round($row[1]*1000/$totalcount)/10,false,false);
+			}
+			else $this->handleOSLine($row);
 		}
-		if ($empty) {// nothing found
-			$rows[]=$this->handleLine("[No Data!]",0,0,true,false);
+		if ($mode!='os') {
+			if ($empty) {// nothing found
+				$rows[]=$this->handleLine("[No Data!]",0,0,true,false);
+			}
+			else if ($other>0) {
+				$rows[]=$this->handleLine("Other",$other,round($other*1000/$totalcount)/10,true,false);
+			}
 		}
-		else if ($other>0) {
-			$rows[]=$this->handleLine("Other",$other,round($other*1000/$totalcount)/10,true,false);
-		}
-		$names=array('lang'=>'Most Frequent browser language'
-		,'os'=>'Most frequent operating system'
-		,'vendor'=>'Most frequent device vendor'
-		,'start'=>'Most frequent startpages');
-/*
-echo "<pre>";
-print_r($rows);
-die("</pre>");*/
-		return array('tables'=>array('main'=>$this->getTable($rows,$names[$mode])));
+		return $this->getTables($rows,$mode);
 	}
 }
