@@ -187,13 +187,13 @@ IF( (@pos:=LOCATE('iPhone',user_agent)) > 0
 		,IF( (@pos2:=LOCATE('=',user_agent,@pos1+8)) > 0
 			,CONCAT('Linux|',SUBSTRING(user_agent,@pos1,@pos2-@pos1))
 			,'Linux|Android Other')
-		,'Linux|Other')
+		,'Linux|Linux Other')
 ,IF(user_agent like '%Blackberry%'
 	,IF( (@pos1:=LOCATE(' Blackberry ',user_agent)) > 0
 		,IF( (@pos2:=LOCATE('=',user_agent,@pos1+12)) > 0
 			,CONCAT('Blackberry|Blackberry ',SUBSTRING(user_agent,@pos1+12,@pos2-@pos1-12))
 			,'Blackberry|Blackberry Other')
-		,'Blackberry|Other')
+		,'Blackberry|Blackberry Other')
 ,IF(user_agent like '%Windows %'
 	,IF( (@pos1:=LOCATE('Windows NT',user_agent)) > 0
 		,CONCAT('Windows|NT ',SUBSTRING(user_agent,@pos1+11,3),IF(user_agent like '%WOW64%',' 64bit',''))
@@ -201,14 +201,14 @@ IF( (@pos:=LOCATE('iPhone',user_agent)) > 0
 			,IF( (@pos2:=LOCATE('=',user_agent,@pos1+17)) > 0
 				,CONCAT('Windows|Phone ',SUBSTRING(user_agent,@pos1+17,@pos2-@pos1-17))
 				,'Windows|Phone Other')
-			,'Windows|Other')
+			,'Windows|Windows Other')
 		)
 ,IF(user_agent like '%Macintosh%'
 	,IF( (@pos1:=LOCATE(' Mac OS X ',user_agent)) > 0
 		,IF( (@pos2:=LOCATE('=',user_agent,@pos1+10)) > 0
 			,CONCAT('Macintosh|Mac OS X ',REPLACE(SUBSTRING(user_agent,@pos1+10,@pos2-@pos1-10),'_','.'))
 			,'Macintosh|Mac OS X Other')
-		,'Macintosh|Other')
+		,'Macintosh|Macintosh Other')
 ,IF( (@pos:=LOCATE('iPad',user_agent)) > 0
 	,IF( (@pos1:=LOCATE(' OS ',user_agent,@pos+4)) > 0
 		,IF( (@pos2:=LOCATE(' ',user_agent,@pos1+4)) > 0
@@ -224,14 +224,14 @@ IF( (@pos:=LOCATE('iPhone',user_agent)) > 0
 		,IF( (@pos2:=LOCATE('=',user_agent,@pos1+9)) > 0
 			,CONCAT('Symbian|SymbianOS ',SUBSTRING(user_agent,@pos1+9,@pos2-@pos1-9))
 			,'Symbian|SymbianOS Other')
-		,'Symbian|Other')
+		,'Symbian|Symbian Other')
 ,IF(user_agent like '%SAMSUNG%','Samsung|Other'
 ,IF(user_agent like '%Nokia%','Nokia'
 ,IF(user_agent like '%SonyEricsson%','SonyEricsson'
 ,IF(user_agent like '%webOS%','Linux|WebOs'
 ,IF(user_agent like '%=28LG%','LG'
 ,IF(user_agent like 'LG-%','LG'
-,'Other|'
+,'Other OS|'
 ))))))))))))))))) as os
 ,count(*) as cnt $from $where GROUP BY os ORDER BY cnt desc");//$limit
 
@@ -274,7 +274,8 @@ INNER JOIN vendors v ON v.prefix = LEFT(l.username,8) $where GROUP BY v.name HAV
 				$rows[]=$this->handleLine("[No Data!]",0,0,true,false);
 			}
 			else if ($other>0) {
-				$rows[]=$this->handleLine("Other",$other,round($other*1000/$totalcount)/10,true,false);
+				$topic=array('lang'=>'language','langf'=>'language','vendor'=>'vendor','start'=>'startpage');
+				$rows[]=$this->handleLine("Other ".$topic[$mode],$other,round($other*1000/$totalcount)/10,true,false);
 			}
 		}
 		return $this->getTables($rows,$mode);
