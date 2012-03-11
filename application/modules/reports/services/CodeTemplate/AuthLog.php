@@ -228,7 +228,7 @@ IF( (@pos:=LOCATE('iPhone',user_agent)) > 0
 ,IF(user_agent like '%SAMSUNG%','Samsung|Other'
 ,IF(user_agent like '%Nokia%','Nokia'
 ,IF(user_agent like '%SonyEricsson%','SonyEricsson'
-,IF(user_agent like '%webOS%','HP WebOs'
+,IF(user_agent like '%webOS%','Linux|WebOs'
 ,IF(user_agent like '%=28LG%','LG'
 ,IF(user_agent like 'LG-%','LG'
 ,'Other|'
