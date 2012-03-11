@@ -51,6 +51,7 @@ class Reports_Service_CodeTemplate_AuthLog extends Reports_Service_CodeTemplate_
 	private function getTables($rows,$mode)
 	{
 		$names=array('lang'=>'Most Frequent browser language'
+		,'langf'=>'Most Frequent browser language flavour'
 		,'os'=>'Most frequent operating system'
 		,'vendor'=>'Most frequent device vendor'
 		,'start'=>'Most frequent startpages');
@@ -83,8 +84,8 @@ class Reports_Service_CodeTemplate_AuthLog extends Reports_Service_CodeTemplate_
 						$rows[]=$this->handleLine($row[0].$appendix,$row[1]
 						,round($row[1]*1000/$sum)/10,false,false);
 					}
-//add category total!?
-					$tables[$cat]=$this->getTable($rows
+					$total=array($this->handleLine('Total',$sum,100,true,true));
+					$tables[$cat]=$this->getTable(array_merge($total,$rows,$total)
 					,'Details: '.$cat.' ('.(round($sum*1000/$this->OStotal)/10).'%)');
 
 					$details=true;
@@ -95,8 +96,8 @@ class Reports_Service_CodeTemplate_AuthLog extends Reports_Service_CodeTemplate_
 			/*legacy: $rows[]=$this->handleLine(str_replace('|',', ',$row[0]),$row[1]
 				,round($row[1]*1000/$this->OStotal)/10,false,false);*/
 			}
-//add total total!?
-			$otable=array('overview'=>$this->getTable($orows,$names[$mode]." ( * Details available )"));
+			$total=array($this->handleLine('Total',$this->OStotal,100,true,true));
+			$otable=array('overview'=>$this->getTable(array_merge($total,$orows,$total),$names[$mode]." ( * Details available )"));
 			return array('tables'=>array_merge($otable,$tables));
 		}
 		return array('tables'=>array('main'=>$this->getTable($rows,$names[$mode])));
@@ -144,7 +145,8 @@ class Reports_Service_CodeTemplate_AuthLog extends Reports_Service_CodeTemplate_
 		$empty=true;
 
 		//show either Language, Startpage, OS, or Vendor
-		if (strpos($this->getReportGroup()->getCodeTemplate()->getTitle(),"anguage")!==false) $mode='lang';
+		if (strpos($this->getReportGroup()->getCodeTemplate()->getTitle(),"lavour")!==false) $mode='langf';
+		else if (strpos($this->getReportGroup()->getCodeTemplate()->getTitle(),"anguage")!==false) $mode='lang';
 		else if (strpos($this->getReportGroup()->getCodeTemplate()->getTitle(),"OS")!==false) $mode='os';
 		else if (strpos($this->getReportGroup()->getCodeTemplate()->getTitle(),"endor")!==false) $mode='vendor';
 		else $mode='start';
@@ -162,11 +164,12 @@ class Reports_Service_CodeTemplate_AuthLog extends Reports_Service_CodeTemplate_
 		$where="WHERE $node_id_str time BETWEEN '$dateFrom' AND '$dateTo'";
 		$limit="LIMIT 50";
 		switch ($mode) {
+			case "langf":
 			case "lang":
-//filter strange accept_languages, or language-variations!?
 				$where.="AND type='guest'";
-				$total=$db->fetchAll("SELECT count(*) $from $where");
-				$stmt=$db->query("SELECT accept_language, count(*) as cnt $from $where GROUP BY accept_language ORDER BY cnt desc $limit");
+				$total=$db->fetchAll("SELECT count(*) $from $where AND accept_language<>''");
+				//limit to results >= 0.2% (0.15% = 1/667)
+				$stmt=$db->query("SELECT lower(".($mode=='langf'?'SUBSTRING(accept_language,1,2)':'accept_language').") as lang, count(*) as cnt $from $where AND accept_language<>'' GROUP BY lang HAVING cnt > ".ceil($total[0][0]/667)." ORDER BY cnt desc $limit");
 				break;
 			case "os":
 //extract os from user_agent!?
@@ -190,7 +193,7 @@ IF( (@pos:=LOCATE('iPhone',user_agent)) > 0
 		,IF( (@pos2:=LOCATE('=',user_agent,@pos1+12)) > 0
 			,CONCAT('Blackberry|Blackberry ',SUBSTRING(user_agent,@pos1+12,@pos2-@pos1-12))
 			,'Blackberry|Blackberry Other')
-		,'Blackberry|Blackberry Other')
+		,'Blackberry|Other')
 ,IF(user_agent like '%Windows %'
 	,IF( (@pos1:=LOCATE('Windows NT',user_agent)) > 0
 		,CONCAT('Windows|NT ',SUBSTRING(user_agent,@pos1+11,3),IF(user_agent like '%WOW64%',' 64bit',''))
@@ -242,13 +245,13 @@ IF( (@pos:=LOCATE('iPhone',user_agent)) > 0
 				$where.="AND type='guest'";
 				$total=$db->fetchAll("SELECT count(*) $from $where");
 				$stmt=$db->query("SELECT v.name, count(*) as cnt $from l
-INNER JOIN vendors v ON v.prefix = LEFT(l.username,8) $where GROUP BY v.name ORDER BY cnt desc LIMIT 20");//$limit
+INNER JOIN vendors v ON v.prefix = LEFT(l.username,8) $where GROUP BY v.name HAVING cnt > ".ceil($total[0][0]/667)." ORDER BY cnt desc $limit");
 				break;
 			case "start":
 //only use domain of userurl!?
 				$where.="AND type='guest'";
 				$total=$db->fetchAll("SELECT count(*) $from $where");
-				$stmt=$db->query("SELECT LEFT(user_url,LOCATE('/',user_url,9)) as domain, count(*) as cnt $from $where GROUP BY domain HAVING domain<>'' ORDER BY cnt desc $limit");
+				$stmt=$db->query("SELECT LEFT(user_url,LOCATE('/',user_url,9)) as domain, count(*) as cnt $from $where GROUP BY domain HAVING domain<>'' AND cnt > ".ceil($total[0][0]/667)." ORDER BY cnt desc $limit");
 				break;
 		}
 		$rows=array();
