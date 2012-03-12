@@ -82,7 +82,7 @@ class Reports_Service_CodeTemplate_Vendor extends Reports_Service_CodeTemplate_A
                 ->join(array('e' => 'group'), 'd.group_id = e.group_id', array('group_id', 'group_name' => 'name'))
                 ->join(array('f' => 'network_user'), 'b.user_id = f.user_id', array('username'))
                 ->where('d.group_id IN (?)', $groupRel)
-                ->where('DATE(b.start_time) BETWEEN "'.$dateFrom.'" AND "'.$dateTo.'"')               
+                ->where('b.start_time BETWEEN "'.$dateFrom.'" AND "'.$dateTo.'"')               
                 ->group('b.user_mac');
 		
         $result = $db->fetchAll($select);
