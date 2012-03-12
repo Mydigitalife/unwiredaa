@@ -74,18 +74,24 @@ class Reports_Service_CodeTemplate_AuthLog extends Reports_Service_CodeTemplate_
 					$details=false;
 				} else {
 					//do detail table
-					$rows=array();
+					$rows=array();$special_count=0;
 					foreach ($this->OSrows[$cat] as $row) {
 						$appendix='';
 						if ($cat=='Windows') {
 							$wname=str_replace(' 64bit','',$row[0]);
-							if (isset($windowsnames[$wname])) $appendix=' (e.g. '.$windowsnames[$wname].')';
-						}
+							if (isset($windowsnames[$wname])) {
+								$appendix=' (e.g. '.$windowsnames[$wname].')';
+								//$special_count+=$row[1];//!!?? count desktop or mobile
+							}
+						} else if ($cat=='iOS' && (substr($row[0],0,4)=='iPad') ) $special_count+=$row[1];
 						$rows[]=$this->handleLine($row[0].$appendix,$row[1]
 						,round($row[1]*1000/$sum)/10,false,false);
 					}
 					$total=array($this->handleLine('Total',$sum,100,true,true));
-					$tables[$cat]=$this->getTable(array_merge($total,$rows,$total)
+					/*if ($cat=='Windows') $total[]=$this->handleLine('Desktop Total',$special_count,round($special_count*1000/$sum)/10,true,true);
+					else */
+					if ($cat=='iOS') $total[]=$this->handleLine('iPad Total',$special_count,round($special_count*1000/$sum)/10,true,true);
+					$tables[str_replace(" ","_",$cat)]=$this->getTable(array_merge($total,$rows,$total)
 					,'Details: '.$cat.' ('.(round($sum*1000/$this->OStotal)/10).'%)');
 
 					$details=true;
@@ -179,18 +185,18 @@ class Reports_Service_CodeTemplate_AuthLog extends Reports_Service_CodeTemplate_
 IF( (@pos:=LOCATE('iPhone',user_agent)) > 0
 	,IF( (@pos1:=LOCATE(' OS ',user_agent,@pos+6)) > 0
 		,IF( (@pos2:=LOCATE(' ',user_agent,@pos1+4)) > 0
-	                ,CONCAT('iOS|iPhone iOS ',REPLACE(SUBSTRING(user_agent,@pos1+4,@pos2-@pos1-4),'_','.'))
-	        	,'iOS|iPhone Unknown')
-        	,'iOS|iPhone Other')
+	                ,CONCAT('Apple iOS|iPhone iOS ',REPLACE(SUBSTRING(user_agent,@pos1+4,@pos2-@pos1-4),'_','.'))
+	        	,'Apple iOS|iPhone Unknown')
+        	,'Apple iOS|iPhone Other')
 ,IF(user_agent like '%Linux%'
 	,IF( (@pos1:=LOCATE('Android ',user_agent)) > 0
 		,IF( (@pos2:=LOCATE('=',user_agent,@pos1+8)) > 0
-			,CONCAT('Linux|',SUBSTRING(user_agent,@pos1,@pos2-@pos1))
-			,'Linux|Android Other')
+			,CONCAT('Android|',SUBSTRING(user_agent,@pos1,@pos2-@pos1))
+			,'Android|Android Other')
 	,IF( user_agent like '%Android%'
-	,'Linux|Android Other'
+	,'Android|Android Other'
 	,IF( user_agent like '%gingerbread%'
-	,'Linux|Android Other'
+	,'Android|Android Other'
 	,IF( user_agent like '%Maemo%'
 	,'Linux|Maemo'
 	,IF( user_agent like '%Ubuntu%'
@@ -198,7 +204,7 @@ IF( (@pos:=LOCATE('iPhone',user_agent)) > 0
 	,IF( user_agent like '%WebOS%'
 	,'Linux|WebOS'
 	,IF( user_agent like '%zbov%'
-	,'Linux|Android Other'
+	,'Android|Android Other'
 	,IF( user_agent like '%Tizen%'
 	,'Linux|Tizen'
 	,'Linux|Linux Other'))))))))
@@ -220,9 +226,19 @@ IF( (@pos:=LOCATE('iPhone',user_agent)) > 0
 		,CONCAT('Windows|NT ',SUBSTRING(user_agent,@pos1+11,3),IF(user_agent like '%WOW64%',' 64bit',''))
 		,IF( (@pos1:=LOCATE('Windows Phone',user_agent)) > 0
 			,IF( (@pos2:=LOCATE('=',user_agent,@pos1+17)) > 0
-				,CONCAT('Windows|Phone ',SUBSTRING(user_agent,@pos1+17,@pos2-@pos1-17))
-				,'Windows|Phone Other')
-			,'Windows|Windows Other')
+				,CONCAT('Windows Phone|Windows Phone ',SUBSTRING(user_agent,@pos1+17,@pos2-@pos1-17))
+				,'Windows Phone|Windows Phone Other')
+			,IF(user_agent like '%CLDC-%'
+			,'Windows Phone|Windows Phone Other'
+			,IF(user_agent like '%HTC_%'
+			,'Windows Phone|Windows Phone Other'
+			,IF(user_agent like '%zuneWP%'
+			,'Windows Phone|Windows Phone Other'
+			,IF(user_agent like '%Windows Mobile%'
+			,'Windows Phone|Windows Mobile'
+			,IF(user_agent like '%Windows CE%'
+			,'Windows Phone|Windows CE'
+			,'Windows Phone|Windows Other'))))))
 		)
 ,IF(user_agent like '%Macintosh%'
 	,IF( (@pos1:=LOCATE(' Mac OS X ',user_agent)) > 0
@@ -233,12 +249,12 @@ IF( (@pos:=LOCATE('iPhone',user_agent)) > 0
 ,IF( (@pos:=LOCATE('iPad',user_agent)) > 0
 	,IF( (@pos1:=LOCATE(' OS ',user_agent,@pos+4)) > 0
 		,IF( (@pos2:=LOCATE(' ',user_agent,@pos1+4)) > 0
-	                ,CONCAT('iOS|iPad iOS ',REPLACE(SUBSTRING(user_agent,@pos1+4,@pos2-@pos1-4),'_','.'))
-	        	,'iOS|iPad Unknown')
-        	,'iOS|iPad Other')
-,IF(user_agent like '%iPod%','iOS|iPod'
+	                ,CONCAT('Apple iOS|iPad iOS ',REPLACE(SUBSTRING(user_agent,@pos1+4,@pos2-@pos1-4),'_','.'))
+	        	,'Apple iOS|iPad Unknown')
+        	,'Apple iOS|iPad Other')
+,IF(user_agent like '%iPod%','Apple iOS|iPod'
 ,IF(user_agent like '%MeeGo%','Linux|MeeGo'
-,IF(user_agent like '%Bada%','Linux|Samsung Bada'
+,IF(user_agent like '%Bada%','Linux|Bada'
 ,IF(user_agent like '%RIM Tablet%','Blackberry|RIM Tablet OS'
 ,IF(user_agent like '%Symb%'
 	,IF( (@pos1:=LOCATE('SymbianOS',user_agent)) > 0
@@ -246,8 +262,12 @@ IF( (@pos:=LOCATE('iPhone',user_agent)) > 0
 			,CONCAT('Symbian|SymbianOS ',SUBSTRING(user_agent,@pos1+10,@pos2-@pos1-10))
 			,'Symbian|SymbianOS Other')
 		,IF(user_agent like '%Symbian/3%'
-		,'Symbian|Symbian^3 (Anna)'
-		,'Symbian|Symbian Other'))
+			,IF(user_agent like '%Browser/7.3%'
+				,'Symbian|Symbian^3 Anna'
+				,IF(user_agent like '%Browser/7.4%'
+					,'Symbian|Symbian^3 Belle'
+					,'Symbian|Symbian^3'))
+			,'Symbian|Symbian Other'))
 ,IF(user_agent like '%SAMSUNG%','Samsung'
 ,IF(user_agent like '%Nokia%','Nokia'
 ,IF(user_agent like '%SonyEricsson%','SonyEricsson'
@@ -262,6 +282,8 @@ IF( (@pos:=LOCATE('iPhone',user_agent)) > 0
 /* notes:
  bada moved into linux? (as it merges with tizen, and anyways already had a linux kernel and a gnu toolchain)
  'Linux zbov' is used by opera as desktop useragent (running on android)
+
+mobile und CE detecten! siehe 459
 */
 				break;
 			case "vendor":
