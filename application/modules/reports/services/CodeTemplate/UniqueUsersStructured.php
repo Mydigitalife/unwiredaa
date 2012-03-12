@@ -213,8 +213,8 @@ else {
 }
 
 /*configure mathcing chart depths (for maxdepth 0 or -1 we should check if real available depth >= 2)*/
-if ($this->maxdepth==1) $cdepths=array(1);
-else $cdepths=array(1,2);
+/*if ($this->maxdepth==1) $cdepths=array(1);
+else $cdepths=array(1,2);*/
 
 $innerColumns=array();
 if ($this->innerCount>0) {
@@ -235,10 +235,10 @@ if ($this->innerCount>0) {
 					,'name'=>'Unique Users'/*!!?? move to chartOptions?*/
 					,'chartOptions'=>array(
 						'type'=>(($this->innerCount>1)?'LineChart':'ColumnChart')
-						,'width'=>760 /*max 370 for 2 charts sidebyside*/
-						,'height'=>400
+						,'width'=>770 /*max 370 for 2 charts sidebyside*/
+						,'height'=>900
 						,'switchAxes'=>($this->innerCount>1)
-						,'depths'=>$cdepths/*either single value, or an array -> multiple charts*/
+						,'depths'=>array(0,1)/*either single value, or an array -> multiple charts*/
 						,'nativeOptions'=>"legend:{position :'right'}")/*passed 1:1 to googleCharts options*/
                                         ,'colDefs'=>array(/*array of coldefs*/
 /*                                                array(//first coldef
