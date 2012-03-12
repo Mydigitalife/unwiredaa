@@ -218,11 +218,16 @@ else $cdepths=array(1,2);*/
 
 $innerColumns=array();
 if ($this->innerCount>0) {
+  //use somewhat sane time-formats (always a bit too m,uch as starttime might be not necesarrily midnight)
+  if ($this->innerInterval >= 3000) $format='Y/m/d';
+  else if ($this->innerInterval >= 120) $format='Y/m/d H\h';
+  else $format='Y/m/d H:i';
   for ($x=0;$x<$this->innerCount;$x++) {
     $s=($this->startTime*1)+($this->innerInterval*($x))+(3600);
     $e=$s+$this->innerInterval;
-    $n=date("Y/m/d H:i",$s)."-<br/>".date("Y/m/d H:i",$e);
-    $innerColumns[]=array('name'=>$n,'height'=>100,'width'=>30,'iclass'=>'bold" style="white-space:nowrap; position:absolute; margin-top:-20px; margin-left:-33px; -webkit-transform: rotate(-85deg);');
+    $n=date($format,$s)." - ".date($format,$e);
+    $innerColumns[]=array('name'=>$n,'height'=>100,'width'=>30,'iclass'=>'bold');
+//" style="white-space:nowrap; position:absolute; margin-top:-20px; margin-left:-33px; -webkit-transform: rotate(-85deg);');
   }
 //!!?? calculate date
 }
