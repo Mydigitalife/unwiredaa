@@ -98,11 +98,11 @@ $acl = Zend_Registry::get ( 'acl' );
 			//prepare chartoptions array
 			if (isset($value->chartOptions)) $opt=$value->chartOptions;
 			else $opt=array();
-			if (!isset($opt->depths)) $depth_list=array(false);
+			if (!isset($opt->depths)) $depth_list=false;
 			else if (is_array($opt->depths)) $depth_list=$opt->depths;
 			else $depth_list=array($opt->depths);
 			$ccnt=0;
-			foreach ($depth_list as $depth):
+			//foreach ($depth_list as $depth):
 				$ccnt++;
 			?>
 			<script type="text/javascript">
@@ -115,7 +115,7 @@ $acl = Zend_Registry::get ( 'acl' );
 					$x=1;$cells="";$Y=0;
 					echo "data.addColumn('string','name');\n";
 					foreach ($value->rows as $k => $v) {
-						if ((!$depth||!isset($v->depth)||($v->depth==$depth)) && (!isset($v->device)||$v->device==0) ) {
+						if ((!$depth_list||!isset($v->depth)||array_search($v->depth,$depth_list)!==false) && (!isset($v->device)||$v->device==0) ) {
 							$y=0;
 	                	        		foreach ($v->data as $kk => $vv) {
 								if ($y==0) {
@@ -146,7 +146,7 @@ $acl = Zend_Registry::get ( 'acl' );
 
 		                	data.addRows([
         		        	<?php $rii=0; foreach ($value->rows as $k => $v):?>
-						<?php if ((!$depth||!isset($v->depth)||($v->depth==$depth)) && (!isset($v->device)||$v->device==0) ):?>
+						<?php if ((!$depth_list||!isset($v->depth)||array_search($v->depth,$depth_list)!=false) && (!isset($v->device)||$v->device==0) ):?>
 	                	        		<?=($rii++==0?"":",")?>[<?php foreach ($v->data as $kk => $vv): echo ($kk==0?"":",").($vv==""?0:(is_numeric($vv)?$vv:'"'.$vv.'"')); endforeach; ?>]
 						<?php endif; ?>
 	                		<?php endforeach; ?>
@@ -154,11 +154,11 @@ $acl = Zend_Registry::get ( 'acl' );
 				<?php } ?>
 
 				var chart = new google.visualization.<?=isset($opt->type)?$opt->type:"PieChart"?>(document.getElementById("chart_div_<?=$ccnt?>_<?php echo $key ?>"));
-				chart.draw(data, {width: <?=isset($opt->width)?$opt->width:"350"?>, height: <?=isset($opt->height)?$opt->height:"300"?>, title: "<?=$this->translate($name).' '.$depth?>"<?=isset($opt->nativeOptions)?','.$opt->nativeOptions:''?>});
+				chart.draw(data, {width: <?=isset($opt->width)?$opt->width:"350"?>, height: <?=isset($opt->height)?$opt->height:"300"?>, title: "<?=$this->translate($name)?>"<?=isset($opt->nativeOptions)?','.$opt->nativeOptions:''?>});
 			}
 			</script>
 			<div id="chart_div_<?=$ccnt?>_<?php echo $key; ?>" style="float: left;"></div>
-			<?php endforeach; /*depth_list*/?>
+			<?php //endforeach; /*depth_list*/?>
 		<?php endif; /*chart*/?>
 		<?php if (($ttype=="both") || ($ttype=="table")):?>
 			<table class="listing">
