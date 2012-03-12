@@ -79,7 +79,7 @@ class Reports_Service_CodeTemplate_AuthLog extends Reports_Service_CodeTemplate_
 						$appendix='';
 						if ($cat=='Windows') {
 							$wname=str_replace(' 64bit','',$row[0]);
-							if (isset($windowsnames[$wname])) $appendix=' (e.g. Windows '.$windowsnames[$wname].')';
+							if (isset($windowsnames[$wname])) $appendix=' (e.g. '.$windowsnames[$wname].')';
 						}
 						$rows[]=$this->handleLine($row[0].$appendix,$row[1]
 						,round($row[1]*1000/$sum)/10,false,false);
@@ -202,12 +202,19 @@ IF( (@pos:=LOCATE('iPhone',user_agent)) > 0
 	,IF( user_agent like '%Tizen%'
 	,'Linux|Tizen'
 	,'Linux|Linux Other'))))))))
-,IF(user_agent like '%Blackberry%'
-	,IF( (@pos1:=LOCATE(' Blackberry ',user_agent)) > 0
-		,IF( (@pos2:=LOCATE('=',user_agent,@pos1+12)) > 0
-			,CONCAT('Blackberry|Blackberry ',SUBSTRING(user_agent,@pos1+12,@pos2-@pos1-12))
+,IF( (@posb:=LOCATE('Blackberry',user_agent)) > 0
+	,IF( (@pos:=LOCATE(' Blackberry ',user_agent)) > 0
+		,IF ( (@pos1:=LOCATE('Version/',user_agent)) > 0
+			,IF( (@pos2:=LOCATE('.',user_agent,@pos1+11)) > 0
+				,CONCAT('Blackberry|Blackberry ',SUBSTRING(user_agent,@pos1+8,@pos2-@pos1-8))
+				,'Blackberry|Blackberry Other')
 			,'Blackberry|Blackberry Other')
-		,'Blackberry|Blackberry Other')
+		,IF ( (@pos1:=LOCATE('/',user_agent,@posb+12)) > 0
+			,IF( (@pos2:=LOCATE('.',user_agent,@pos1+4)) > 0
+				,CONCAT('Blackberry|Blackberry ',SUBSTRING(user_agent,@pos1+1,@pos2-@pos1-1))
+				,'Blackberry|Blackberry Other')
+			,'Blackberry|Blackberry Other')
+		)
 ,IF(user_agent like '%Windows %'
 	,IF( (@pos1:=LOCATE('Windows NT',user_agent)) > 0
 		,CONCAT('Windows|NT ',SUBSTRING(user_agent,@pos1+11,3),IF(user_agent like '%WOW64%',' 64bit',''))
@@ -238,7 +245,9 @@ IF( (@pos:=LOCATE('iPhone',user_agent)) > 0
 		,IF( (@pos2:=LOCATE('=',user_agent,@pos1+10)) > 0
 			,CONCAT('Symbian|SymbianOS ',SUBSTRING(user_agent,@pos1+10,@pos2-@pos1-10))
 			,'Symbian|SymbianOS Other')
-		,'Symbian|Symbian Other')
+		,IF(user_agent like '%Symbian/3%'
+		,'Symbian|Symbian^3 (Anna)'
+		,'Symbian|Symbian Other'))
 ,IF(user_agent like '%SAMSUNG%','Samsung'
 ,IF(user_agent like '%Nokia%','Nokia'
 ,IF(user_agent like '%SonyEricsson%','SonyEricsson'
