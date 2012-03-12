@@ -187,7 +187,21 @@ IF( (@pos:=LOCATE('iPhone',user_agent)) > 0
 		,IF( (@pos2:=LOCATE('=',user_agent,@pos1+8)) > 0
 			,CONCAT('Linux|',SUBSTRING(user_agent,@pos1,@pos2-@pos1))
 			,'Linux|Android Other')
-		,'Linux|Linux Other')
+	,IF( user_agent like '%Android%'
+	,'Linux|Android Other'
+	,IF( user_agent like '%gingerbread%'
+	,'Linux|Android Other'
+	,IF( user_agent like '%Maemo%'
+	,'Linux|Maemo'
+	,IF( user_agent like '%Ubuntu%'
+	,'Linux|Ubuntu'
+	,IF( user_agent like '%WebOS%'
+	,'Linux|WebOS'
+	,IF( user_agent like '%zbov%'
+	,'Linux|Android Other'
+	,IF( user_agent like '%Tizen%'
+	,'Linux|Tizen'
+	,'Linux|Linux Other'))))))))
 ,IF(user_agent like '%Blackberry%'
 	,IF( (@pos1:=LOCATE(' Blackberry ',user_agent)) > 0
 		,IF( (@pos2:=LOCATE('=',user_agent,@pos1+12)) > 0
@@ -217,26 +231,28 @@ IF( (@pos:=LOCATE('iPhone',user_agent)) > 0
         	,'iOS|iPad Other')
 ,IF(user_agent like '%iPod%','iOS|iPod'
 ,IF(user_agent like '%MeeGo%','Linux|MeeGo'
-,IF(user_agent like '%Bada%','Samsung|Bada'
+,IF(user_agent like '%Bada%','Linux|Samsung Bada'
 ,IF(user_agent like '%RIM Tablet%','Blackberry|RIM Tablet OS'
 ,IF(user_agent like '%Symb%'
 	,IF( (@pos1:=LOCATE('SymbianOS',user_agent)) > 0
-		,IF( (@pos2:=LOCATE('=',user_agent,@pos1+9)) > 0
-			,CONCAT('Symbian|SymbianOS ',SUBSTRING(user_agent,@pos1+9,@pos2-@pos1-9))
+		,IF( (@pos2:=LOCATE('=',user_agent,@pos1+10)) > 0
+			,CONCAT('Symbian|SymbianOS ',SUBSTRING(user_agent,@pos1+10,@pos2-@pos1-10))
 			,'Symbian|SymbianOS Other')
 		,'Symbian|Symbian Other')
-,IF(user_agent like '%SAMSUNG%','Samsung|Other'
+,IF(user_agent like '%SAMSUNG%','Samsung'
 ,IF(user_agent like '%Nokia%','Nokia'
 ,IF(user_agent like '%SonyEricsson%','SonyEricsson'
 ,IF(user_agent like '%webOS%','Linux|WebOs'
+,IF(user_agent like '%Tizen%','Linux|Tizen'
 ,IF(user_agent like '%=28LG%','LG'
 ,IF(user_agent like 'LG-%','LG'
 ,'Other OS|'
-))))))))))))))))) as os
+)))))))))))))))))) as os
 ,count(*) as cnt $from $where GROUP BY os ORDER BY cnt desc");//$limit
 
-/*
-,CONCAT('Other|',user_agent)
+/* notes:
+ bada moved into linux? (as it merges with tizen, and anyways already had a linux kernel and a gnu toolchain)
+ 'Linux zbov' is used by opera as desktop useragent (running on android)
 */
 				break;
 			case "vendor":
