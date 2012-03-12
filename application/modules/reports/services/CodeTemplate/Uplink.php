@@ -68,7 +68,7 @@ class Reports_Service_CodeTemplate_Uplink extends Reports_Service_CodeTemplate_A
 		//get inner interval
 		$iintv=$this->innerInterval=$this->getReportGroup()->getInnerInterval()*60;
 
-		$tstmt=$db->query("SELECT CONCAT(MIN(time),'-',MAX(time))
+		$tstmt=$db->query("SELECT CONCAT(LEFT(MIN(time),16),' - ',LEFT(MAX(time),16))
 , (sum(vpn_eth1_RX)+sum(nat_eth2_TX))*8/($iintv*1024) as server_down
 , (sum(vpn_eth1_TX)+sum(nat_eth2_RX))*8/($iintv*1024) as server_up
 , (UNIX_TIMESTAMP(time)-UNIX_TIMESTAMP('$dateFrom')) DIV $iintv as intv
