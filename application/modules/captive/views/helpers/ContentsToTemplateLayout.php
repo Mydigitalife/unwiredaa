@@ -42,15 +42,24 @@ class Captive_View_Helper_ContentsToTemplateLayout extends Zend_View_Helper_Abst
             $sorted[$containerName] = array();
         }
 
-        foreach ($contents as $content) {
-            $column = $content->getColumn();
-            switch ($column) {
-                case ($column < 0):
-                    $sorted['special'][] = $content;
-                break;
+        if (isset($sorted['special'])) {
+            unset($sorted['special']);
+            $sorted = array('special' => array()) + $sorted;
+        }
 
+        foreach ($contents as $content) {
+            $column = (int) $content->getColumn();
+
+            switch ($column) {
                 case 0:
                     $sorted['main'][] = $content;
+                break;
+
+                /**
+                 * 0 < 0 == true ?!?!?!?
+                 */
+                case ($column < 0):
+                    $sorted['special'][] = $content;
                 break;
 
                 default:

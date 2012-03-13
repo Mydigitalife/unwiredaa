@@ -10,6 +10,12 @@
 * license available at http://www.unwired.at/license.html
 */
 ?>
+<script type="text/javascript" src="<?php echo $this->baseUrl('scripts/nicedit/nicEdit.js'); ?>"></script>
+<script type="text/javascript">
+	$(document).ready(function(){
+		htmlEditors = nicEditors.allTextAreas({iconsPath : '<?php echo $this->baseUrl('scripts/nicedit/nicEditorIcons.gif'); ?>'})
+	});
+</script>
 <?php
     if ($this->content->getContentId()) :
 ?>
@@ -56,7 +62,7 @@
 			        $content['desktop'][$languageId] = $contentData;
 			    }
 		?>
-		<div id="desktop-<?php echo $languageId; ?>">
+		<div id="desktop-<?php echo $languageId; ?>" class="desktop-content">
 			<div class="formelement span-16 last">
     			<label for="title-desktop-<?php echo $languageId; ?>"><?php echo $this->translate('widget_html_admin_title');?>:</label>
     			<input type="text" name="content[desktop][<?php echo $languageId; ?>][title]"
@@ -64,8 +70,10 @@
 			</div>
 			<div class="formelement span-16 last">
     			<label for="content-desktop-<?php echo $languageId; ?>"><?php echo $this->translate('widget_html_admin_content');?>:</label>
-    			<textarea name="content[desktop][<?php echo $languageId; ?>][content]"
-    			id="content-desktop-<?php echo $languageId; ?>"><?php echo $content['desktop'][$languageId]->getContent(); ?></textarea>
+    			<div class="span-15 last">
+        			<textarea name="content[desktop][<?php echo $languageId; ?>][content]"
+        			id="content-desktop-<?php echo $languageId; ?>"><?php echo $content['desktop'][$languageId]->getContent(); ?></textarea>
+    			</div>
 			</div>
 		</div>
 		<?php
@@ -86,13 +94,13 @@
 
 		<?php
 		    foreach ($templateSettings['language_ids'] as $languageId) :
-			    if (!isset($content['desktop'][$languageId])) {
+			    if (!isset($content['mobile'][$languageId])) {
 			        $contentData = new Captive_Model_ContentData();
 			        $contentData->setLanguageId($languageId);
-			        $content['desktop'][$languageId] = $contentData;
+			        $content['mobile'][$languageId] = $contentData;
 			    }
 		?>
-		<div id="mobile-<?php echo $languageId; ?>">
+		<div id="mobile-<?php echo $languageId; ?>" class="mobile-content">
 			<div class="formelement span-16 last">
     			<label for="title-mobile-<?php echo $languageId; ?>"><?php echo $this->translate('widget_html_admin_title');?>:</label>
     			<input type="text" name="content[mobile][<?php echo $languageId; ?>][title]"
@@ -100,8 +108,10 @@
 			</div>
 			<div class="formelement span-16 last">
     			<label for="content-mobile-<?php echo $languageId; ?>"><?php echo $this->translate('widget_html_admin_content');?>:</label>
-    			<textarea name="content[mobile][<?php echo $languageId; ?>][content]"
-    			id="content-mobile-<?php echo $languageId; ?>"><?php echo $content['mobile'][$languageId]->getContent(); ?></textarea>
+    			<div class="span-15 last">
+        			<textarea name="content[mobile][<?php echo $languageId; ?>][content]"
+        			id="content-mobile-<?php echo $languageId; ?>"><?php echo $content['mobile'][$languageId]->getContent(); ?></textarea>
+    			</div>
 			</div>
 		</div>
 		<?php

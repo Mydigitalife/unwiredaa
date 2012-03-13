@@ -18,6 +18,7 @@ class Captive_Bootstrap extends Unwired_Application_Module_Bootstrap
 
 		$acl->addResource(new Zend_Acl_Resource('captive_template'));
 		$acl->addResource(new Zend_Acl_Resource('captive_splashpage'));
+		$acl->addResource(new Zend_Acl_Resource('captive_content'));
 
 		return $acl;
 	}

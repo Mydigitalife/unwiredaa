@@ -1,6 +1,6 @@
 <?php
 
-class Captive_Model_Content extends Unwired_Model_Generic
+class Captive_Model_Content extends Unwired_Model_Generic implements Zend_Acl_Resource_Interface
 {
     protected $_contentId = null;
 
@@ -307,13 +307,18 @@ class Captive_Model_Content extends Unwired_Model_Generic
     public function __toString()
     {
         if (!$this->getWidget()) {
-             return $this->getContent();
+             $this->setWidget('Html');
         }
 
         $widgetClass = 'Widget_' . ucfirst($this->getWidget());
         $widget = new $widgetClass;
 
         return $widget->render($this);
+    }
+
+    public function getResourceId()
+    {
+        return 'captive_content';
     }
 
 }

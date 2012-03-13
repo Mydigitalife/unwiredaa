@@ -34,19 +34,19 @@ class Captive_Service_SplashPage
         return null;
     }
 
-    public function getSplashPageContents(Captive_Model_SplashPage $splashPage,
-                                          Captive_Model_Language $language)
+    public function getSplashPageContents(Captive_Model_SplashPage $splashPage/*,
+                                          Captive_Model_Language $language*/)
     {
         $mapperContent = new Captive_Model_Mapper_Content();
 
         $criteria = array('splash_id'   => $splashPage->getSplashId(),
-                          'language_id' => $language->getLanguageId(),
-                          'mobile'      => 0,
+                          /*'language_id' => $language->getLanguageId(),
+                          'mobile'      => 0,*/
                           'type'        => 'content');
 
-        if ($splashPage->isMobile()) {
+      /*  if ($splashPage->isMobile()) {
             $criteria['mobile'] = 1;
-        }
+        }*/
 
         $contents = $mapperContent->findBy($criteria/*,
                                            null,
@@ -86,6 +86,74 @@ class Captive_Service_SplashPage
         $contents = $mapperContent->findBy(array('template_id' => $template->getTemplateId()));
 
         return $contents;
+    }
+
+    public function updateOrder($desktop, $mobile, $template = false)
+    {
+        $mapperContent = new Captive_Model_Mapper_Content();
+
+        $contents = array('desktop' => $desktop, 'mobile' => $mobile);
+
+        $forUpdate = array();
+
+        foreach ($contents as $layoutName => $layout) {
+            foreach ($layout as $column => $order) {
+                $column = (int) $column;
+
+                $position = 0;
+
+                foreach ($order as $contentId) {
+                    $position++;
+                    $contentId = (int) $contentId;
+
+                    if (!isset($forUpdate[$contentId])) {
+                        $content = $mapperContent->find($contentId);
+                    } else {
+                        $content = $forUpdate[$contentId];
+                    }
+
+                    if (!$content) {
+                        continue;
+                    }
+
+                    if (!$template && $content->getTemplateId()) {
+                        continue;
+                    }
+
+                    if ($template && $content->getSplashId()) {
+                        continue;
+                    }
+
+                    if ($layoutName == 'desktop') {
+                        $content->setColumn($column);
+                    }
+
+                    $data = $content->getData();
+
+                    foreach($data as $contentData) {
+                        if ($layoutName == 'desktop') {
+                            if($contentData->isMobile()) {
+                                continue;
+                            }
+                        } else {
+                            if(!$contentData->isMobile()) {
+                                continue;
+                            }
+                        }
+
+                        $contentData->setOrder($position);
+                    }
+
+                    $forUpdate[$content->getContentId()] = $content;
+                }
+            }
+        }
+
+        foreach ($forUpdate as $content) {
+            $mapperContent->save($content);
+        }
+
+        return true;
     }
 
     public function saveTemplateContents(Captive_Model_Template $template, array $contents)
