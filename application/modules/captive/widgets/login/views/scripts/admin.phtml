@@ -1,0 +1,101 @@
+<?php
+/**
+* Unwired AA GUI
+*
+* Author & Copyright (c) 2011 Unwired Networks GmbH
+* alexander.szlezak@unwired.at
+*
+* Licensed under the terms of the Affero Gnu Public License version 3
+* (AGPLv3 - http://www.gnu.org/licenses/agpl.html) or our proprietory
+* license available at http://www.unwired.at/license.html
+*/
+?>
+<?php
+    if ($this->content->getContentId()) :
+?>
+	<input type="hidden" name="content_id" value="<?php echo $this->content->getContentId(); ?>" />
+<?php
+    endif;
+?>
+<input type="hidden" name="column" value="<?php echo $this->escape($this->content->getColumn()); ?>"/>
+<input type="hidden" name="type" value="<?php echo $this->escape($this->content->getType()); ?>"/>
+<input type="hidden" name="widget" value="Html"/>
+<?php
+    $content = array('mobile' => array(), 'desktop' => array());
+
+    foreach ($this->content->getData() as $contentData) {
+        $key = 'desktop';
+        if ($contentData->isMobile()) {
+            $key = 'mobile';
+        }
+
+        $content[$key][$contentData->getLanguageId()] = $contentData;
+    }
+?>
+<div class="span-18 tabs">
+	<ul>
+		<li><a href="#desktop_content"><?php echo $this->translate('captive_content_edit_desktop_content');?></a></li>
+		<li><a href="#mobile_content"><?php echo $this->translate('captive_content_edit_mobile_content');?></a></li>
+	</ul>
+	<div id="desktop_content" class="tabs subtabs">
+		<ul>
+		<?php
+		    $templateSettings = $this->template->getSettings();
+    	    foreach ($templateSettings['language_ids'] as $languageId) :
+        ?>
+			<li><a href="#desktop-<?php echo $languageId; ?>"><?php echo $this->languages[$languageId]->getName();?></a></li>
+        <?php
+		    endforeach;
+		?>
+		</ul>
+		<?php
+		    foreach ($templateSettings['language_ids'] as $languageId) :
+			    if (!isset($content['desktop'][$languageId])) {
+			        $contentData = new Captive_Model_ContentData();
+			        $contentData->setLanguageId($languageId);
+			        $content['desktop'][$languageId] = $contentData;
+			    }
+		?>
+		<div id="desktop-<?php echo $languageId; ?>" class="desktop-content">
+			<div class="formelement span-16 last">
+    			<label for="title-desktop-<?php echo $languageId; ?>"><?php echo $this->translate('widget_html_admin_title');?>:</label>
+    			<input type="text" name="content[desktop][<?php echo $languageId; ?>][title]"
+    			id="title-desktop-<?php echo $languageId; ?>" value="<?php echo $content['desktop'][$languageId]->getTitle(); ?>" />
+			</div>
+		</div>
+		<?php
+		    endforeach;
+		?>
+	</div>
+
+	<div id="mobile_content" class="tabs subtabs">
+		<ul>
+		<?php
+    	    foreach ($templateSettings['language_ids'] as $languageId) :
+        ?>
+			<li><a href="#mobile-<?php echo $languageId; ?>"><?php echo $this->languages[$languageId]->getName();?></a></li>
+        <?php
+		    endforeach;
+		?>
+		</ul>
+
+		<?php
+		    foreach ($templateSettings['language_ids'] as $languageId) :
+			    if (!isset($content['mobile'][$languageId])) {
+			        $contentData = new Captive_Model_ContentData();
+			        $contentData->setLanguageId($languageId);
+			        $content['mobile'][$languageId] = $contentData;
+			    }
+		?>
+		<div id="mobile-<?php echo $languageId; ?>" class="mobile-content">
+			<div class="formelement span-16 last">
+    			<label for="title-mobile-<?php echo $languageId; ?>"><?php echo $this->translate('widget_html_admin_title');?>:</label>
+    			<input type="text" name="content[mobile][<?php echo $languageId; ?>][title]"
+    			id="title-mobile-<?php echo $languageId; ?>" value="<?php echo $content['mobile'][$languageId]->getTitle(); ?>" />
+			</div>
+		</div>
+		<?php
+		    endforeach;
+		?>
+	</div>
+</div>
