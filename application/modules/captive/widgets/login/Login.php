@@ -34,9 +34,10 @@ class Widget_Login extends Unwired_Widget_Abstract
 
     public function renderAdmin($content, $params = array())
     {
-        /**
-         * @todo Login widget administration
-         */
-        return '';
+        $this->getView()->assign($params);
+
+        $this->getView()->content = $content;
+
+        return $this->getView()->render('admin.phtml');
     }
 }
