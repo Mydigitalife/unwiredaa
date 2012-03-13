@@ -9,14 +9,21 @@
 * (AGPLv3 - http://www.gnu.org/licenses/agpl.html) or our proprietory
 * license available at http://www.unwired.at/license.html
 */
-    if (!$this->hasLinkWidgetScripts) :
-    $this->headScript()->appendFile($this->baseUrl('scripts/filebrowser.js'));
-    $this->headScript()->captureStart();
-?>
+    if (!Zend_Controller_Front::getInstance()->getRequest()->isXmlHttpRequest()) :
+        $this->headScript()->appendFile($this->baseUrl('scripts/filebrowser.js'));
+        $this->headScript()->captureStart();
+    else :
+    ?>
+	<script type="text/javascript" src="<?php echo $this->baseUrl('scripts/filebrowser.js');?>"></script>
+	<script type="text/javascript">
+    <?php
+    endif;
+    ?>
 	$(document).ready(function(){
 		var templatePath = '<?php echo $this->baseUrl('data/templates/' . (isset($this->splashPage) ? $this->splashPage->getTemplateId() : $this->template->getTemplateId()))?>';
 		var splashpagePath = '<?php echo $this->baseUrl('data/splashpages/' . (isset($this->splashPage) ? $this->splashPage->getSplashId() : ''))?>';
 
+		$('select.contenttype').die('change');
 		$('select.contenttype').live('change', function(){
 			$(this).parent().next().children(':not(input, label)').remove();
 			if ($(this).val() == 'text') {
@@ -52,6 +59,7 @@
 
 		$('select.contenttype').change();
 
+		$('select.deviceSelect').die('change');
 		$('select.deviceSelect').live('change',function(){
 			var inputs = $(this).parents(".devicelink:first").find('input');
 			var select = this;
@@ -61,6 +69,7 @@
 			});
 		});
 
+		$('a.deviceLinkAction.remove').die('click');
 		$('a.deviceLinkAction.remove').live('click', function(){
 			if (!confirm('<?php echo $this->translate('widget_links_admin_devicelink_remove_confirm');?>')) {
 				return false;
@@ -78,6 +87,7 @@
 			}
 		});
 
+		$('a.deviceLinkAction.add').die('click');
 		$('a.deviceLinkAction.add').live('click', function(){
 			var cloned = $(this).parents('.devicelink:first').clone();
 
@@ -85,6 +95,7 @@
 			$(this).parents('fieldset').find('.devicelink:last').find('input').val('');
 		});
 
+		$('a.addlink').unbind('click');
 		$('a.addlink').click(function(){
 			var cloned = $(this).parents(".formelement:first").prev().clone();
 
@@ -114,10 +125,12 @@
 		                                         'default',
 		                                         true); ?>');
 
+        $('.changeImage').die('click');
 		$('.changeImage').live('click', function(){
 			openFileBrowser($(this).parent().prev(), '<?php echo $this->baseUrl(); ?>/');
 		});
 
+		$('.linkcontent').die('change');
 	$('.linkcontent').live('change', function(){
 		if ($(this).parent().prev().find('select').val() !== 'image') {
 			return;
@@ -151,111 +164,270 @@
 		}); */
 	});
 <?php
+    if (!Zend_Controller_Front::getInstance()->getRequest()->isXmlHttpRequest()) :
     $this->headScript()->captureEnd();
-
-    $this->hasLinkWidgetScripts = true;
+    else:
+    ?>
+    </script>
+    <?php
     endif;
 ?>
-<div class="formelement linkwidget">
-<div class="span-17 formelement">
-	<label><?php echo $this->translate('captive_content_edit_language'); ?>: <?php echo $this->languages[$this->languageId]->getName(); ?></label>
-	<?php
-	    if ($this->content->getContentId()) :
-	?>
-		<input type="hidden" name="<?php echo $this->prefix; ?>[content_id]" value="<?php echo $this->content->getContentId(); ?>" />
-	<?php
-	    endif;
-	?>
-	<input type="hidden" name="<?php echo $this->prefix; ?>[language_id]" value="<?php echo $this->languageId; ?>" />
-</div>
-<div class="formelement">
-	<label><?php echo $this->translate('widget_links_admin_title'); ?>* :</label>
-	<input type="text" name="<?php echo $this->prefix; ?>[title]" value="<?php echo $this->escape($this->content->getTitle()); ?>"/>
-	<input type="hidden" name="<?php echo $this->prefix; ?>[column]" value="<?php echo $this->escape($this->content->getColumn()); ?>"/>
-	<input type="hidden" name="<?php echo $this->prefix; ?>[order_web]" value="<?php echo $this->escape($this->content->getOrderWeb()); ?>"/>
-	<input type="hidden" name="<?php echo $this->prefix; ?>[order_mobile]" value="<?php echo $this->escape($this->content->getOrderMobile()); ?>"/>
-	<input type="hidden" name="<?php echo $this->prefix; ?>[widget]" value="Links"/>
-</div>
-<div class="formelement span-17">
-	<label><?php echo $this->translate('widget_links_admin_showtitle'); ?>* :</label>
-	<input type="hidden" name="<?php echo $this->prefix; ?>[content][showtitle]" value="0"/>
-	<input type="checkbox" name="<?php echo $this->prefix; ?>[content][showtitle]" value="1" <?php
-	    if ($this->linksShowTitle) {
-	        echo 'checked="checked"';
-	    }
-	?>/>
-</div>
-<div class="formelement span-17">
-	<label><?php echo $this->translate('widget_links_admin_decorate'); ?>* :</label>
-	<input type="hidden" name="<?php echo $this->prefix; ?>[content][decorate]" value="0"/>
-	<input type="checkbox" name="<?php echo $this->prefix; ?>[content][decorate]" value="1" <?php
-	    if ($this->linksDecorate) {
-	        echo 'checked="checked"';
-	    }
-	?>/>
-</div>
-<div class="formelement span-17">
-	<label><?php echo $this->translate('widget_links_admin_class'); ?> :</label>
-	<input type="text" name="<?php echo $this->prefix; ?>[content][class]" value="<?php echo $this->linksWidgetClass; ?>"/>
-</div>
 <?php
-    $linkCounter = 0;
-    foreach ($this->linksData as $link) :
-        $linkCounter++;
+    if ($this->content->getContentId()) :
 ?>
-<div class="formelement">
-	<fieldset>
-	<legend><?php echo $this->translate('widget_links_admin_link'); ?></legend>
-	<?php foreach ($link as $device => $linkData) :?>
-	<div class="devicelink span-18 last">
-    	<div class="span-3">
-        	<label><?php echo $this->translate('widget_links_admin_link_device'); ?></label>
-        	<select class="deviceSelect" name="deviceSelect<?php echo $linkCounter; ?><?php echo $device; ?>">
-        		<?php
-        		    foreach (array('desktop', 'android', 'iphone', 'symbian', 'blackberry', 'other') as $deviceOption):
-        		?>
-        			<option value="<?php echo $deviceOption; ?>" <?php echo ($device == $deviceOption) ? 'selected="selected"' : '';?>><?php
-        			    echo $this->translate('widget_links_admin_device_'.$deviceOption);
-        			?></option>
-        		<?php
-        		    endforeach;
-        		?>
-        	</select>
-    	</div>
-    	<div class="span-5">
-    		<label><?php echo $this->translate('widget_links_admin_link_href'); ?></label>
-    		<input class="span-5 last" type="text" name="<?php echo $this->prefix; ?>[content][links][<?php echo $linkCounter;?>][<?php echo $device;?>][href]" value="<?php echo $linkData['href']?>" />
-    	</div>
-    	<div class="span-2">
-	    	<label><?php echo $this->translate('widget_links_admin_link_contenttype'); ?></label>
-        	<select class="contenttype" name="contentType<?php echo $linkCounter; ?><?php echo $device; ?>">
-        		<?php
-        		    $isImage = preg_match('/\<img/i', $linkData['content']);
-        		?>
-        			<option value="text" <?php echo !$isImage ? 'selected="selected"' : '';?>><?php
-        			    echo $this->translate('widget_links_admin_contenttype_text');
-        			?></option>
-        			<option value="image" <?php echo $isImage ? 'selected="selected"' : '';?>><?php
-        			    echo $this->translate('widget_links_admin_contenttype_image');
-        			?></option>
+	<input type="hidden" name="content_id" value="<?php echo $this->content->getContentId(); ?>" />
+<?php
+    endif;
+?>
+<input type="hidden" name="column" value="<?php echo $this->escape($this->content->getColumn()); ?>"/>
+<input type="hidden" name="type" value="<?php echo $this->escape($this->content->getType()); ?>"/>
+<input type="hidden" name="widget" value="Html"/>
+<?php
+    $content = array('mobile' => array(), 'desktop' => array());
 
-        	</select>
-    	</div>
-    	<div class="span-5">
-    		<label><?php echo $this->translate('widget_links_admin_link_content'); ?></label>
-    		<input class="span-5 last linkcontent" type="text" name="<?php echo $this->prefix; ?>[content][links][<?php echo $linkCounter;?>][<?php echo $device;?>][content]" value="<?php echo $this->escape($linkData['content']);?>" />
-    	</div>
+    foreach ($this->content->getData() as $contentData) {
+        $key = 'desktop';
+        if ($contentData->isMobile()) {
+            $key = 'mobile';
+        }
 
-    	<div class="span-1 last">
-    		<a href="javascript:;" class="deviceLinkAction remove"><?php echo $this->translate('widget_link_admin_devicelink_remove')?></a>
-    		<a href="javascript:;" class="deviceLinkAction add"><?php echo $this->translate('widget_link_admin_devicelink_add')?></a>
-    	</div>
+        $content[$key][$contentData->getLanguageId()] = $contentData;
+    }
+?>
+<div class="span-18 tabs">
+	<ul>
+		<li><a href="#desktop_content"><?php echo $this->translate('captive_content_edit_desktop_content');?></a></li>
+		<li><a href="#mobile_content"><?php echo $this->translate('captive_content_edit_mobile_content');?></a></li>
+	</ul>
+	<div id="desktop_content" class="tabs subtabs">
+		<ul>
+		<?php
+		    $templateSettings = $this->template->getSettings();
+    	    foreach ($templateSettings['language_ids'] as $languageId) :
+        ?>
+			<li><a href="#desktop-<?php echo $languageId; ?>"><?php echo $this->languages[$languageId]->getName();?></a></li>
+        <?php
+		    endforeach;
+		?>
+		</ul>
+		<?php
+		    foreach ($templateSettings['language_ids'] as $languageId) :
+			    if (!isset($content['desktop'][$languageId])) {
+			        $contentData = new Captive_Model_ContentData();
+			        $contentData->setLanguageId($languageId);
+			        $content['desktop'][$languageId] = $contentData;
+			    }
+
+			    $linksData = @unserialize($content['desktop'][$languageId]->getContent());
+		?>
+		<div id="desktop-<?php echo $languageId; ?>" class="desktop-content">
+			<div class="formelement span-16 last">
+    			<label for="title-desktop-<?php echo $languageId; ?>"><?php echo $this->translate('widget_links_admin_title');?>:</label>
+    			<input type="text" name="content[desktop][<?php echo $languageId; ?>][title]"
+    			id="title-desktop-<?php echo $languageId; ?>" value="<?php echo $content['desktop'][$languageId]->getTitle(); ?>" />
+			</div>
+			<div class="formelement span-16 last">
+            	<label><?php echo $this->translate('widget_links_admin_showtitle'); ?>* :</label>
+            	<input type="hidden" name="content[desktop][<?php echo $languageId; ?>][content][showtitle]" value="0"/>
+            	<input type="checkbox" name="content[desktop][<?php echo $languageId; ?>][content][showtitle]" value="1" <?php
+            	    if ($linksData['showtitle']) {
+            	        echo 'checked="checked"';
+            	    }
+            	?>/>
+            </div>
+			<div class="formelement span-16 last">
+            	<label><?php echo $this->translate('widget_links_admin_decorate'); ?>* :</label>
+            	<input type="hidden" name="content[desktop][<?php echo $languageId; ?>][content][decorate]" value="0"/>
+            	<input type="checkbox" name="content[desktop][<?php echo $languageId; ?>][content][decorate]" value="1" <?php
+            	    if ($linksData['decorate']) {
+            	        echo 'checked="checked"';
+            	    }
+            	?>/>
+            </div>
+            <div class="formelement span-16 last">
+            	<label><?php echo $this->translate('widget_links_admin_class'); ?> :</label>
+            	<input type="text" name="content[desktop][<?php echo $languageId; ?>][content][class]" value="<?php echo $linksData['class']; ?>"/>
+            </div>
+
+            <?php
+                $linkCounter = 0;
+                foreach ($linksData['links'] as $link) :
+                    $linkCounter++;
+            ?>
+            <div class="formelement">
+            	<fieldset>
+            	<legend><?php echo $this->translate('widget_links_admin_link'); ?></legend>
+            	<?php foreach ($link as $device => $linkData) :?>
+            	<div class="devicelink span-16 last">
+                	<div class="span-3">
+                    	<label><?php echo $this->translate('widget_links_admin_link_device'); ?></label>
+                    	<select class="deviceSelect" name="deviceSelect<?php echo $linkCounter; ?><?php echo $device; ?>">
+                    		<?php
+                    		    foreach (array('desktop', 'android', 'iphone', 'symbian', 'blackberry', 'other') as $deviceOption):
+                    		?>
+                    			<option value="<?php echo $deviceOption; ?>" <?php echo ($device == $deviceOption) ? 'selected="selected"' : '';?>><?php
+                    			    echo $this->translate('widget_links_admin_device_'.$deviceOption);
+                    			?></option>
+                    		<?php
+                    		    endforeach;
+                    		?>
+                    	</select>
+                	</div>
+                	<div class="span-5">
+                		<label><?php echo $this->translate('widget_links_admin_link_href'); ?></label>
+                		<input class="span-5 last" type="text" name="content[desktop][<?php echo $languageId; ?>][content][links][<?php echo $linkCounter;?>][<?php echo $device;?>][href]" value="<?php echo $linkData['href']?>" />
+                	</div>
+                	<div class="span-2">
+            	    	<label><?php echo $this->translate('widget_links_admin_link_contenttype'); ?></label>
+                    	<select class="contenttype" name="contentType<?php echo $linkCounter; ?><?php echo $device; ?>">
+                    		<?php
+                    		    $isImage = preg_match('/\<img/i', $linkData['content']);
+                    		?>
+                    			<option value="text" <?php echo !$isImage ? 'selected="selected"' : '';?>><?php
+                    			    echo $this->translate('widget_links_admin_contenttype_text');
+                    			?></option>
+                    			<option value="image" <?php echo $isImage ? 'selected="selected"' : '';?>><?php
+                    			    echo $this->translate('widget_links_admin_contenttype_image');
+                    			?></option>
+
+                    	</select>
+                	</div>
+                	<div class="span-5">
+                		<label><?php echo $this->translate('widget_links_admin_link_content'); ?></label>
+                		<input class="span-5 last linkcontent" type="text" name="content[desktop][<?php echo $languageId; ?>][content][links][<?php echo $linkCounter;?>][<?php echo $device;?>][content]" value="<?php echo $this->escape($linkData['content']);?>" />
+                	</div>
+
+                	<div class="span-1 last">
+                		<a href="javascript:;" class="deviceLinkAction remove"><?php echo $this->translate('widget_link_admin_devicelink_remove')?></a>
+                		<a href="javascript:;" class="deviceLinkAction add"><?php echo $this->translate('widget_link_admin_devicelink_add')?></a>
+                	</div>
+            	</div>
+            	<?php endforeach;?>
+            	</fieldset>
+            </div>
+            <?php endforeach;?>
+            <div class="formelement">
+            	<a href="javascript:;" class="button green small addlink"><span><?php echo $this->translate('widget_links_admin_link_add');?></span></a>
+            </div>
+		</div>
+		<?php
+		    endforeach;
+		?>
 	</div>
-	<?php endforeach;?>
-	</fieldset>
-</div>
-<?php endforeach;?>
-<div class="formelement">
-	<a href="javascript:;" class="button green small addlink"><span><?php echo $this->translate('widget_links_admin_link_add');?></span></a>
-</div>
+
+	<div id="mobile_content" class="tabs subtabs">
+		<ul>
+		<?php
+    	    foreach ($templateSettings['language_ids'] as $languageId) :
+        ?>
+			<li><a href="#mobile-<?php echo $languageId; ?>"><?php echo $this->languages[$languageId]->getName();?></a></li>
+        <?php
+		    endforeach;
+		?>
+		</ul>
+
+		<?php
+		    foreach ($templateSettings['language_ids'] as $languageId) :
+			    if (!isset($content['mobile'][$languageId])) {
+			        $contentData = new Captive_Model_ContentData();
+			        $contentData->setLanguageId($languageId);
+			        $content['mobile'][$languageId] = $contentData;
+			    }
+
+			    $linksData = @unserialize($content['mobile'][$languageId]->getContent());
+		?>
+		<div id="mobile-<?php echo $languageId; ?>" class="mobile-content">
+			<div class="formelement span-16 last">
+    			<label for="title-mobile-<?php echo $languageId; ?>"><?php echo $this->translate('widget_links_admin_title');?>:</label>
+    			<input type="text" name="content[mobile][<?php echo $languageId; ?>][title]"
+    			id="title-mobile-<?php echo $languageId; ?>" value="<?php echo $content['mobile'][$languageId]->getTitle(); ?>" />
+			</div>
+			<div class="formelement span-16 last">
+            	<label><?php echo $this->translate('widget_links_admin_showtitle'); ?>* :</label>
+            	<input type="hidden" name="content[mobile][<?php echo $languageId; ?>][content][showtitle]" value="0"/>
+            	<input type="checkbox" name="content[mobile][<?php echo $languageId; ?>][content][showtitle]" value="1" <?php
+            	    if ($linksData['showtitle']) {
+            	        echo 'checked="checked"';
+            	    }
+            	?>/>
+            </div>
+			<div class="formelement span-16 last">
+            	<label><?php echo $this->translate('widget_links_admin_decorate'); ?>* :</label>
+            	<input type="hidden" name="content[mobile][<?php echo $languageId; ?>][content][decorate]" value="0"/>
+            	<input type="checkbox" name="content[mobile][<?php echo $languageId; ?>][content][decorate]" value="1" <?php
+            	    if ($linksData['decorate']) {
+            	        echo 'checked="checked"';
+            	    }
+            	?>/>
+            </div>
+            <div class="formelement span-16 last">
+            	<label><?php echo $this->translate('widget_links_admin_class'); ?> :</label>
+            	<input type="text" name="content[mobile][<?php echo $languageId; ?>][content][class]" value="<?php echo $linksData['class']; ?>"/>
+            </div>
+
+            <?php
+                $linkCounter = 0;
+                foreach ($linksData['links'] as $link) :
+                    $linkCounter++;
+            ?>
+            <div class="formelement">
+            	<fieldset>
+            	<legend><?php echo $this->translate('widget_links_admin_link'); ?></legend>
+            	<?php foreach ($link as $device => $linkData) :?>
+            	<div class="devicelink span-16 last">
+                	<div class="span-3">
+                    	<label><?php echo $this->translate('widget_links_admin_link_device'); ?></label>
+                    	<select class="deviceSelect" name="deviceSelect<?php echo $linkCounter; ?><?php echo $device; ?>">
+                    		<?php
+                    		    foreach (array('desktop', 'android', 'iphone', 'symbian', 'blackberry', 'other') as $deviceOption):
+                    		?>
+                    			<option value="<?php echo $deviceOption; ?>" <?php echo ($device == $deviceOption) ? 'selected="selected"' : '';?>><?php
+                    			    echo $this->translate('widget_links_admin_device_'.$deviceOption);
+                    			?></option>
+                    		<?php
+                    		    endforeach;
+                    		?>
+                    	</select>
+                	</div>
+                	<div class="span-5">
+                		<label><?php echo $this->translate('widget_links_admin_link_href'); ?></label>
+                		<input class="span-5 last" type="text" name="content[mobile][<?php echo $languageId; ?>][content][links][<?php echo $linkCounter;?>][<?php echo $device;?>][href]" value="<?php echo $linkData['href']?>" />
+                	</div>
+                	<div class="span-2">
+            	    	<label><?php echo $this->translate('widget_links_admin_link_contenttype'); ?></label>
+                    	<select class="contenttype" name="contentType<?php echo $linkCounter; ?><?php echo $device; ?>">
+                    		<?php
+                    		    $isImage = preg_match('/\<img/i', $linkData['content']);
+                    		?>
+                    			<option value="text" <?php echo !$isImage ? 'selected="selected"' : '';?>><?php
+                    			    echo $this->translate('widget_links_admin_contenttype_text');
+                    			?></option>
+                    			<option value="image" <?php echo $isImage ? 'selected="selected"' : '';?>><?php
+                    			    echo $this->translate('widget_links_admin_contenttype_image');
+                    			?></option>
+
+                    	</select>
+                	</div>
+                	<div class="span-5">
+                		<label><?php echo $this->translate('widget_links_admin_link_content'); ?></label>
+                		<input class="span-5 last linkcontent" type="text" name="content[mobile][<?php echo $languageId; ?>][content][links][<?php echo $linkCounter;?>][<?php echo $device;?>][content]" value="<?php echo $this->escape($linkData['content']);?>" />
+                	</div>
+
+                	<div class="span-1 last">
+                		<a href="javascript:;" class="deviceLinkAction remove"><?php echo $this->translate('widget_link_admin_devicelink_remove')?></a>
+                		<a href="javascript:;" class="deviceLinkAction add"><?php echo $this->translate('widget_link_admin_devicelink_add')?></a>
+                	</div>
+            	</div>
+            	<?php endforeach;?>
+            	</fieldset>
+            </div>
+            <?php endforeach;?>
+            <div class="formelement">
+            	<a href="javascript:;" class="button green small addlink"><span><?php echo $this->translate('widget_links_admin_link_add');?></span></a>
+            </div>
+		</div>
+		<?php
+		    endforeach;
+		?>
+	</div>
 </div>

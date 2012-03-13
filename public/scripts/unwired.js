@@ -13,6 +13,7 @@
 		modal: true,
 		draggable: false,
 		resizable: false,
+		zIndex: 19999,
 		title: 'Alert',
 		buttons: { "Ok": function() { $(this).dialog("close"); } },
 		close: function(event, ui) { 

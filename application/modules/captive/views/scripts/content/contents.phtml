@@ -1,0 +1,505 @@
+<?php
+/**
+* Unwired AA GUI
+*
+* Author & Copyright (c) 2011 Unwired Networks GmbH
+* alexander.szlezak@unwired.at
+*
+* Licensed under the terms of the Affero Gnu Public License version 3
+* (AGPLv3 - http://www.gnu.org/licenses/agpl.html) or our proprietory
+* license available at http://www.unwired.at/license.html
+*/
+?>
+<h1><?php
+    if (isset($this->splashPage)) {
+	    echo sprintf($this->translate('captive_index_edit_heading_edit'), $this->splashPage->getTitle());
+    } else {
+        echo sprintf($this->translate('captive_template_edit_heading_edit'), $this->template->getName());
+    }
+
+    $acl = Zend_Registry::get('acl');
+
+    $settings = $this->template->getSettings();
+
+    $this->contents = $this->contentsToTemplateLayout($this->contents, $this->template);
+?></h1>
+<?php
+    $this->headStyle('.column { padding-top: 5px; min-height:50px; padding-bottom: 5px; margin-bottom: 10px; margin-right: 8px}
+				  	  .portlet { margin: 0 5px 10px 5px; }
+					  .portlet-header { cursor: move; margin: 2px; padding-bottom: 4px; padding-left: 0.2em; }
+					  .static .portlet-header {cursor: default!important;}
+					  .portlet-header .ui-icon { cursor: pointer; float: right; }
+					  .portlet-content { padding: 0.4em; }
+					  .ui-tabs-panel { padding: 10px !important; }
+					  .ui-sortable-placeholder { margin: 0 5px 10px 5px;border: 1px dotted black; visibility: visible !important; height: 80px !important; }
+					  .ui-sortable-placeholder * { visibility: hidden; }');
+
+	$this->headScript()->appendFile($this->baseUrl('scripts/fancybox/jquery.fancybox-1.3.4.pack.js'));
+	$this->headLink()->appendStylesheet($this->baseUrl('scripts/fancybox/jquery.fancybox-1.3.4.css'));
+    $this->headScript()->appendFile($this->baseUrl('scripts/nicedit/nicEdit.js'));
+    $this->headScript()->captureStart();
+?>
+	var htmlEditors = false;
+
+	$(document).ready(function() {
+		$('div.tabs').tabs();
+
+        $("#fancybox-content .tabs:not(.subtabs)" ).live( "tabsselect", function(event, ui) {
+
+            if (!$('.ui-tabs-panel:visible:last input[name*=title]:first').val().length) {
+            	return;
+            }
+
+			if ($('.ui-tabs-panel:visible:last').siblings().find('input[name*=title]:first').val().length) {
+				return;
+			}
+
+         	if (!confirm('<?php echo $this->translate('captive_content_edit_use_defaults'); ?>')) {
+          		return;
+          	}
+
+            var otherPanels = $('.tabs .tabs .ui-tabs-panel:not(:visible)');
+
+            $('.ui-tabs-panel:visible:last input').each(function(){
+            	var targetName = $(this).attr('name').replace(/.*\[([a-z]+)\]$/gi, '$1');
+
+            	otherPanels.find('input[name*='+targetName+']').val($(this).val());
+
+            	if ($(this).attr('type') == 'checkbox') {
+            		if ($(this).is(':checked')) {
+            			otherPanels.find('input[name*='+targetName+']').attr('checked','checked');
+        			} else {
+        				otherPanels.find('input[name*='+targetName+']').removeAttr('checked');
+        			}
+            	}
+            	/**
+            	 * @todo Add check for radio buttons
+            	 */
+            });
+
+            $('.ui-tabs-panel:visible:last select').each(function(){
+                var targetName = $(this).attr('name').replace(/.*\[([a-z]+)\]$/gi, '$1');
+                otherPanels.find('select[name*='+targetName+']').val($(this).val());
+            });
+
+            $('.ui-tabs-panel:visible:last textarea').each(function(){
+                var targetName = $(this).attr('name').replace(/.*\[([a-z]+)\]$/gi, '$1');
+
+				if (nicEditors) {
+					nicEditors.findEditor($(this).attr('id')).saveContent();
+
+    				var prefilledTextArea = this;
+
+                    otherPanels.find('textarea[name*='+targetName+']').each(function(){
+    					nicEditors.findEditor($(this).attr('id')).setContent($(prefilledTextArea).val());
+    					nicEditors.findEditor($(this).attr('id')).saveContent();
+                    });
+    			} else {
+					otherotherPanels.find('textarea[name*='+targetName+']').val($(this).val());
+    			}
+            });
+        });
+
+		$(".column:not(.special)").sortable({
+			connectWith: ".column:not(.special)",
+			placeholder: "ui-sortable-placeholder ui-state-highlight ui-corner-all",
+			distance: 15,
+			items: ".portlet:not('.terms'):not('.imprint')",
+			receive: function(event, ui) {
+				if (ui.item.prevAll('.tools').length) {
+					ui.item.after(ui.item.siblings(".tools"));
+				}
+			},
+			"cancel":".portlet.static",
+            "change":function(event,ui) {
+
+            },
+
+			stop: function(event, ui) {
+				var columnsContentOrder = {'mobile': [], 'desktop': []};
+
+				$('.column:not(.special)').each(function(){
+					var column = $(this).attr('id').replace(/[^\d]/gi, '');
+
+					if (!column.length) {
+						column = 0;
+					}
+
+					var columnOrder = new Array();
+
+					$(this).find('.portlet').each(function(){
+						var contentId = $(this).attr('id').replace(/[^\d]/gi, '');
+
+						columnOrder.push(contentId);
+					});
+
+					if ($(this).parents('#mobile').length) {
+						columnsContentOrder['mobile'][column] = columnOrder;
+					} else {
+						columnsContentOrder['desktop'][column] = columnOrder;
+					}
+				});
+
+				$.ajax({
+					url: '<?php echo $this->url(array('module' => 'captive',
+					                                  'controller' => 'content',
+					                                  'action' => 'reorder',
+					                                  'splashId' => isset($this->splashPage) ? $this->splashPage->getSplashId() : null,
+					                                  'templateId' => $this->template->getTemplateId()), 'default', true); ?>',
+					data: columnsContentOrder,
+					cache: false,
+    				type: 'POST',
+    				success: function(data){
+						alert('success',1);
+    				},
+    				error: function(data){
+						alert('error',1);
+    				},
+				});
+			}
+		});
+
+		$(".portlet").addClass( "ui-widget ui-widget-content ui-helper-clearfix ui-corner-all" )
+			.find( ".portlet-header" )
+				.addClass( "ui-widget-header ui-corner-all" )
+				.prepend( "<span class='ui-icon ui-icon-minusthick'></span>")
+				.end()
+			.find( ".portlet-content" );
+
+		$(".portlet-header .ui-icon").click(function() {
+			$( this ).toggleClass( "ui-icon-minusthick" ).toggleClass( "ui-icon-plusthick" );
+			$( this ).parents( ".portlet:first" ).find( ".portlet-content" ).toggle();
+		});
+
+		$(".column").disableSelection();
+
+		$('#fancybox-content a.cancel').live('click', function(){
+			$.fancybox.close();
+			htmlEditors = false;
+			return false;
+		});
+		$('#fancybox-content a.save').live('click', function(){
+			if (nicEditors) {
+				$('#fancybox-content textarea').each(function(){
+					nicEditors.findEditor($(this).attr('id')).saveContent();
+				});
+			}
+
+			var postVars = $('#fancybox-content form:first').serialize();
+			$('#fancybox-content form:first').find('input, textarea, select').attr('disabled','disabled');
+
+			$.fancybox.showActivity();
+
+			$.ajax({
+				url: $('#fancybox-content form:first').attr('action'),
+				data: postVars,
+				cache: false,
+				type: 'POST',
+				success: function(data){
+					window.location.reload();
+					//$.fancybox.hideActivity();
+					//$.fancybox.close();
+
+				},
+				error: function(data){
+					alert('There was an error saving the information!');
+					$('#fancybox-content form:first').find('input, textarea, select').removeAttr('disabled');
+
+					$.fancybox.hideActivity();
+				},
+			})
+			return false;
+		});
+
+		$('a.icon.edit').live('click',function(){
+			$.fancybox.showActivity();
+			var column = $(this).parents(".column:first").attr('id').replace(/[^0-9]/gi,'');
+
+			if (!column.length) {
+				column = 0;
+			}
+
+			$.ajax({
+				url: '<?php echo $this->url(array('module' => 'captive',
+				                                  'controller' => 'content',
+				                                  'action' => 'edit',
+				                                  'splashId' => (isset($this->splashPage) ? $this->splashPage->getSplashid() : null),
+				                                  'templateId' => $this->template->getTemplateId()), 'default', true);?>/column/' + column + '/id/' + $(this).prev().val(),
+
+				'success' : function(data){
+
+					$.fancybox({
+						content: data,
+						modal: false,
+						autoDimensions: true,
+						hideOnOverlayClick: false,
+						showCloseButton: true,
+						onComplete: function() {
+							$('#fancybox-content').find('.tabs').tabs();
+							$.fancybox.resize();
+							$.fancybox.center();
+						}
+					});
+				},
+				'error' : function(data) {
+					alert('There was an error saving the widget');
+					$.fancybox.hideActivity();
+				}
+			})
+
+		});
+
+		$('a.icon.add').click(function(){
+			var column = $(this).parents(".column:first").attr('id').replace(/[^0-9]/gi,'');
+
+			if (!column.length) {
+				column = 0;
+			}
+
+			var order = 1;
+			var orderMobile = 1;
+
+			if ($(this).parents("#desktop").length) {
+				order = $(this).parent().siblings().length+1;
+			} else {
+				order = $('#desktop-column-main .portlet').length+1;
+			}
+
+			orderMobile = $('#mobile-column-main .portlet').length+1;
+
+			$('body').append('<div id="dialogadd" />');
+			$('#dialogadd').dialog({
+				modal: true,
+				title: '<?php echo $this->translate('content_edit_widget_add_title'); ?>',
+				closeOnEscape: false,
+				open: function(event, ui) {
+					$('#dialogadd').append('<div id="widgetSet">'+
+                                        		'<input type="radio" id="Html" value="Html" name="widget" checked="checked" /><label for="Html">Html</label>'+
+                                        		'<input type="radio" id="Links" value="Links" name="widget" /><label for="Links">Links</label>'+
+                                        		'<input type="radio" id="Iframe" value="Iframe" name="widget" /><label for="Iframe">Iframe</label>'+
+                                        		'<input type="radio" id="Login" value="Login" name="widget" /><label for="Login">Login</label>'+
+                                        	'</div>');
+					$('#widgetSet').buttonset();
+				},
+				close: function(){
+					$(this).dialog('destroy');
+					$('#dialogadd').remove();
+				},
+				buttons: {
+					'<?php echo $this->translate('content_edit_button_add'); ?>' : function() {
+						var addDialog = this;
+						$.fancybox.showActivity();
+
+						$.ajax({
+							url: '<?php echo $this->url(array('module' => 'captive',
+							                                  'controller' => 'content',
+							                                  'action' => 'add',
+							                                  'splashId' => (isset($this->splashPage) ? $this->splashPage->getSplashid() : null),
+							                                  'templateId' => $this->template->getTemplateId()), 'default', true);?>/column/' + column + '/widget/' + $('#widgetSet input:checked').val(),
+
+							'success' : function(data){
+
+								$.fancybox({
+									content: data,
+									modal: false,
+									autoDimensions: true,
+									hideOnOverlayClick: false,
+									showCloseButton: true,
+									onComplete: function() {
+										$('#fancybox-content').find('.tabs').tabs();
+
+                            			$('.desktop-content').each(function(){
+                            				var languageId = $(this).attr('id').replace(/[^\d]/gi, '');
+
+                            				$(this).append('<input type="hidden" name="content[desktop][' + languageId +'][order]" value="' + order + '" />');
+                            			});
+                            			$('.mobile-content').each(function(){
+                            				var languageId = $(this).attr('id').replace(/[^\d]/gi, '');
+
+                            				$(this).append('<input type="hidden" name="content[mobile][' + languageId +'][order]" value="' + orderMobile + '" />');
+                            			});
+
+										$.fancybox.resize();
+										$.fancybox.center();
+									}
+								});
+
+								$(addDialog).dialog('close');
+							},
+							'error' : function(data) {
+								alert('There was an error adding the widget');
+								$(addDialog).dialog('close');
+							}
+						})
+					},
+					'<?php echo $this->translate('content_edit_button_cancel'); ?>' : function() {
+						$(this).dialog('close');
+					}
+				}
+			});
+		});
+
+	});
+<?php
+    $this->headScript()->captureEnd();
+?>
+<div class="span-19 last">
+	<div class="tabs span-19 last">
+		<ul>
+			<li><a href="#desktop"><?php echo $this->translate('captive_content_tab_desktop'); ?></a></li>
+			<li><a href="#mobile"><?php echo $this->translate('captive_content_tab_mobile'); ?></a></li>
+		</ul>
+		<div id="desktop" class="span-19 last">
+  <?php
+
+      $mobileContent = array();
+
+      if (array_key_exists('special', $this->contents)) {
+          $mobileContent['special'] = array();
+      }
+
+      $mobileContent['main'] = array();
+
+      foreach ($this->contents as $column => $columnContents) :
+      ?>
+	  <div id="desktop-column-<?php echo $column; ?>" class="column ui-widget <?php echo $column; ?> ui-widget-content ui-helper-clearfix ui-corner-all span-<?php if ($column == 'special') echo '18 last'; else echo '6'; ?>">
+		<?php
+		 foreach ($columnContents as $contents) :
+
+             $data = null;
+             $dataMobile = null;
+
+             foreach ($contents->getData() as $data) {
+                if ($data->isMobile()) {
+                    $dataMobile = $data;
+                }
+
+                if ($data && $dataMobile) {
+                    break;
+                }
+             }
+
+             if ($dataMobile) {
+                 if ($column == 'special') {
+                     $mobileContent['special'][] = $dataMobile;
+                 } else {
+                     $mobileContent['main'][] = $dataMobile;
+                 }
+             }
+		?>
+		<div id="desktop-<?php echo $data->getContentId(); ?>" class="portlet <?php
+		     if (isset($this->splashPage) && !$data->getParent()->getSplashId()) {
+		         echo " static ";
+		     }
+
+		     echo $data->getParent()->getWidget();
+
+		     ?>">
+    		<div class="portlet-header"><?php echo $data->getParent()->getWidget(); ?></div>
+    		<div class="portlet-content">
+    		    <?php echo $data->getTitle();?>
+    		    <?php
+            		 if ($contents->isEditable()) :
+                ?>
+        		<div class="portlet-tools tools">
+        			<input type="hidden" name="content_id" value="<?php echo $data->getContentId(); ?>" />
+        			<a class="icon edit"><?php echo $this->translate('captive_content_widget_edit'); ?></a>
+        			<?php if ($acl->isAllowed($this->currentUser, $data->getParent(), 'delete')
+        			          && ((isset($this->splashPage) && $data->getParent()->getSplashId())
+        			               || (!isset($this->splashPage) && $data->getParent()->getTemplateId()))) :?>
+        			<a href="<?php echo $this->url(array('module' => 'captive',
+        			                                     'controller' => 'content',
+        			                                     'action' => 'delete',
+        			                                     'id' => $data->getContentId(),
+				                                         'splashId' => (isset($this->splashPage) ? $this->splashPage->getSplashid() : null),
+				                                  		 'templateId' => $this->template->getTemplateId()), 'default', true); ?>"
+				      class="icon delete"><?php echo $this->translate('captive_content_widget_delete'); ?></a>
+				      <?php endif; ?>
+        		</div>
+        		<?php endif;?>
+    		</div>
+    	</div>
+		<?php
+
+		 endforeach;
+	     if ($column !== 'special') :
+		?>
+		<div class="portlet-tools ui-helper-clearfix tools">
+			<a class="icon add"><?php echo $this->translate('captive_content_widget_add'); ?></a>
+		</div>
+		<?php
+		 endif;
+		?>
+	  </div>
+  <?php
+      endforeach;
+
+      /**
+       * @todo Get this out of here
+       */
+      function sortMobileContents($contentA, $contentB) {
+        return ($contentA->getOrder() < $contentB->getOrder()) ? -1 : 1;
+      }
+
+      usort($mobileContent['main'],'sortMobileContents');
+  ?>
+  	</div>
+  	<div id="mobile">
+	<?php
+	foreach ($mobileContent as $column => $columnContents) :
+      ?>
+	  <div id="mobile-column-<?php echo $column; ?>" class="column <?php echo $column; ?> ui-widget ui-widget-content ui-helper-clearfix ui-corner-all span-18 last">
+		<?php
+	      foreach ($columnContents as $data) :
+		?>
+		<div id="mobile-<?php echo $data->getContentId(); ?>" class="portlet <?php
+		    if (isset($this->splashPage) && !$data->getParent()->getSplashId()) {
+		         echo " static ";
+		    }
+
+		    echo $data->getParent()->getWidget();
+
+		    ?>">
+    		<div class="portlet-header"><?php echo $data->getParent()->getWidget(); ?></div>
+    		<div class="portlet-content">
+    		    <?php echo $data->getTitle();?>
+    		    <?php
+    		        if ($data->getParent()->isEditable()) :
+    		    ?>
+        		<div class="portlet-tools tools">
+        			<input type="hidden" name="content_id" value="<?php echo $data->getContentId(); ?>" />
+        			<a class="icon edit"><?php echo $this->translate('captive_content_widget_edit'); ?></a>
+        			<?php if ($acl->isAllowed($this->currentUser, $data->getParent(), 'delete')
+        			          && ((isset($this->splashPage) && $data->getParent()->getSplashId())
+        			               || (!isset($this->splashPage) && $data->getParent()->getTemplateId()))) :?>
+        			<a href="<?php echo $this->url(array('module' => 'captive',
+        			                                     'controller' => 'content',
+        			                                     'action' => 'delete',
+        			                                     'id' => $data->getContentId(),
+				                                         'splashId' => (isset($this->splashPage) ? $this->splashPage->getSplashid() : null),
+				                                  		 'templateId' => $this->template->getTemplateId()), 'default', true); ?>"
+				      class="icon delete"><?php echo $this->translate('captive_content_widget_delete'); ?></a>
+				      <?php endif; ?>
+        		</div>
+        		<?php
+        		    endif;
+        		?>
+    		</div>
+    	</div>
+		<?php
+	     endforeach;
+	     if ($column !== 'special') :
+		?>
+		<div class="portlet-tools ui-helper-clearfix tools">
+			<a class="icon add"><?php echo $this->translate('captive_content_widget_add'); ?></a>
+		</div>
+		<?php
+		 endif;
+		?>
+	  </div>
+      <?php
+      endforeach;
+	?>
+  	</div>
+  </div>
+</div>

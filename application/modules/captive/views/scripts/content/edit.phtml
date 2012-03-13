@@ -1,0 +1,46 @@
+<form method="post" action="<?php echo $_SERVER['REQUEST_URI']; ?>">
+	<div class="span-18">
+		<!-- start content edit -->
+		<h2 class="ui-widget-header ui-corner-all">
+		<?php
+		if ($this->content->getContentId()) :
+			echo $this->translate('captive_content_edit_heading', $this->content->getWidget());
+		else :
+	        echo $this->translate('captive_content_add_heading', $this->content->getWidget());
+		endif;
+		?>
+		</h2>
+		<div class="formelement">
+		    <?php if (!isset($this->splashPage)) :?>
+			<div class="formelement span-8">
+            	<label><?php echo $this->translate('captive_content_edit_editable'); ?>* :</label>
+            	<input type="hidden" name="editable" value="0"/>
+            	<input type="checkbox" name="editable" value="1" <?php
+            	    if ($this->content->isEditable()) {
+            	        echo 'checked="checked"';
+            	    }
+            	?>/>
+            </div>
+            <?php endif; ?>
+			<div class="formelement span-8 last">
+            	<label class="span-6"><span><?php echo $this->translate('captive_content_edit_restricted'); ?>* :</span></label>
+            	<input type="hidden" name="restricted" value="0"/>
+            	<input type="checkbox" name="restricted" value="1" <?php
+            	    if ($this->content->isRestricted()) {
+            	        echo 'checked="checked"';
+            	    }
+            	?>/>
+            </div>
+		</div>
+		<?php
+		    echo $this->widgetAdmin($this->content, array('splashPage' => $this->splashPage, 'template' => $this->template));
+		?>
+
+		<!-- end content edit -->
+
+		<div class="buttons">
+			<a href="javascript:;" class="button green save"><span><?php echo $this->translate('captive_content_edit_content_save'); ?></span></a>
+			<a href="javascript:;" class="button blue cancel"><span><?php echo $this->translate('captive_content_edit_content_cancel'); ?></span></a>
+		</div>
+	</div>
+</form>

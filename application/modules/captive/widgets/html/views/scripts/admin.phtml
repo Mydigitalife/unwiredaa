@@ -10,50 +10,112 @@
 * license available at http://www.unwired.at/license.html
 */
 ?>
+<script type="text/javascript" src="<?php echo $this->baseUrl('scripts/nicedit/nicEdit.js'); ?>"></script>
+<script type="text/javascript">
+	$(document).ready(function(){
+		htmlEditors = nicEditors.allTextAreas({iconsPath : '<?php echo $this->baseUrl('scripts/nicedit/nicEditorIcons.gif'); ?>'})
+	});
+</script>
 <?php
     if ($this->content->getContentId()) :
 ?>
-	<input type="hidden" name="<?php echo $this->prefix; ?>[content_id]" value="<?php echo $this->content->getContentId(); ?>" />
+	<input type="hidden" name="content_id" value="<?php echo $this->content->getContentId(); ?>" />
 <?php
     endif;
 ?>
-<input type="hidden" name="<?php echo $this->prefix; ?>[column]" value="<?php echo $this->escape($this->content->getColumn()); ?>"/>
-<input type="hidden" name="<?php echo $this->prefix; ?>[order_web]" value="<?php echo $this->escape($this->content->getOrderWeb()); ?>"/>
-<input type="hidden" name="<?php echo $this->prefix; ?>[order_mobile]" value="<?php echo $this->escape($this->content->getOrderMobile()); ?>"/>
-<input type="hidden" name="<?php echo $this->prefix; ?>[widget]" value="Html"/>
-<div class="span-18 tabs subtabs">
+<input type="hidden" name="column" value="<?php echo $this->escape($this->content->getColumn()); ?>"/>
+<input type="hidden" name="type" value="<?php echo $this->escape($this->content->getType()); ?>"/>
+<input type="hidden" name="widget" value="Html"/>
 <?php
-    $targetId = rand(0,999) . '-' . $this->content->getContentId() . '-' . $this->languageId;
+    $content = array('mobile' => array(), 'desktop' => array());
+
+    foreach ($this->content->getData() as $contentData) {
+        $key = 'desktop';
+        if ($contentData->isMobile()) {
+            $key = 'mobile';
+        }
+
+        $content[$key][$contentData->getLanguageId()] = $contentData;
+    }
 ?>
-    <div class="span-17 formelement">
-    	<label><?php echo $this->translate('captive_content_edit_language'); ?>: <?php echo $this->languages[$this->languageId]->getName(); ?></label>
-    	<input type="hidden" name="<?php echo $this->prefix; ?>[language_id]" value="<?php echo $this->languageId; ?>" />
-    </div>
-    <div class="span-17 formelement">
-    	<label><?php echo $this->translate('widget_html_admin_title'); ?>* :</label>
-    	<input type="text" name="<?php echo $this->prefix; ?>[title]" value="<?php echo $this->escape($this->content->getTitle()); ?>"/>
-    </div>
-    <div class="span-17 formelement">
-    	<label><?php echo $this->translate('widget_html_admin_content'); ?>* :</label>
-    </div>
-
-    <ul class="span-18 last">
-    	<li><a href="#desktop-<?php echo $targetId; ?>">Desktop</a></li>
-    	<li><a href="#mobile-<?php echo $targetId; ?>">Mobile</a></li>
-    </ul>
-
-	<div id="desktop-<?php echo $targetId; ?>" class="subtabs-panel">
-    	<div class="span-18 last">
-    		<textarea class="wysiwyg span-18 last" name="<?php echo $this->prefix; ?>[content][desktop]"><?php
-    		    echo $this->escape($this->contentData['desktop']);
-    		?></textarea>
-    	</div>
+<div class="span-18 tabs">
+	<ul>
+		<li><a href="#desktop_content"><?php echo $this->translate('captive_content_edit_desktop_content');?></a></li>
+		<li><a href="#mobile_content"><?php echo $this->translate('captive_content_edit_mobile_content');?></a></li>
+	</ul>
+	<div id="desktop_content" class="tabs subtabs">
+		<ul>
+		<?php
+		    $templateSettings = $this->template->getSettings();
+    	    foreach ($templateSettings['language_ids'] as $languageId) :
+        ?>
+			<li><a href="#desktop-<?php echo $languageId; ?>"><?php echo $this->languages[$languageId]->getName();?></a></li>
+        <?php
+		    endforeach;
+		?>
+		</ul>
+		<?php
+		    foreach ($templateSettings['language_ids'] as $languageId) :
+			    if (!isset($content['desktop'][$languageId])) {
+			        $contentData = new Captive_Model_ContentData();
+			        $contentData->setLanguageId($languageId);
+			        $content['desktop'][$languageId] = $contentData;
+			    }
+		?>
+		<div id="desktop-<?php echo $languageId; ?>" class="desktop-content">
+			<div class="formelement span-16 last">
+    			<label for="title-desktop-<?php echo $languageId; ?>"><?php echo $this->translate('widget_html_admin_title');?>:</label>
+    			<input type="text" name="content[desktop][<?php echo $languageId; ?>][title]"
+    			id="title-desktop-<?php echo $languageId; ?>" value="<?php echo $content['desktop'][$languageId]->getTitle(); ?>" />
+			</div>
+			<div class="formelement span-16 last">
+    			<label for="content-desktop-<?php echo $languageId; ?>"><?php echo $this->translate('widget_html_admin_content');?>:</label>
+    			<div class="span-15 last">
+        			<textarea name="content[desktop][<?php echo $languageId; ?>][content]"
+        			id="content-desktop-<?php echo $languageId; ?>"><?php echo $content['desktop'][$languageId]->getContent(); ?></textarea>
+    			</div>
+			</div>
+		</div>
+		<?php
+		    endforeach;
+		?>
 	</div>
-	<div id="mobile-<?php echo $targetId; ?>" class="subtabs-panel">
-    	<div class="span-18 last">
-    		<textarea class="wysiwyg span-18 last" name="<?php echo $this->prefix; ?>[content][mobile]"><?php
-    		    echo $this->escape($this->contentData['mobile']);
-    		?></textarea>
-    	</div>
+
+	<div id="mobile_content" class="tabs subtabs">
+		<ul>
+		<?php
+    	    foreach ($templateSettings['language_ids'] as $languageId) :
+        ?>
+			<li><a href="#mobile-<?php echo $languageId; ?>"><?php echo $this->languages[$languageId]->getName();?></a></li>
+        <?php
+		    endforeach;
+		?>
+		</ul>
+
+		<?php
+		    foreach ($templateSettings['language_ids'] as $languageId) :
+			    if (!isset($content['mobile'][$languageId])) {
+			        $contentData = new Captive_Model_ContentData();
+			        $contentData->setLanguageId($languageId);
+			        $content['mobile'][$languageId] = $contentData;
+			    }
+		?>
+		<div id="mobile-<?php echo $languageId; ?>" class="mobile-content">
+			<div class="formelement span-16 last">
+    			<label for="title-mobile-<?php echo $languageId; ?>"><?php echo $this->translate('widget_html_admin_title');?>:</label>
+    			<input type="text" name="content[mobile][<?php echo $languageId; ?>][title]"
+    			id="title-mobile-<?php echo $languageId; ?>" value="<?php echo $content['mobile'][$languageId]->getTitle(); ?>" />
+			</div>
+			<div class="formelement span-16 last">
+    			<label for="content-mobile-<?php echo $languageId; ?>"><?php echo $this->translate('widget_html_admin_content');?>:</label>
+    			<div class="span-15 last">
+        			<textarea name="content[mobile][<?php echo $languageId; ?>][content]"
+        			id="content-mobile-<?php echo $languageId; ?>"><?php echo $content['mobile'][$languageId]->getContent(); ?></textarea>
+    			</div>
+			</div>
+		</div>
+		<?php
+		    endforeach;
+		?>
 	</div>
 </div>

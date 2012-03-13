@@ -84,26 +84,29 @@ class Widget_Links extends Unwired_Widget_Abstract
     {
         $this->getView()->assign($params);
 
-        $data = @unserialize($content->getContent());
+        foreach ($content->getData() as $data) {
+            $dataContent = $data->getContent();
 
-        if (!$data) {
-            $data = array();
+            if ($dataContent !== null && is_string($dataContent)) {
+                $dataContent = @unserialize($dataContent);
+            }
+
+            if (!is_array($dataContent)) {
+                $dataContent = array();
+            }
+
+            if (!isset($dataContent['links'])) {
+                $dataContent = array('links' => $dataContent);
+            }
+
+            $dataContent = array_merge($this->_config, $dataContent);
+
+            if (!is_array($dataContent['links']) || empty($dataContent['links'])) {
+                $dataContent['links'] = array(array('other' => array('href' => '', 'content' => '')));
+            }
+
+            $data->setContent($dataContent);
         }
-
-        if (!isset($data['links'])) {
-            $data = array('links' => $data);
-        }
-
-        $data = array_merge($this->_config, $data);
-
-        if (!is_array($data['links']) || empty($data['links'])) {
-            $data['links'] = array(array('other' => array('href' => '', 'content' => '')));
-        }
-
-        $this->getView()->linksData = $data['links'];
-        $this->getView()->linksDecorate = $data['decorate'];
-        $this->getView()->linksShowTitle = $data['showtitle'];
-        $this->getView()->linksWidgetClass = $data['class'];
 
         $this->getView()->content = $content;
 

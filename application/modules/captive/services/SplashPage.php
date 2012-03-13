@@ -34,22 +34,23 @@ class Captive_Service_SplashPage
         return null;
     }
 
-    public function getSplashPageContents(Captive_Model_SplashPage $splashPage,
-                                          Captive_Model_Language $language)
+    public function getSplashPageContents(Captive_Model_SplashPage $splashPage/*,
+                                          Captive_Model_Language $language*/)
     {
         $mapperContent = new Captive_Model_Mapper_Content();
 
-        if ($splashPage->isMobile()) {
-            $order = 'order_mobile ASC';
-        } else {
-            $order = 'order_web ASC';
-        }
+        $criteria = array('splash_id'   => $splashPage->getSplashId(),
+                          /*'language_id' => $language->getLanguageId(),
+                          'mobile'      => 0,*/
+                          'type'        => 'content');
 
-        $contents = $mapperContent->findBy(array('splash_id' => $splashPage->getSplashId(),
-                                                 'language_id' => $language->getLanguageId(),
-                                                 'type'    => 'content'),
+      /*  if ($splashPage->isMobile()) {
+            $criteria['mobile'] = 1;
+        }*/
+
+        $contents = $mapperContent->findBy($criteria/*,
                                            null,
-                                           $order);
+                                           '`order` ASC'*/);
 
         $templateOverrideIds = array();
 
@@ -59,11 +60,12 @@ class Captive_Service_SplashPage
             }
         }
 
-        $templateContents = $mapperContent->findBy(array('template_id' => $splashPage->getTemplateId(),
-                                                         'language_id' => $language->getLanguageId(),
-                                                         'type'    => 'content'),
+        unset($criteria['splash_id']);
+        $criteria['template_id'] = $splashPage->getTemplateId();
+
+        $templateContents = $mapperContent->findBy($criteria/*,
                                                    null,
-                                                   $order);
+                                                   '`order` ASC'*/);
 
         foreach ($templateContents as $index => $content) {
             if (in_array($content->getContentId(), $templateOverrideIds)) {
@@ -81,34 +83,77 @@ class Captive_Service_SplashPage
     {
         $mapperContent = new Captive_Model_Mapper_Content();
 
-        $settings = $template->getSettings();
-
         $contents = $mapperContent->findBy(array('template_id' => $template->getTemplateId()));
 
-        $contentSorted = array('content' => array(), 'imprint' => array(), 'terms' => array());
+        return $contents;
+    }
 
-        if (empty($contents)) {
-            foreach (array_keys($contentSorted) as $type) {
-                foreach ($settings['language_ids'] as $languageId) {
-                    $content = new Captive_Model_Content();
+    public function updateOrder($desktop, $mobile, $template = false)
+    {
+        $mapperContent = new Captive_Model_Mapper_Content();
 
-                    $content->setType($type);
-                    $content->setLanguageId($languageId);
-                    $content->setColumn(0);
-                    $content->setOrderWeb(1);
-                    $content->setOrderMobile(1);
+        $contents = array('desktop' => $desktop, 'mobile' => $mobile);
+
+        $forUpdate = array();
+
+        foreach ($contents as $layoutName => $layout) {
+            foreach ($layout as $column => $order) {
+                $column = (int) $column;
+
+                $position = 0;
+
+                foreach ($order as $contentId) {
+                    $position++;
+                    $contentId = (int) $contentId;
+
+                    if (!isset($forUpdate[$contentId])) {
+                        $content = $mapperContent->find($contentId);
+                    } else {
+                        $content = $forUpdate[$contentId];
+                    }
+
+                    if (!$content) {
+                        continue;
+                    }
+
+                    if (!$template && $content->getTemplateId()) {
+                        continue;
+                    }
+
+                    if ($template && $content->getSplashId()) {
+                        continue;
+                    }
+
+                    if ($layoutName == 'desktop') {
+                        $content->setColumn($column);
+                    }
+
+                    $data = $content->getData();
+
+                    foreach($data as $contentData) {
+                        if ($layoutName == 'desktop') {
+                            if($contentData->isMobile()) {
+                                continue;
+                            }
+                        } else {
+                            if(!$contentData->isMobile()) {
+                                continue;
+                            }
+                        }
+
+                        $contentData->setOrder($position);
+                    }
+
+                    $forUpdate[$content->getContentId()] = $content;
                 }
             }
         }
 
-        foreach ($contents as $content) {
-            if (!isset($contentSorted[$content->getType()][$content->getLanguageId()])) {
-                $contentSorted[$content->getType()][$content->getLanguageId()] = array();
-            }
-            $contentSorted[$content->getType()][$content->getLanguageId()] = $content;
+        foreach ($forUpdate as $content) {
+            $mapperContent->save($content);
         }
 
-        return $contentSorted;
+        return true;
     }
 
     public function saveTemplateContents(Captive_Model_Template $template, array $contents)
