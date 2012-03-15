@@ -265,14 +265,17 @@
 				modal: true,
 				title: '<?php echo $this->translate('content_edit_widget_add_title'); ?>',
 				closeOnEscape: false,
+				width: 380,
 				open: function(event, ui) {
-					$('#dialogadd').append('<div id="widgetSet">'+
-                                        		'<input type="radio" id="Html" value="Html" name="widget" checked="checked" /><label for="Html">Html</label>'+
-                                        		'<input type="radio" id="Links" value="Links" name="widget" /><label for="Links">Links</label>'+
-                                        		'<input type="radio" id="Iframe" value="Iframe" name="widget" /><label for="Iframe">Iframe</label>'+
-                                        		'<input type="radio" id="Login" value="Login" name="widget" /><label for="Login">Login</label>'+
-                                        	'</div>');
+					$('#dialogadd').append('<h3><?php echo $this->translate('captive_content_edit_widget_select_add');?></h3><ul id="widgetSet">'+
+                                        		'<li><input type="radio" id="Html" value="Html" name="widget" checked="checked" /><label for="Html" class="widgetbutton htmlwidget">Html</label></li>'+
+                                        		'<li><input type="radio" id="Links" value="Links" name="widget" /><label for="Links" class="widgetbutton linkswidget">Links</label></li>'+
+                                        		'<li><input type="radio" id="Iframe" value="Iframe" name="widget" /><label for="Iframe" class="widgetbutton iframewidget">Iframe</label></li>'+
+                                        		'<li><input type="radio" id="Login" value="Login" name="widget" /><label for="Login" class="widgetbutton loginwidget">Login</label></li>'+
+                                        	'</ul>');
 					$('#widgetSet').buttonset();
+					$('#widgetSet label').addClass('ui-corner-all');
+
 				},
 				close: function(){
 					$(this).dialog('destroy');
