@@ -95,6 +95,18 @@
         });
 
 		var locked = {};
+		var correctItems = {};
+		var correctIndex = {};
+
+    	$('.column:not(.special)').each(function(){
+    		var columnId = $(this).attr('id');
+    		correctItems[columnId] = $(this).find('.portlet.static');
+    		correctIndex[columnId] = [];
+
+            for(var i=0; i < correctItems[columnId].length; i++){
+            	correctIndex[columnId][i]= $('#' + columnId + ' div.portlet').index(correctItems[columnId][i]);
+    		}
+    	});
 
 		$(".column:not(.special)").sortable({
 			connectWith: ".column:not(.special)",
@@ -109,12 +121,70 @@
 			},
 			cancel: ".portlet.static",
 			start: function(event, ui) {
-				locked = {};
 
-				//$(ui.item.parents('.column').siblings(':not(.special)');
+
 			},
-            change:function(event,ui) {
-				//if (ui.item.prevAll()
+            change: function(event,ui) {
+
+            	var columnId = $(ui.placeholder).parents('.column').attr('id');
+
+				var columnChildren = $('#' + columnId).children();
+
+				//var staticItem = $(correctItems[columnId][idx]);
+
+				//var newItemPosition = columnChildren.index(staticItem);
+
+				var itemPosition = columnChildren.index(ui.item);
+				var placeHolderPosition = columnChildren.index(ui.placeholder)
+
+console.log(itemPosition + ' - ' + placeHolderPosition);
+
+				if (itemPosition < placeHolderPosition) {
+				console.log('a ' + $(columnChildren).filter(":gt(" + itemPosition + "):lt(" + placeHolderPosition + ")").filter(".static").length);
+					$(columnChildren).filter(":gt(" + itemPosition + "):lt(" + placeHolderPosition + ")").filter(".static").each(function(){
+						$(this).next().after(this);
+					})
+				} else {
+				console.log('b ' + $(columnChildren).filter(":gt(" + placeHolderPosition + "):lt(" + itemPosition + ")").filter(".static").length);
+					$(columnChildren).filter(":gt(" + placeHolderPosition + "):lt(" + itemPosition + ")").filter(".static").each(function(){
+						$(this).prev().before(this);
+					})
+				}
+
+
+return;
+
+				/* $.each(correctIndex[columnId], function(idx, position){
+
+					//var placeHolderPosition = $(ui.placeholder).parents('.column').children().index(ui.placeholder);
+
+					var columnChildren = $('#' + columnId).children();
+
+					var staticItem = $(correctItems[columnId][idx]);
+
+					var newItemPosition = columnChildren.index(staticItem);
+
+
+					var itemPosition = columnChildren.index(ui.item);
+					var placeHolderPosition = columnChildren.index(ui.placeholder)
+
+					if (position == newItemPosition) {
+						return true;
+					}
+
+					if (position < newItemPosition) {
+						do {
+							$(staticItem).insertBefore($(staticItem).prev());
+							newItemPosition--;
+						} while (position !== newItemPosition);
+					} else {
+						do {
+							$(staticItem).insertAfter($(staticItem).next());
+							newItemPosition++;
+						} while (position !== newItemPosition);
+					}
+
+				});*/
             },
 
 			update: function(event, ui) {
