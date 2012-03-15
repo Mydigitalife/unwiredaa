@@ -43,13 +43,14 @@
             	return;
             }
 
+			/*
 			if ($('.ui-tabs-panel:visible:last').siblings().find('input[name*=title]:first').val().length) {
 				return;
 			}
 
          	if (!confirm('<?php echo $this->translate('captive_content_edit_use_defaults'); ?>')) {
           		return;
-          	}
+          	} */
 
             var otherPanels = $('.tabs .tabs .ui-tabs-panel:not(:visible)');
 
@@ -93,6 +94,8 @@
             });
         });
 
+		var locked = {};
+
 		$(".column:not(.special)").sortable({
 			connectWith: ".column:not(.special)",
 			placeholder: "ui-sortable-placeholder ui-state-highlight ui-corner-all",
@@ -104,9 +107,14 @@
 					ui.item.after(ui.item.siblings(".tools"));
 				}
 			},
-			"cancel":".portlet.static",
-            "change":function(event,ui) {
+			cancel: ".portlet.static",
+			start: function(event, ui) {
+				locked = {};
 
+				//$(ui.item.parents('.column').siblings(':not(.special)');
+			},
+            change:function(event,ui) {
+				//if (ui.item.prevAll()
             },
 
 			update: function(event, ui) {
@@ -177,6 +185,25 @@
 					nicEditors.findEditor($(this).attr('id')).saveContent();
 				});
 			}
+
+			var filledTitle = false;
+
+			$('#fancybox-content form:first input[name*=title]').each(function(){
+				if ($(this).val().length) {
+					filledTitle = this;
+					return false;
+				}
+			});
+
+			if (!filledTitle) {
+				alert('<?php echo $this->translate('captive_content_edit_fill_content');?>');
+				return false;
+			}
+
+			$(filledTitle).parents('.tabs:first').tabs("select", $(filledTitle).parents(".ui-tabs-panel:first").prevAll("div").length);
+			$(filledTitle).parents('.tabs:eq(1)').tabs("select", $(filledTitle).parents(".ui-tabs-panel:eq(1)").prevAll("div").length);
+
+			$("#fancybox-content .tabs:not(.subtabs)" ).trigger("tabsselect");
 
 			var postVars = $('#fancybox-content form:first').serialize();
 			$('#fancybox-content form:first').find('input, textarea, select').attr('disabled','disabled');
@@ -260,23 +287,20 @@
 
 			orderMobile = $('#mobile-column-main .portlet').length+1;
 
-			$('body').append('<div id="dialogadd" />');
+			$('body').append('<div id="dialogadd">'+
+							 '<h3><?php echo $this->translate('captive_content_edit_widget_select_add');?></h3><ul id="widgetSet">'+
+                                        		'<li><input type="radio" id="Html" value="Html" name="widget" checked="checked" /><label for="Html" class="widgetbutton htmlwidget"><?php echo $this->translate('captive_content_widget_html'); ?></label></li>'+
+                                        		'<li><input type="radio" id="Links" value="Links" name="widget" /><label for="Links" class="widgetbutton linkswidget"><?php echo $this->translate('captive_content_widget_links'); ?></label></li>'+
+                                        		'<li><input type="radio" id="Iframe" value="Iframe" name="widget" /><label for="Iframe" class="widgetbutton iframewidget"><?php echo $this->translate('captive_content_widget_iframe'); ?></label></li>'+
+                                        		'<li><input type="radio" id="Login" value="Login" name="widget" /><label for="Login" class="widgetbutton loginwidget"><?php echo $this->translate('captive_content_widget_login'); ?></label></li>'+
+                                        	'</ul></div>');
+			$('#widgetSet').buttonset();
+			$('#widgetSet label').addClass('ui-corner-all');
 			$('#dialogadd').dialog({
 				modal: true,
 				title: '<?php echo $this->translate('content_edit_widget_add_title'); ?>',
 				closeOnEscape: false,
 				width: 380,
-				open: function(event, ui) {
-					$('#dialogadd').append('<h3><?php echo $this->translate('captive_content_edit_widget_select_add');?></h3><ul id="widgetSet">'+
-                                        		'<li><input type="radio" id="Html" value="Html" name="widget" checked="checked" /><label for="Html" class="widgetbutton htmlwidget">Html</label></li>'+
-                                        		'<li><input type="radio" id="Links" value="Links" name="widget" /><label for="Links" class="widgetbutton linkswidget">Links</label></li>'+
-                                        		'<li><input type="radio" id="Iframe" value="Iframe" name="widget" /><label for="Iframe" class="widgetbutton iframewidget">Iframe</label></li>'+
-                                        		'<li><input type="radio" id="Login" value="Login" name="widget" /><label for="Login" class="widgetbutton loginwidget">Login</label></li>'+
-                                        	'</ul>');
-					$('#widgetSet').buttonset();
-					$('#widgetSet label').addClass('ui-corner-all');
-
-				},
 				close: function(){
 					$(this).dialog('destroy');
 					$('#dialogadd').remove();
