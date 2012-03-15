@@ -2,7 +2,7 @@
 @CHARSET "UTF-8";
 
 a, a:visited {
-    color: #465A00;
+    color: #002F59;
 	text-decoration: none;
 }
 
@@ -29,8 +29,8 @@ input[type="password"],
 input[type="url"],
 input[type="email"] {
 	width: 190px;	
-}*/
-
+}
+*/
 form {
 	margin: 0px;
 	padding: 0px;
@@ -50,7 +50,7 @@ fieldset legend {
 
 h1 {
 	font-size: 2.2em;
-	color: #465A00;
+	color: #002F59;
 	border-bottom: 1px dotted #465465;
 	padding-bottom: 5px;
 }
@@ -60,7 +60,7 @@ h1 {
 }
 
 #header {
-	background: #97B400 url('../images/header950px.jpg') no-repeat left top;
+	background: #017CC0 url('../images/logo.jpg') no-repeat left 50%;
 	height: 150px;
 	margin-bottom: 20px;
 	filter:progid:DXImageTransform.Microsoft.Shadow(color=#cccccc, Direction=180, Strength=8) progid:DXImageTransform.Microsoft.Shadow(color=#cccccc, Direction=90, Strength=8) 
@@ -77,32 +77,32 @@ h1 {
 }
 
 .userblock div {
-	float: left;
-	width: 100%;
+    float: left;
+    width: 100%;
 }
 
 .userblock form div label {
-	display: block;
-	color: #fff;
-	margin: 0px;
+    display: block;
+    color: #fff;
+    margin: 0px;
 }
 
 .userblock form div input {
-	margin-top: 0px;
-	position: relative !important;
-	width: 120px;
+    margin-top: 0px;
+    position: relative !important;
+    width: 120px;
 }
 
 .userblock form div span.button {
-	position: relative;
+    position: relative;
 }
 
 .userblock form div span.button input,
 .userblock form div span.button input.button {
-	width: 100px;
-	position: relative;
-	top: 0px;
-	margin-top: 0px !important;
+    width: 100px;
+    position: relative;
+    top: 0px;
+    margin-top: 0px !important;
 }
 
 #sidenav {
@@ -150,7 +150,7 @@ ul.navigation li ul li a {
 
 ul.navigation li ul li a:hover {
     display: block;
-    border-left: 5px solid #465A00;
+    border-left: 5px solid #002F59;
 }
 
 table.listing {
@@ -164,7 +164,7 @@ table.listing {
 }
 
 table.listing th {
-	background: #465A00;
+	background: #002F59;
 	color: #fff;
 }
 
@@ -187,13 +187,13 @@ table.listing tr th img {
 
 table.listing th.tools a {
 	padding: 5px 3px;
-	border: 1px solid #465A00; 
+	border: 1px solid #002F59; 
 }
 
 table.listing th.tools a:hover {
 	text-decoration: none;
-	background: #566620;
-	border: 1px solid #97B400;
+	background: #26659B;
+	border: 1px solid #00219B;
 }
 
 table.listing tbody tr {
@@ -201,14 +201,14 @@ table.listing tbody tr {
 }
 
 table.listing tbody tr:hover {
-	border-bottom: 1px solid #465A00;
+	border-bottom: 1px solid #002F59;
 }
 
 table.listing tr .tools {
     text-align: center;	
 	width: 160px;
 }
-/*
+
 table.listing td.tools a img{
 	margin-left: 3px;
 	padding: 2px;
@@ -216,10 +216,10 @@ table.listing td.tools a img{
 }
 
 table.listing td.tools a:hover img{
-	border: 1px solid #97B400;
-	background: #FCFFED;
+	border: 1px solid #00219B;
+	background: #D7DBE8;
 }
-*/
+
 table.listing tr td.column_id {
     width: 70px;
 }
@@ -237,7 +237,7 @@ table.listing tr td.status1 {
 }
 
 table.listing tr td span.online {
-	color: #007700;
+    color: #007700;
 }
 
 table.listing tr td span.offline {
@@ -253,14 +253,6 @@ div.formelement {
 	float: left;
 }
 
-div.formelement.ui-accordion-content {
-    padding: 0px;	
-}
-
-div.formelement.ui-accordion-content .nicEdit-main {
-	background: #fff;
-}
-
 fieldset div.formelement {
     margin-left: 10px;	
 }
@@ -272,13 +264,13 @@ div.formelement label {
 	margin: 0.5em 0;
 }
 
-div.formelement label.multicheckbox {
-	width: 100px;
-}
-
 div.formelement input {
 	float: left;
 }
+div.formelement.ui-accordion-content {
+    padding: 0px;	
+}
+
 
 div.formelement input.latlng {
 	width: 150px;
@@ -318,15 +310,15 @@ form div.buttons {
 }
 
 .tools a.icon {
-	text-indent: -1000px;
-	overflow: hidden;
-	padding: 2px !important;
-	background-repeat: no-repeat !important;
+    text-indent: -1000px;
+    overflow: hidden;
+    padding: 2px !important;
+    background-repeat: no-repeat !important;
     background-position: 50% 50% !important;
-	width: 28px;
-	height: 28px;
-	display: block;
-	float: left;
+    width: 28px;
+    height: 28px;
+    display: block;
+    float: left;
 }
 
 .tools a.icontext {
@@ -336,35 +328,32 @@ form div.buttons {
 }
 
 .tools a.filter {
-	background-image: url('../images/icons/24x24/search.png') !important;
+    background-image: url('../images/icons/24x24/search.png') !important;
 }
 
 .tools a.reset {
-	background-image: url('../images/icons/24x24/reset.png') !important;
+    background-image: url('../images/icons/24x24/reset.png') !important;
 }
 
+.tools a.view,
 .tools a.reports {
-	background-image: url('../images/icons/24x24/view.png') !important;
+	background-image: url('../images/icons/24x24/view.png');
 }
 
-.tools a.view {
-	background-image: url('../images/icons/24x24/view.png');
+.tools a.icon.add {
+	background-image: url('../images/icons/24x24/add.png');
 }
 
 .tools a.edit {
 	background-image: url('../images/icons/24x24/edit.png');
 }
 
-.tools a.generate {
-    background-image: url('../images/icons/24x24/gear.png');
-}
-
 .tools a.csv {
-    background-image: url('../images/icons/24x24/csv_file.png');
+	background-image: url('../images/icons/24x24/csv_file.png');
 }
 
 .tools a.pdf {
-    background-image: url('../images/icons/24x24/pdf.png');
+        background-image: url('../images/icons/24x24/pdf.png');
 }
 
 .tools a.content {
@@ -387,9 +376,14 @@ form div.buttons {
     background-image: url('../images/icons/24x24/gear.png');
 }
 
+.tools a.generate {
+//    background-image: url('../images/icons/24x24/keys.png');
+}
+
 .tools a.instant {
     background-image: url('../images/icons/24x24/instant.png');
 }
+
 
 /* buttons */
 span.button, a.button {display:inline-block;height:32px;color:#343434;font:bold 12px Tahoma,Helvetica,sans-serif !important;cursor:pointer !important;position:relative;left:5px;text-shadow:1px 1px 0px rgba(255,255,255,0.5);text-decoration:none;margin:0 5px 0 8px;padding-left:0px;vertical-align:middle;background:url("../images/buttons.png") top right no-repeat;white-space:nowrap;border:none;overflow:visible;}
@@ -438,6 +432,7 @@ span.button.blue.small:hover button, span.button.blue.small:hover a, span.button
 	margin: 3px 0px 0px 5px;
 	background: transparent url('../images/icons/24x24/map.png') no-repeat left bottom;
 }
+
 .fancymap {
 	width: 500px;
 	height: 410px;
@@ -453,26 +448,13 @@ span.button.blue.small:hover button, span.button.blue.small:hover a, span.button
 
 .message.success {	background-image: url('../images/icons/24x24/accept.png'); }
 .message.info { background-image: url('../images/icons/24x24/info.png'); }
-.message.warning { 
-	   background-image: url('../images/icons/24x24/warning.png');
-	   background-color: #FFE2A0;
-	   padding:0.8em 0.8em 0.8em 35px;
-	   margin-bottom:1em;
-	   border:2px solid #FFB200;
-}
+.message.warning { background-image: url('../images/icons/24x24/warning.png'); }
 .message.error { background-image: url('../images/icons/24x24/block.png'); }
-
-.subtabs {
-    border: 0px !important;
-}
-
-.subtabs-panel {
-    padding: 0px !important;
-}
 
 .ml220 {
 	margin-left: 220px;
 }
+
 table.listing td.bold {font-weight: bold;}
 table.listing td.italic {font-style: italic;}
 table.listing td.right {float: none !important; text-align: right; }
@@ -493,29 +475,29 @@ table.listing td.right {float: none !important; text-align: right; }
 /*.portlet-header .ui-icon { cursor: pointer; float: right; }*/
 
 .portlet-header div.title {
-    float: left;
-    width: 135px;
-    line-height: 25px;
-    padding-top: 4px;
-    height: 25px;
-    overflow: hidden;
+	float: left;
+	width: 135px;
+	line-height: 25px;
+	padding-top: 4px;
+	height: 25px;
+	overflow: hidden;
 }
 
 .span-18 .portlet-header div.title {
-    width: 600px;
+	width: 600px;
 }
 
 .portlet-header .toolset {
-    width: 70px;
-    padding-top: 2px;
-    float: right;
-    text-align: right;
+	width: 70px;
+	padding-top: 2px;
+	float: right;
+	text-align: right;
 }
 .portlet-content { padding: 0.4em; }
 .ui-tabs-panel { padding: 10px !important; }
 .ui-sortable-placeholder { margin: 0 5px 10px 5px;border: 1px dotted black; visibility: visible !important; height: 80px !important; }
 .ui-sortable-placeholder * { visibility: hidden; }
 .static .portlet-header.ui-widget-header { 
-       background: #949494 url('jqueryui/images/ui-bg_gloss-wave_55_949494_500x100.png') repeat-x scroll 50% 50%;
-       border: 1px solid #808080;
+	   background: #949494 url('jqueryui/images/ui-bg_gloss-wave_55_949494_500x100.png') repeat-x scroll 50% 50%;
+	   border: 1px solid #808080;
 }

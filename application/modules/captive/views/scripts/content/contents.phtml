@@ -24,16 +24,6 @@
     $this->contents = $this->contentsToTemplateLayout($this->contents, $this->template);
 ?></h1>
 <?php
-    $this->headStyle('.column { padding-top: 5px; min-height:50px; padding-bottom: 5px; margin-bottom: 10px; margin-right: 8px}
-				  	  .portlet { margin: 0 5px 10px 5px; }
-					  .portlet-header { cursor: move; margin: 2px; padding-bottom: 4px; padding-left: 0.2em; }
-					  .static .portlet-header {cursor: default!important;}
-					  .portlet-header .ui-icon { cursor: pointer; float: right; }
-					  .portlet-content { padding: 0.4em; }
-					  .ui-tabs-panel { padding: 10px !important; }
-					  .ui-sortable-placeholder { margin: 0 5px 10px 5px;border: 1px dotted black; visibility: visible !important; height: 80px !important; }
-					  .ui-sortable-placeholder * { visibility: hidden; }');
-
 	$this->headScript()->appendFile($this->baseUrl('scripts/fancybox/jquery.fancybox-1.3.4.pack.js'));
 	$this->headLink()->appendStylesheet($this->baseUrl('scripts/fancybox/jquery.fancybox-1.3.4.css'));
     $this->headScript()->appendFile($this->baseUrl('scripts/nicedit/nicEdit.js'));
@@ -43,6 +33,9 @@
 
 	$(document).ready(function() {
 		$('div.tabs').tabs();
+
+		$('.portlet-header a.edit').button({icons: { primary: 'ui-icon-pencil'}, text: false});
+		$('.portlet-header a.delete').button({icons: { primary: 'ui-icon-circle-close'}, text: false});
 
         $("#fancybox-content .tabs:not(.subtabs)" ).live( "tabsselect", function(event, ui) {
 
@@ -104,6 +97,7 @@
 			connectWith: ".column:not(.special)",
 			placeholder: "ui-sortable-placeholder ui-state-highlight ui-corner-all",
 			distance: 15,
+			handle: '.portlet-header',
 			items: ".portlet:not('.terms'):not('.imprint')",
 			receive: function(event, ui) {
 				if (ui.item.prevAll('.tools').length) {
@@ -115,7 +109,7 @@
 
             },
 
-			stop: function(event, ui) {
+			update: function(event, ui) {
 				var columnsContentOrder = {'mobile': [], 'desktop': []};
 
 				$('.column:not(.special)').each(function(){
@@ -162,14 +156,13 @@
 		$(".portlet").addClass( "ui-widget ui-widget-content ui-helper-clearfix ui-corner-all" )
 			.find( ".portlet-header" )
 				.addClass( "ui-widget-header ui-corner-all" )
-				.prepend( "<span class='ui-icon ui-icon-minusthick'></span>")
 				.end()
 			.find( ".portlet-content" );
 
-		$(".portlet-header .ui-icon").click(function() {
+		/*$(".portlet-header .ui-icon").click(function() {
 			$( this ).toggleClass( "ui-icon-minusthick" ).toggleClass( "ui-icon-plusthick" );
 			$( this ).parents( ".portlet:first" ).find( ".portlet-content" ).toggle();
-		});
+		});*/
 
 		$(".column").disableSelection();
 
@@ -395,13 +388,12 @@
 		     echo $data->getParent()->getWidget();
 
 		     ?>">
-    		<div class="portlet-header"><?php echo $data->getParent()->getWidget(); ?></div>
-    		<div class="portlet-content">
-    		    <?php echo $data->getTitle();?>
-    		    <?php
-            		 if ($contents->isEditable()) :
-                ?>
-        		<div class="portlet-tools tools">
+    		<div class="portlet-header ui-helper-clearfix">
+    		    <div class="title"><?php echo $data->getTitle(); ?></div>
+                <?php
+    		        if ($data->getParent()->isEditable()) :
+    		    ?>
+    		    	<div class="toolset">
         			<input type="hidden" name="content_id" value="<?php echo $data->getContentId(); ?>" />
         			<a class="icon edit"><?php echo $this->translate('captive_content_widget_edit'); ?></a>
         			<?php if ($acl->isAllowed($this->currentUser, $data->getParent(), 'delete')
@@ -415,8 +407,14 @@
 				                                  		 'templateId' => $this->template->getTemplateId()), 'default', true); ?>"
 				      class="icon delete"><?php echo $this->translate('captive_content_widget_delete'); ?></a>
 				      <?php endif; ?>
-        		</div>
-        		<?php endif;?>
+				      </div>
+        		<?php
+        		    endif;
+        		?>
+    		</div>
+    		<div class="portlet-content">
+    			<span class="type"><?php echo $this->translate('captive_content_edit_widget_type'); ?>:</span>
+    		    <?php echo $data->getParent()->getWidget();?>
     		</div>
     	</div>
 		<?php
@@ -460,13 +458,12 @@
 		    echo $data->getParent()->getWidget();
 
 		    ?>">
-    		<div class="portlet-header"><?php echo $data->getParent()->getWidget(); ?></div>
-    		<div class="portlet-content">
-    		    <?php echo $data->getTitle();?>
-    		    <?php
+    		<div class="portlet-header ui-helper-clearfix">
+    		    <div class="title"><?php echo $data->getTitle(); ?></div>
+                <?php
     		        if ($data->getParent()->isEditable()) :
     		    ?>
-        		<div class="portlet-tools tools">
+    		    	<div class="toolset">
         			<input type="hidden" name="content_id" value="<?php echo $data->getContentId(); ?>" />
         			<a class="icon edit"><?php echo $this->translate('captive_content_widget_edit'); ?></a>
         			<?php if ($acl->isAllowed($this->currentUser, $data->getParent(), 'delete')
@@ -480,10 +477,14 @@
 				                                  		 'templateId' => $this->template->getTemplateId()), 'default', true); ?>"
 				      class="icon delete"><?php echo $this->translate('captive_content_widget_delete'); ?></a>
 				      <?php endif; ?>
-        		</div>
+				      </div>
         		<?php
         		    endif;
         		?>
+    		</div>
+    		<div class="portlet-content">
+    		    <span class="type"><?php echo $this->translate('captive_content_edit_widget_type'); ?>:</span>
+    		    <?php echo $data->getParent()->getWidget();?>
     		</div>
     	</div>
 		<?php

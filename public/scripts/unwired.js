@@ -40,7 +40,7 @@ $(document).ready(function(){
 	/**
 	 * Hook delete buttons
 	 */
-	$('.tools a.delete').live('click', function(){
+	$('.tools a.delete, .portlet-header a.delete').live('click', function(){
 		return confirm('Are you sure you want to delete this entry?');
 	});
 	
@@ -155,7 +155,7 @@ $(document).ready(function(){
 		return false;
 	});
 	
-	$('td.tools a.icon').tipsy({
+	$('.tools a.icon, .portlet-header a').tipsy({
 		delayIn: 500,
 		delayOut: 0,
 		title: function() { return $(this).text(); }, 
