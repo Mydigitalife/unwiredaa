@@ -90,7 +90,7 @@ class Captive_ContentController extends Unwired_Controller_Crud
 
         $serviceSplash = new Captive_Service_SplashPage();
 
-        if (!$serviceSplash->updateOrder($desktop, $mobile, (!$splashId) ? true : false)) {
+        if (!$serviceSplash->updateOrder($desktop, $mobile, (!$splashId) ? true : false, $splashId, $templateId)) {
             $this->getResponse()->setHttpResponseCode(500);
             echo $this->view->json(array('error'=>'Error updating widget order'));
         } else {
@@ -209,6 +209,9 @@ class Captive_ContentController extends Unwired_Controller_Crud
         if (!$postedContentData) {
             throw new Unwired_Exception('No content provided');
         }
+
+        $content->setEditable((int) $this->getRequest()->getParam('editable', $content->isEditable()));
+        $content->setRestricted((int) $this->getRequest()->getParam('restricted', $content->isRestricted()));
 
         $contentModified = array();
 

@@ -139,24 +139,10 @@
 
 console.log(itemPosition + ' - ' + placeHolderPosition);
 
-				if (itemPosition < placeHolderPosition) {
-				console.log('a ' + $(columnChildren).filter(":gt(" + itemPosition + "):lt(" + placeHolderPosition + ")").filter(".static").length);
-					$(columnChildren).filter(":gt(" + itemPosition + "):lt(" + placeHolderPosition + ")").filter(".static").each(function(){
-						$(this).next().after(this);
-					})
-				} else {
-				console.log('b ' + $(columnChildren).filter(":gt(" + placeHolderPosition + "):lt(" + itemPosition + ")").filter(".static").length);
-					$(columnChildren).filter(":gt(" + placeHolderPosition + "):lt(" + itemPosition + ")").filter(".static").each(function(){
-						$(this).prev().before(this);
-					})
-				}
 
+				$.each(correctIndex[columnId], function(idx, position){
 
-return;
-
-				/* $.each(correctIndex[columnId], function(idx, position){
-
-					//var placeHolderPosition = $(ui.placeholder).parents('.column').children().index(ui.placeholder);
+					var newPlaceHolderPosition = $(ui.placeholder).parents('.column').children().index(ui.placeholder);
 
 					var columnChildren = $('#' + columnId).children();
 
@@ -164,11 +150,32 @@ return;
 
 					var newItemPosition = columnChildren.index(staticItem);
 
-
-					var itemPosition = columnChildren.index(ui.item);
-					var placeHolderPosition = columnChildren.index(ui.placeholder)
-
 					if (position == newItemPosition) {
+						// Check if we are dragging up -> down
+						if (placeHolderPosition < itemPosition) {
+							return true;
+						}
+
+						// check if static item is not before dragged item
+						if (position < itemPosition) {
+							return true;
+						}
+
+						// check if static item is not after the placeholder position
+						if (position > placeHolderPosition) {
+							return true;
+						}
+
+						var nextItem = null;
+						// find next non static item to push before the static one
+						do {
+							nextItem = $(staticItem).next();
+						} while (nextItem.length && ($(nextItem).hasClass('static') || $(nextItem).hasClass('tools')));
+
+						if (nextItem.length) {
+							$(nextItem).insertBefore($(staticItem));
+						}
+
 						return true;
 					}
 
@@ -184,10 +191,11 @@ return;
 						} while (position !== newItemPosition);
 					}
 
-				});*/
+				});
             },
 
 			update: function(event, ui) {
+			return;
 				var columnsContentOrder = {'mobile': [], 'desktop': []};
 
 				$('.column:not(.special)').each(function(){
@@ -478,9 +486,9 @@ return;
              }
 		?>
 		<div id="desktop-<?php echo $data->getContentId(); ?>" class="portlet <?php
-		     if (isset($this->splashPage) && !$data->getParent()->getSplashId()) {
-		         echo " static ";
-		     }
+ 		    if (isset($this->splashPage) && !$data->getParent()->getSplashId() && !$data->getParent()->isEditable()) {
+	            echo " static ";
+		    }
 
 		     echo $data->getParent()->getWidget();
 
@@ -488,7 +496,7 @@ return;
     		<div class="portlet-header ui-helper-clearfix">
     		    <div class="title"><?php echo $data->getTitle(); ?></div>
                 <?php
-    		        if ($data->getParent()->isEditable()) :
+    		        if (!isset($this->splashPage) || $data->getParent()->isEditable()) :
     		    ?>
     		    	<div class="toolset">
         			<input type="hidden" name="content_id" value="<?php echo $data->getContentId(); ?>" />
@@ -548,7 +556,7 @@ return;
 	      foreach ($columnContents as $data) :
 		?>
 		<div id="mobile-<?php echo $data->getContentId(); ?>" class="portlet <?php
-		    if (isset($this->splashPage) && !$data->getParent()->getSplashId()) {
+		    if (isset($this->splashPage) && !$data->getParent()->getSplashId() && !$data->getParent()->isEditable()) {
 		         echo " static ";
 		    }
 
@@ -558,7 +566,7 @@ return;
     		<div class="portlet-header ui-helper-clearfix">
     		    <div class="title"><?php echo $data->getTitle(); ?></div>
                 <?php
-    		        if ($data->getParent()->isEditable()) :
+    		        if (isset($this->splashPage) && $data->getParent()->isEditable()) :
     		    ?>
     		    	<div class="toolset">
         			<input type="hidden" name="content_id" value="<?php echo $data->getContentId(); ?>" />
