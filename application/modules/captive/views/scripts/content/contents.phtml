@@ -108,90 +108,83 @@
     		}
     	});
 
+		var prevPlaceHolderIndex = -1;
+
 		$(".column:not(.special)").sortable({
 			connectWith: ".column:not(.special)",
 			placeholder: "ui-sortable-placeholder ui-state-highlight ui-corner-all",
 			distance: 15,
 			handle: '.portlet-header',
-			items: ".portlet:not('.terms'):not('.imprint')",
+			items: ".portlet:not(.terms):not(.imprint):not(.static)",
 			receive: function(event, ui) {
 				if (ui.item.prevAll('.tools').length) {
 					ui.item.after(ui.item.siblings(".tools"));
 				}
 			},
 			cancel: ".portlet.static",
-			start: function(event, ui) {
-
-
+			start: function(event,ui) {
+				prevPlaceHolderIndex = ui.placeholder.index();
 			},
             change: function(event,ui) {
+				var columnId = $(ui.item).parents(".column").attr('id');
+				var itemIndex = ui.item.index();
+				var placeholderIndex = ui.placeholder.index();
 
-            	var columnId = $(ui.placeholder).parents('.column').attr('id');
+				console.log('col: ' + columnId + ', item pos: ' + ui.item.index() + ', placeholder pos: ' + ui.placeholder.index());
+				var direction = 'up';
 
-				var columnChildren = $('#' + columnId).children();
-
-				//var staticItem = $(correctItems[columnId][idx]);
-
-				//var newItemPosition = columnChildren.index(staticItem);
-
-				var itemPosition = columnChildren.index(ui.item);
-				var placeHolderPosition = columnChildren.index(ui.placeholder)
-
-console.log(itemPosition + ' - ' + placeHolderPosition);
+				if (ui.item.index() < ui.placeholder.index()) {
+					direction = 'down';
+				}
 
 
-				$.each(correctIndex[columnId], function(idx, position){
+				/* if (correctIndex[columnId].indexOf(placeholderIndex) !== false) {
+					return false;
+				} */
 
-					var newPlaceHolderPosition = $(ui.placeholder).parents('.column').children().index(ui.placeholder);
 
-					var columnChildren = $('#' + columnId).children();
+				/**
+				 * Move down
+				 */
+				if (ui.item.index() < ui.placeholder.index()) {
+					for (i = correctIndex[columnId].length-1; i >= 0; i--) {
+						var position = correctIndex[columnId][i];
 
-					var staticItem = $(correctItems[columnId][idx]);
-
-					var newItemPosition = columnChildren.index(staticItem);
-
-					if (position == newItemPosition) {
-						// Check if we are dragging up -> down
-						if (placeHolderPosition < itemPosition) {
-							return true;
+						if (position <= ui.item.index() || position > ui.placeholder.index()) {
+							continue;
 						}
 
-						// check if static item is not before dragged item
-						if (position < itemPosition) {
-							return true;
+						if (position == ui.placeholder.index()) {
+							ui.placeholder.insertAfter($('#' + columnId + ' div.portlet:eq(' + ui.placeholder.index() + ')'));
+							continue;
 						}
 
-						// check if static item is not after the placeholder position
-						if (position > placeHolderPosition) {
-							return true;
+						if (position == ui.placeholder.index()-1) {
+							ui.placeholder.insertAfter($('#' + columnId + ' div.portlet:eq(' + ui.placeholder.index() + ')'));
+							continue;
 						}
 
-						var nextItem = null;
-						// find next non static item to push before the static one
-						do {
-							nextItem = $(staticItem).next();
-						} while (nextItem.length && ($(nextItem).hasClass('static') || $(nextItem).hasClass('tools')));
-
-						if (nextItem.length) {
-							$(nextItem).insertBefore($(staticItem));
-						}
-
-						return true;
+						$(correctItems[columnId][i]).insertAfter($(correctItems[columnId][i]).next());
 					}
+				// alert(ui.item.nextAll('.ui-sortable-placeholder').length,1);
+				return true;
+					$('#'+ columnId +' div.portlet:lt('+placeholderIndex+'):gte('+itemIndex+')').each(function(){
+						if (!$(this).hasClass('static')) {
+							return true;
+						}
 
-					if (position < newItemPosition) {
-						do {
-							$(staticItem).insertBefore($(staticItem).prev());
-							newItemPosition--;
-						} while (position !== newItemPosition);
-					} else {
-						do {
-							$(staticItem).insertAfter($(staticItem).next());
-							newItemPosition++;
-						} while (position !== newItemPosition);
-					}
+						$(this).nextAll(':not(.static):first').insertBefore(this);
+					});
+                } else {
+            	/*
+            	 * Move up
+            	 */
 
-				});
+
+
+                }
+				console.log(ui.item.index());
+				console.log(ui.placeholder.index());
             },
 
 			update: function(event, ui) {
