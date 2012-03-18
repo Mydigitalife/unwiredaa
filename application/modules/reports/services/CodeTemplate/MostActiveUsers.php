@@ -82,7 +82,7 @@ class Reports_Service_CodeTemplate_MostActiveUsers extends Reports_Service_CodeT
         	
         	foreach ($result[$k] as $key => $value) {
         		$table['rows'][] = array(
-        				'data' => array(substr($value['username'],0,11).'-XX-XX', $this->_convertTraffic($value['down_total']), $this->_convertTraffic($value['up_total']), $this->_convertTraffic($value['down_total']+$value['up_total'])),
+        				'data' => array((substr($value['username'],2,1)=='-'?substr($value['username'],0,11).'-XX-XX':$value['username']), $this->_convertTraffic($value['down_total']), $this->_convertTraffic($value['up_total']), $this->_convertTraffic($value['down_total']+$value['up_total'])),
         				'class' => array('', 'right', 'right', 'right')
         		);
         	}
