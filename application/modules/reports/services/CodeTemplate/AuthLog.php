@@ -146,11 +146,8 @@ class Reports_Service_CodeTemplate_AuthLog extends Reports_Service_CodeTemplate_
 		$empty=true;
 
 		//show either Language, Startpage, OS, or Vendor
-		if (strpos($this->getReportGroup()->getCodeTemplate()->getTitle(),"lavour")!==false) $mode='langf';
-		else if (strpos($this->getReportGroup()->getCodeTemplate()->getTitle(),"anguage")!==false) $mode='lang';
-		else if (strpos($this->getReportGroup()->getCodeTemplate()->getTitle(),"OS")!==false) $mode='os';
-		else if (strpos($this->getReportGroup()->getCodeTemplate()->getTitle(),"endor")!==false) $mode='vendor';
-		else $mode='start';
+		$mode=$this->getReportGroup()->getCodeTemplate()->getOption('mode');
+                if (!$mode) $mode='start';
 
 		$node_id_query="SELECT node_id from node WHERE group_id in (".implode(",",$this->_getGroupRelations($groupIds)).")";
 		$db->setFetchMode(Zend_Db::FETCH_NUM);
@@ -170,7 +167,7 @@ class Reports_Service_CodeTemplate_AuthLog extends Reports_Service_CodeTemplate_
 				$where.="AND type='guest'";
 				$total=$db->fetchAll("SELECT count(*) $from $where AND accept_language<>''");
 				//limit to results >= 0.2% (0.15% = 1/667)
-				$stmt=$db->query("SELECT lower(".($mode=='langf'?'SUBSTRING(accept_language,1,2)':'accept_language').") as lang, count(*) as cnt $from $where AND accept_language<>'' GROUP BY lang HAVING cnt > ".ceil($total[0][0]/667)." ORDER BY cnt desc $limit");
+				$stmt=$db->query("SELECT lower(".($mode=='lang'?'SUBSTRING(accept_language,1,2)':'accept_language').") as lang, count(*) as cnt $from $where AND accept_language<>'' GROUP BY lang HAVING cnt > ".ceil($total[0][0]/667)." ORDER BY cnt desc $limit");
 				break;
 			case "os":
 //extract os from user_agent!?
