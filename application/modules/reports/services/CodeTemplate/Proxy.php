@@ -15,7 +15,7 @@ class Reports_Service_CodeTemplate_Proxy extends Reports_Service_CodeTemplate_Ab
 	private function getTable($rows,$cat)
 	{
 		return 		array(/*table definition*/
-					'type'=>strtolower($this->getReportGroup()->getCodeTemplate()->getFormatDefault())
+					'type'=>strtolower($this->getReportGroup()->getFormatSelected())
                                         ,'name'=>$cat
                                         ,'chartOptions'=>array(
                                                 'type'=>'PieChart'

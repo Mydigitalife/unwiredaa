@@ -15,7 +15,7 @@ class Reports_Service_CodeTemplate_AuthLog extends Reports_Service_CodeTemplate_
 	private function getTable($rows,$name)
 	{
 		return 		array(/*table definition*/
-					'type'=>strtolower($this->getReportGroup()->getCodeTemplate()->getFormatDefault())
+					'type'=>strtolower($this->getReportGroup()->getFormatSelected())
                                         ,'name'=>$name
                                         ,'chartOptions'=>array(
                                                 'type'=>'PieChart'
