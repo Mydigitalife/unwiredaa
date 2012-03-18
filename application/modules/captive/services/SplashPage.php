@@ -88,7 +88,7 @@ class Captive_Service_SplashPage
         return $contents;
     }
 
-    public function updateOrder($desktop, $mobile, $template = false)
+    public function updateOrder($desktop, $mobile, $template = false, $splashId = 0, $templateId = 0)
     {
         $mapperContent = new Captive_Model_Mapper_Content();
 
@@ -116,12 +116,47 @@ class Captive_Service_SplashPage
                         continue;
                     }
 
-                    if (!$template && $content->getTemplateId()) {
+                    if ($template && $content->getSplashId()) {
                         continue;
                     }
 
-                    if ($template && $content->getSplashId()) {
-                        continue;
+                    $pageContent = null;
+                    if (!$template && $content->getTemplateId()) {
+                        /**
+                         * Content is not editable
+                         */
+                        if (!$content->isEditable()) {
+                            continue;
+                        }
+
+                        $pageContent = $mapperContent->findOneBy(array('template_content' => $content->getContentId()));
+
+                        if (!$pageContent) {
+                            /**
+                             * Clone the content so we can move it
+                             */
+                            $pageContent = clone $content;
+                            $pageContent->setContentId(null)
+                                        ->setTemplateId(null)
+                                        ->setTemplateContent($content->getContentId())
+                                        ->setSplashId($splashId);
+
+                            try {
+                                $mapperContent->save($pageContent);
+                            } catch (Exception $e) {
+                                continue;
+                            }
+                        }
+                    }
+
+                    /**
+                     * Check and swap template widget with splashpage widget
+                     */
+                    if ($pageContent) {
+                        $forUpdate[$content->getContentId()] = $pageContent;
+                        $content = $pageContent;
+                    } else {
+                        $forUpdate[$content->getContentId()] = $content;
                     }
 
                     if ($layoutName == 'desktop') {
@@ -143,8 +178,6 @@ class Captive_Service_SplashPage
 
                         $contentData->setOrder($position);
                     }
-
-                    $forUpdate[$content->getContentId()] = $content;
                 }
             }
         }
