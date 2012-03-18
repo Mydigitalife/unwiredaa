@@ -64,19 +64,28 @@ if (($plimit++)>10) {$path.="/[ploop!]";break;}
 /*also add support to inner intervals*/
 	public function getData($groupIds, $dateFrom, $dateTo) {
 	        $this->db = Zend_Db_Table_Abstract::getDefaultAdapter();
-		$this->summable=false;/*false fails in prepeare Table*/
-		/*verify if groupdepth is activated for this report!!??*/
-		if ($this->getReportGroup()->getCodeTemplate()->isGroupDepthSupported()) $this->maxdepth=$this->getReportGroup()->getGroupDepthMax();
-		else $this->maxdepth=2;
+		$mode=$this->getReportGroup()->getCodeTemplate()->getOption('mode');
+		if (!$mode) $mode='unique';
+
+		if ($mode=='unique') $this->summable=false;
+		else $this->summable=true;
+
+		if ($mode!='billingb') {
+			/*verify if groupdepth is activated for this report!!??*/
+			if ($this->getReportGroup()->getCodeTemplate()->isGroupDepthSupported()) $this->maxdepth=$this->getReportGroup()->getGroupDepthMax();
+			else $this->maxdepth=2;
+		} else $this->maxdepth=1;
+
 		$this->startTime=$this->duration=$this->getReportGroup()->getDateTo()->getTimestamp();
 		$this->duration=$this->startTime-$this->getReportGroup()->getDateFrom()->getTimestamp();
 		$this->innerCount=0;//means no inner interval
-		if ($this->getReportGroup()->getCodeTemplate()->isInnerIntervalSupported()) {
+		if (($mode!='billingb')&&($this->getReportGroup()->getCodeTemplate()->isInnerIntervalSupported())) {
 			$this->innerInterval=$this->getReportGroup()->getInnerInterval()*60;
 			if (($this->innerInterval)&&($this->innerInterval>0)) $this->innerCount=ceil($this->duration/$this->innerInterval);
 			else $this->innerInterval=$this->duration;
 		}
 		else $this->innerInterval=$this->duration;
+
 		$this->prepareTemporaryTable($groupIds);
 		$tables=array();
 /*
@@ -84,8 +93,6 @@ echo "<pre>";
 print_r($this->rgroup);
 die("</pre>");
 */
-
-		/*use the temporary table for our own query (hmm count is timmer 0) DISTINCT s.user_mac*/
 
                 /*prepare temporary table*/
                 $this->db->query("CREATE TEMPORARY TABLE unique_session
@@ -95,63 +102,66 @@ die("</pre>");
 //, UNIQUE KEY `main` (node_id, `intv`, session_id))");
 //echo microtime()." 1<hr>";
 
-$ids=array();
-$resi=$this->db->fetchall("SELECT DISTINCT node_id from node_reportgroup");//GROUP_CONCAT(DISTINCT macht desweilen zuviele "," *G
-foreach ($resi as $line) if ($line[0]) $ids[]=$line[0];
+		$ids=array();
+		$resi=$this->db->fetchall("SELECT DISTINCT node_id from node_reportgroup");//GROUP_CONCAT(DISTINCT macht desweilen zuviele "," *G
+		foreach ($resi as $line) if ($line[0]) $ids[]=$line[0];
 
-		$this->db->query("INSERT INTO unique_session
+		if ($mode=='unique') {
+			$this->db->query("INSERT INTO unique_session
 SELECT DISTINCT i.session_id, i.node_id, ( (UNIX_TIMESTAMP(time)-UNIX_TIMESTAMP('$dateFrom') ) DIV $this->innerInterval) as intv
 FROM acct_internet_interim i
 WHERE i.time >= '$dateFrom' AND i.time < '$dateTo' AND i.node_id IN (".implode(",",$ids).")");
 //!!??unix_timestamp might need an offset if starttime is not correctly aligned to interval!?
 //innerinterval grouping: UNIX_TIMESTAMP(time) DIV @intv
 
-//echo microtime()." 2<hr>";
+echo microtime()." 2<hr>";
 //die();//test large: 47 seconds
 //echo serialize($this->db->fetchall("SELECT count(*) FROM unique_session"));
 
 //test speed of simpler join
-$this->db->query("CREATE TEMPORARY TABLE unique_mac
- (user_mac BIGINT NOT NULL, node_id INT NOT NULL, intv INT NOT NULL, KEY `node` (node_id))");
+			$this->db->query("CREATE TEMPORARY TABLE unique_mac
+(user_mac BIGINT NOT NULL, node_id INT NOT NULL, intv INT NOT NULL, KEY `node` (node_id))");
 
-$resi=$this->db->query("INSERT INTO unique_mac SELECT DISTINCT s.user_mac, us.node_id, us.intv
+			$resi=$this->db->query("INSERT INTO unique_mac SELECT DISTINCT s.user_mac, us.node_id, us.intv
 FROM acct_internet_session s
 INNER JOIN unique_session us ON s.session_id=us.session_id");
-//echo microtime()." 3<hr>";
+echo microtime()." 3<hr>";
 
 //prepare same table-"size" result for inner interval counts, as for total counts
-if ($this->innerCount>1)
-$resi=$this->db->fetchall("SELECT i.reportgroup, GROUP_CONCAT(i.intv), GROUP_CONCAT(i.cnt) FROM
+			if ($this->innerCount>1)
+			$resi=$this->db->fetchall("SELECT i.reportgroup, GROUP_CONCAT(i.intv), GROUP_CONCAT(i.cnt) FROM
 (SELECT rg.reportgroup, um.intv, COUNT(DISTINCT um.user_mac) as cnt
 FROM unique_mac um
 INNER JOIN node_reportgroup rg ON um.node_id = rg.node_id
 GROUP BY reportgroup, um.intv) i
 GROUP BY i.reportgroup");
-/*old query deprecated
-$resi=$this->db->fetchall("SELECT i.reportgroup, GROUP_CONCAT(i.intv), GROUP_CONCAT(i.cnt) FROM
-(SELECT rg.reportgroup, us.intv, COUNT(DISTINCT s.user_mac) as cnt
-FROM acct_internet_session s
-INNER JOIN unique_session us ON s.session_id=us.session_id
-INNER JOIN node_reportgroup rg ON us.node_id = rg.node_id
-GROUP BY reportgroup, us.intv) i
-GROUP BY i.reportgroup");*/
-//echo microtime()." 4<hr>";
+echo microtime()." 4<hr>";
 
 //for summable reports, we could calc this query in php, but it shoudl be quite fast anyways
-$res=$this->db->fetchall("SELECT rg.reportgroup, -1 as intv, COUNT(DISTINCT um.user_mac)
+			$res=$this->db->fetchall("SELECT rg.reportgroup, -1 as intv, COUNT(DISTINCT um.user_mac)
 FROM unique_mac um
 INNER JOIN node_reportgroup rg ON um.node_id = rg.node_id
 GROUP BY reportgroup");
-/*old query deprecated
-$res=$this->db->fetchall("SELECT rg.reportgroup, -1 as intv, COUNT(DISTINCT s.user_mac)
-FROM acct_internet_session s
-INNER JOIN unique_session us ON s.session_id=us.session_id
-INNER JOIN node_reportgroup rg ON us.node_id = rg.node_id
-GROUP BY reportgroup");*/
+		} else if (($mode=='billingb')||($mode=='traffic')) {/*traffic mode*/
+			$resi=$this->db->fetchall("SELECT i.reportgroup, GROUP_CONCAT(i.intv), GROUP_CONCAT(i.cnt) FROM
+(SELECT rg.reportgroup, ((UNIX_TIMESTAMP(time)-UNIX_TIMESTAMP('$dateFrom')) DIV $this->innerInterval) as intv, SUM(bytes_up+bytes_down) as cnt
+FROM acct_internet_node_sums ns
+INNER JOIN node_reportgroup rg ON ns.node_id = rg.node_id
+WHERE ns.time BETWEEN '$dateFrom' AND '$dateTo'
+GROUP BY reportgroup, intv) i
+GROUP BY i.reportgroup");
 
-/*echo "<pre>";
-print_r($resi);
-die("</pre>".microtime());*/
+			$res=$this->db->fetchall("SELECT rg.reportgroup, -1 as intv, SUM(bytes_up+bytes_down)
+FROM acct_internet_node_sums ns
+INNER JOIN node_reportgroup rg ON ns.node_id = rg.node_id
+WHERE ns.time BETWEEN '$dateFrom' AND '$dateTo'
+GROUP BY reportgroup");
+		}
+/*
+echo "<pre>";
+print_r($res);
+die("</pre>".microtime());
+*/
 		$last_rid=-1;/*-1 to indicate first appendStructureRange() that there is no previous sum*/
 		$last_depth=0;
 		$rows=array();
@@ -237,7 +247,7 @@ if ($this->innerCount>0) {
                                 'main'=>array( /*table 1*/
 /*use title specifed by user?*/
 					'type'=>$type
-					,'name'=>'Unique Users'/*!!?? move to chartOptions?*/
+					,'name'=>($mode!='unique'?'Traffic':'Unique Users')/*!!?? move to chartOptions?*/
 					,'chartOptions'=>array(
 						'type'=>(($this->innerCount>1)?'LineChart':'ColumnChart')
 						,'width'=>770 /*max 370 for 2 charts sidebyside*/
@@ -262,7 +272,7 @@ if ($this->innerCount>0) {
 						,*/
 						array_merge(
 							array(
-								array('name'=>'Unique Sessions of','translatable'=>false,'class'=>'bold')
+								array('name'=>($mode!='unique'?'Traffic':'Unique').' Users of','translatable'=>false,'class'=>'bold')
 								,array('name'=>'Total','translatable'=>false,'class'=>'bold')
 							)
 							,$innerColumns
