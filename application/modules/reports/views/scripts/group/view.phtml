@@ -180,10 +180,18 @@ $acl = Zend_Registry::get ( 'acl' );
 			</tr>
 			<?php endforeach; ?>
 			<?php if (isset($value->rows)): ?>
-				<?php foreach ($value->rows as $k => $v): ?>
+				<?php foreach ($value->rows as $k => $v): 
+					if (isset($v->url)) $url=$v->url;
+					else $url=false;
+				?>
 				<tr class="<?php echo $this->cycle(array('odd', 'even'))->next(); ?>">
 					<?php
 					/*if (is_array($v->data)) */foreach ($v->data as $kk => $vv):
+
+					if ($url) {
+						$vv='<a href="'.$url.'">'.$vv.'</a>';
+						$url=false;
+					}
 
 				    	if (isset($v->class) && is_object($v->class)) {
 					        $v->class = (array) $v->class;
