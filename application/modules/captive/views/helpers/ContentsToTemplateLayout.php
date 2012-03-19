@@ -22,7 +22,7 @@ class Captive_View_Helper_ContentsToTemplateLayout extends Zend_View_Helper_Abst
 
         $viewScript = file_get_contents($templateDesktopLayout);
 
-        if (!preg_match_all('/\$this->layout\(\)->(container-?\d+|content)/ius', $viewScript, $containers)) {
+        if (!preg_match_all('/\$this->layout\(\)->{?"?(container-?\d+|content)"?}?/ius', $viewScript, $containers)) {
             throw new Unwired_Exception("No content placeholders found in layout!");
         }
 
