@@ -65,11 +65,11 @@ class Reports_Service_CodeTemplate_Proxy extends Reports_Service_CodeTemplate_Ab
 		$empty=true;
 
 		//show either url-blocks or viruses
-		if (strpos($this->getReportGroup()->getCodeTemplate()->getTitle(),"irus")!==false) $virus=true;
-		else $virus=false;
+		$mode=$this->getReportGroup()->getCodeTemplate()->getOption('mode');
+                if (!$mode) $mode='threat';
 
 		/*query total total*/
-		if ($virus) $stmt=$db->query("SELECT 'virus', count(*) AS cnt
+		if ($mode=='virus') $stmt=$db->query("SELECT 'virus', count(*) AS cnt
 FROM proxy_log WHERE stamp BETWEEN '$dateFrom' AND '$dateTo' AND category like '%virus%'");
 		else $stmt=$db->query("SELECT category, count(*) AS cnt
 FROM proxy_log WHERE stamp BETWEEN '$dateFrom' AND '$dateTo' GROUP BY category ORDER BY cnt DESC;");
@@ -77,7 +77,7 @@ FROM proxy_log WHERE stamp BETWEEN '$dateFrom' AND '$dateTo' GROUP BY category O
 		while ($row=$stmt->fetch()) {
 			$empty=false;
 			$rows=array();
-			if (!$virus) {
+			if ($mode!='virus') {
 				$ttotal[$row[0]]=$row[1];
 				$totaltotal+=$row[1];
 			}
@@ -85,7 +85,7 @@ FROM proxy_log WHERE stamp BETWEEN '$dateFrom' AND '$dateTo' GROUP BY category O
 			$total[]=$this->handleLine('Total '.$row[0],$row[1],100,true,true);
 
 			/*query top 50 virus threats*/
-			if ($virus) $tstmt=$db->query("SELECT virusname, count(*) AS cnt
+			if ($mode=='virus') $tstmt=$db->query("SELECT virusname, count(*) AS cnt
 FROM proxy_log WHERE category like '%virus%' and stamp BETWEEN '$dateFrom' AND '$dateTo'
 GROUP BY virusname ORDER BY cnt DESC limit 50;");
 			else $tstmt=$db->query("SELECT substring_index(domain,'.','-2') AS tld, count(*) AS cnt
@@ -95,7 +95,7 @@ FROM proxy_log WHERE category='$row[0]' and stamp BETWEEN '$dateFrom' AND '$date
 				$rows[]=$this->handleLine($trow[0],$trow[1],round($trow[1]*1000/$row[1])/10,false,false);
 			}
 
-			$tables[str_replace(",","_",str_replace(" ","",$row[0]))]=$this->getTable(array_merge($total,$rows,$total),($virus?'Top 50 virus':'Top 20 '.$row[0]));
+			$tables[str_replace(",","_",str_replace(" ","",$row[0]))]=$this->getTable(array_merge($total,$rows,$total),(($mode=='virus')?'Top 50 virus':'Top 20 '.$row[0]));
 		}
 		if ($empty) {
 		// no virus found
@@ -103,7 +103,7 @@ FROM proxy_log WHERE category='$row[0]' and stamp BETWEEN '$dateFrom' AND '$date
 			$tables[]=$this->getTable($rows,'No Data!');
 		}
 		//add overview chart(and table) based on totals ?
-		if ($virus) $overview=array();
+		if ($mode=='virus') $overview=array();
 		else {
 			//build total with perc
 			foreach ($ttotal as $name=>$value)
