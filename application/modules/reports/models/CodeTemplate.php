@@ -27,9 +27,9 @@ class Reports_Model_CodeTemplate extends Unwired_Model_Generic implements Zend_A
 
 	protected $_groupDepthSupported = 0;
 
-	protected $_groupDepthDefault = -1;
+	protected $_groupDepthDefault = 1;
 
-	protected $_groupDepthChartDefault = -1;
+	protected $_groupDepthChartDefault = 1;
 
 	protected $_innerIntervalSupported = 0;
 

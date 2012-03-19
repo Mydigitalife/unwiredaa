@@ -204,10 +204,21 @@ $(function () {
 	  }
 
 	  $('#group_depth_max').change(function(){
-	  	var filterIndex = $(this).find('option:selected').prevAll().length;
 
-		$('#group_depth_chart_max option').removeAttr('disabled')
-									      .filter(':lt(' + filterIndex + ')').attr('disabled','disabled');
+	  	var currentDepth = parseInt($(this).val());
+		$('#group_depth_chart_max option').removeAttr('disabled');
+
+		if (currentDepth <= 0) {
+    	  	var filterIndex = $(this).find('option:selected').prevAll().length;
+    	  	$('#group_depth_chart_max option').filter(':lt(' + filterIndex + ')').attr('disabled','disabled');
+		} else {
+			$('#group_depth_chart_max option').each(function(){
+				var optValue = parseInt($(this).val());
+				if (optValue <= 0 || optValue > currentDepth) {
+					$(this).attr('disabled','disabled');
+				}
+			});
+		}
 
 		if ($('#group_depth_chart_max option:selected').is(':disabled')) {
 			$('#group_depth_chart_max option:not(:disabled):first').attr('selected','selected');
