@@ -25,8 +25,6 @@ class Reports_Service_CodeTemplate_TopTLD extends Reports_Service_CodeTemplate_A
 			                ->group(array('tld', 'sld'))
 					->order('cnt DESC');
 
-//echo serialize($select->__toString());
-//die();
 			$items = $db->fetchAll($select);
 			$result = array();
 			$total=0;
