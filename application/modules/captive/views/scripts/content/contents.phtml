@@ -43,11 +43,11 @@
             	return;
             }
 
-			/*
 			if ($('.ui-tabs-panel:visible:last').siblings().find('input[name*=title]:first').val().length) {
 				return;
 			}
 
+			/*
          	if (!confirm('<?php echo $this->translate('captive_content_edit_use_defaults'); ?>')) {
           		return;
           	} */
@@ -124,6 +124,7 @@
 			},
 			cancel: ".portlet.static",
             change: function(event,ui) {
+            	return;
             	if (blockChangeEvent) {
             		return;
             	}
@@ -212,7 +213,7 @@ blockChangeEvent = false;
             },
 
 			update: function(event, ui) {
-			return;
+
 				var columnsContentOrder = {'mobile': [], 'desktop': []};
 
 				$('.column:not(.special)').each(function(){
