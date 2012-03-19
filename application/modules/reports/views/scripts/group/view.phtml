@@ -181,7 +181,7 @@ $acl = Zend_Registry::get ( 'acl' );
 			<?php endforeach; ?>
 			<?php if (isset($value->rows)): ?>
 				<?php foreach ($value->rows as $k => $v): 
-					if (isset($v->url)) $url=$v->url;
+					if (isset($v->url)) $url=$v->url.'&parent='.$this->report->getItemId();
 					else $url=false;
 				?>
 				<tr class="<?php echo $this->cycle(array('odd', 'even'))->next(); ?>">
