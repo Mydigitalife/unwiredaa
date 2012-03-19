@@ -12,30 +12,9 @@
 
 class Captive_ContentController extends Unwired_Controller_Crud
 {
-    protected $_actionsToReferer = array('template', 'splashpage', 'files', 'upload');
+    protected $_actionsToReferer = array('template', 'splashpage', 'delete', 'files', 'upload');
 
-	public function preDispatch()
-	{
-		if (null === $this->_currentUser || !$this->getAcl()->hasRole($this->_currentUser)) {
-			$this->_helper->redirector->gotoRouteAndExit(array(), 'default', true);
-		}
-
-		if ($this->getInvokeArg('bootstrap')->hasResource('session')) {
-			$session = $this->getInvokeArg('bootstrap')->getResource('session');
-
-			if (null === $session->referer) {
-				$session->referer = $this->getRequest()->getServer('HTTP_REFERER');
-			}
-
-			if (!in_array($this->getRequest()->getActionName(), $this->_actionsToReferer)) {
-				$session->referer = null;
-			}
-
-			$this->_referer = $session->referer;
-
-			$this->view->refererUrl = $this->_referer;
-		}
-	}
+    protected $_defaultMapper = 'Captive_Model_Mapper_Content';
 
 	public function splashpageAction()
 	{
@@ -68,29 +47,8 @@ class Captive_ContentController extends Unwired_Controller_Crud
         $serviceSplashPage = new Captive_Service_SplashPage();
 
         /**
-         * Try to save contents
-         */
-        if ($this->getRequest()->isPost())
-        {
-            $contents = $this->getRequest()->getPost('content');
-
-            if (!empty($contents) && is_array($contents)) {
-                try {
-                    $serviceSplashPage->saveSplashPageContents($splashPage, $contents);
-                    $this->view->uiMessage('captive_content_splashpage_content_saved', 'success');
-                    $this->_gotoIndex();
-                } catch (Exception $e) {
-                    $this->view->uiMessage('captive_content_splashpage_content_error', 'error');
-                }
-            } else {
-                $this->view->uiMessage('captive_content_splashpage_no_content_provided', 'error');
-            }
-        }
-
-        /**
          * Get template languages and language content
          */
-        $contents = array('special' => array());
 
         $mapperLanguages = new Captive_Model_Mapper_Language();
 
@@ -100,36 +58,9 @@ class Captive_ContentController extends Unwired_Controller_Crud
 
         foreach ($languages as $language) {
             $languagesSorted[$language->getLanguageId()] = $language;
-
-            $languageContent = $serviceSplashPage->getSplashPageContents($splashPage, $language);
-
-            foreach ($languageContent as $content) {
-                $columnKey = $content->getColumn();
-
-                if ($columnKey < 0) {
-                    $columnKey = 'special';
-                } else if ($columnKey == 0) {
-                    $columnKey = 'main';
-                } else {
-                    $columnKey = 'column' . $columnKey;
-                }
-
-
-                if (!isset($contents[$columnKey])) {
-                    $contents[$columnKey] = array();
-                }
-
-                if (!isset($contents[$columnKey][$language->getLanguageId()])) {
-                    $contents[$columnKey][$language->getLanguageId()] = array();
-                }
-
-                $contents[$columnKey][$language->getLanguageId()][] = $content;
-
-            }
         }
 
-        ksort($contents);
-        $contents = array_merge(array('special' => array(), 'main' => array()), $contents);
+        $contents = $serviceSplashPage->getSplashPageContents($splashPage);
 
         $languages = null;
         $this->view->languages = $languagesSorted;
@@ -137,8 +68,245 @@ class Captive_ContentController extends Unwired_Controller_Crud
         $mapperLanguages = null;
 
         $this->view->splashPage = $splashPage;
+        $this->view->template = $splashPage->getTemplate();
         $this->view->contents = $contents;
+        $this->_helper->viewRenderer->setScriptAction('contents');
 	}
+
+	public function reorderAction()
+	{
+	    $this->_helper->layout->disableLayout();
+	    $this->_helper->viewRenderer->setNoRender();
+
+        $desktop = $this->getRequest()->getParam('desktop', null);
+        $mobile = $this->getRequest()->getParam('mobile', null);
+
+        $splashId = (int) $this->getRequest()->getParam('splashId', 0);
+        $templateId = (int) $this->getRequest()->getParam('templateId', 0);
+
+        if (!$desktop || !$mobile || !is_array($desktop) || !is_array($mobile)) {
+            throw new Unwired_Exception('Invalid parameters');
+        }
+
+        $serviceSplash = new Captive_Service_SplashPage();
+
+        if (!$serviceSplash->updateOrder($desktop, $mobile, (!$splashId) ? true : false, $splashId, $templateId)) {
+            $this->getResponse()->setHttpResponseCode(500);
+            echo $this->view->json(array('error'=>'Error updating widget order'));
+        } else {
+            echo $this->view->json(array('success'=>'Widget order updated'));
+        }
+	}
+
+	public function deleteAction()
+	{
+	    $this->_delete();
+	}
+
+	public function addAction(Captive_Model_Content $content = null)
+	{
+	    if ($this->getRequest()->isXmlHttpRequest()) {
+	        $this->_helper->layout()->disableLayout();
+	    }
+
+        $templateId = (int) $this->getRequest()->getParam('templateId', 0);
+        $splashId = (int) $this->getRequest()->getParam('splashId', 0);
+        $widget = $this->getRequest()->getParam('widget', 'Html');
+        $contentType = $this->getRequest()->getParam('type', 'content');
+
+        $column = (int) $this->getRequest()->getParam('column', 0);
+
+        if (!in_array($contentType, array('content', 'terms', 'imprint'))) {
+            $contentType = 'content';
+        }
+
+        $widget = ucfirst($widget);
+        if (!in_array($widget, array('Html','Links','Iframe','Login'))) {
+            throw new Unwired_Exception('Invalid widget specified', 500);
+        }
+
+        if (!$templateId && !$splashId) {
+            throw new Unwired_Exception('No template or splashpage specified', 500);
+        }
+
+        $splashPage = null;
+        $template = null;
+
+        if ($splashId) {
+            $mapperSplash = new Captive_Model_Mapper_SplashPage();
+            $splashPage = $mapperSplash->find($splashId);
+            if ($splashPage) {
+                $template = $splashPage->getTemplate();
+            }
+        } else {
+            $mapperTemplate = new Captive_Model_Mapper_Template();
+            $template = $mapperTemplate->find($templateId);
+        }
+
+        if (!$template) {
+            throw new Unwired_Exception('No template or splashpage specified', 500);
+        }
+
+        /**
+         * @todo Move this to mapper or service?
+         */
+        $templateSettings = $template->getSettings();
+        if (!$content) {
+            $content = new Captive_Model_Content();
+
+            foreach ($templateSettings['language_ids'] as $language) {
+                $contentData = new Captive_Model_ContentData();
+                $contentData->setLanguageId($language);
+                $content->addData($contentData);
+
+                $mobileContentData = clone $contentData;
+                $mobileContentData->setMobile(1);
+
+                $content->addData($mobileContentData);
+            }
+            $content->setWidget($widget)
+                    ->setType($contentType);
+        } else {
+            // Prefill missing languages?!
+        }
+
+        if ($splashPage) {
+            $content->setSplashId($splashId);
+        } else {
+            $content->setTemplateId($templateId);
+        }
+
+
+        $content->setColumn($column);
+
+
+        $mapperLanguages = new Captive_Model_Mapper_Language();
+
+        $languages = $mapperLanguages->findBy(array('language_id' => $templateSettings['language_ids']));
+
+        $languagesSorted = array();
+
+        foreach ($languages as $language) {
+            $languagesSorted[$language->getLanguageId()] = $language;
+        }
+
+        $this->view->languages = $languagesSorted;
+
+        $this->view->content = $content;
+        $this->view->splashPage = $splashPage;
+        $this->view->template = $template;
+
+        $this->_helper->viewRenderer->setScriptAction('edit');
+
+        if (!$this->getRequest()->isPost()) {
+            return;
+        }
+
+        /**
+         * Process posted data
+         */
+        $postedContentData = $this->getRequest()->getPost('content', null);
+        if (!$postedContentData) {
+            throw new Unwired_Exception('No content provided');
+        }
+
+        $content->setEditable((int) $this->getRequest()->getParam('editable', $content->isEditable()));
+        $content->setRestricted((int) $this->getRequest()->getParam('restricted', $content->isRestricted()));
+
+        $contentModified = array();
+
+        $contentData = $content->getData();
+
+        foreach ($postedContentData['desktop'] as $languageId => $desktopContent) {
+            $desktopContent['language_id'] = $languageId;
+            $desktopContent['mobile'] = 0;
+
+            $foundContent = null;
+
+            foreach ($contentData as $key => $data) {
+                if (!$data->getLanguageId() != $languageId || $data->isMobile()) {
+                    continue;
+                }
+
+                $foundContent = $data;
+                unset($contentData[$key]);
+            }
+
+            if (!$foundContent) {
+                $foundContent = new Captive_Model_ContentData();
+                $foundContent->setLanguageId($languageId);
+            }
+
+            $foundContent->fromArray($desktopContent);
+            $contentModified[] = $foundContent;
+        }
+
+        foreach ($postedContentData['mobile'] as $languageId => $mobileContent) {
+            $mobileContent['language_id'] = $languageId;
+            $mobileContent['mobile'] = 1;
+
+            $foundContent = null;
+
+            foreach ($contentData as $key => $data) {
+                if (!$data->getLanguageId() != $languageId || !$data->isMobile()) {
+                    continue;
+                }
+
+                $foundContent = $data;
+                unset($contentData[$key]);
+            }
+
+            if (!$foundContent) {
+                $foundContent = new Captive_Model_ContentData();
+                $foundContent->setLanguageId($languageId)
+                             ->setMobile(1);
+            }
+
+            $foundContent->fromArray($mobileContent);
+            $contentModified[] = $foundContent;
+        }
+
+        $postedContentData = null;
+        $contentData = null;
+        $mobileContent = null;
+        $desktopContent = null;
+//        $contentModified = $contentModified + $contentData;
+
+        $content->setData($contentModified);
+
+        $mapperContent = new Captive_Model_Mapper_Content();
+        $mapperContent->save($content);
+	}
+
+	public function editAction()
+	{
+	    $id = (int) $this->getRequest()->getParam('id', 0);
+
+	    if (!$id) {
+	        throw new Unwired_Exception('Content not found');
+	    }
+
+	    $mapperContent = new Captive_Model_Mapper_Content();
+	    $content = $mapperContent->find($id);
+
+	    if (!$content) {
+	        throw new Unwired_Exception('Content not found');
+	    }
+
+	    if ($this->getRequest()->isPost()) {
+    	    $splashId = (int) $this->getRequest()->getParam('splashId', 0);
+
+    	    if ($content->getTemplateId() && $splashId) {
+                $content->setTemplateContent($content->getContentId())
+                        ->setSplashId($splashId)
+                        ->setTemplateId(null)
+                        ->setContentId(null);
+    	    }
+	    }
+
+	    $this->addAction($content);
+	}
+
 
     public function templateAction()
     {
@@ -214,7 +382,10 @@ class Captive_ContentController extends Unwired_Controller_Crud
 
         $this->view->template = $template;
         $this->view->contents = $contents;
+
+        $this->_helper->viewRenderer->setScriptAction('contents');
     }
+
 
     public function filesAction()
     {

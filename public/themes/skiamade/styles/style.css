@@ -1,0 +1,535 @@
+@import url("jqueryui/jquery-ui-1.8.16.custom.css");
+@CHARSET "UTF-8";
+
+a, a:visited {
+    color: #002F59;
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+	color: #333333;
+}
+
+select {
+	background-color: #FFFFFF;
+    border: 1px solid #BBBBBB;
+    color: #000000;
+}
+
+input[disabled], input[readonly], select[disabled], select[readonly], checkbox[disabled], checkbox[readonly], textarea[disabled], textarea[readonly]
+{
+ background-color: #dcdcdc;
+ color: #333;
+ cursor: default;
+}
+/*
+input[type="text"],
+input[type="password"],
+input[type="url"],
+input[type="email"] {
+	width: 190px;	
+}
+*/
+form {
+	margin: 0px;
+	padding: 0px;
+}
+
+fieldset {
+	padding: 20px 0px;
+	border-bottom: 0px;
+	border-left: 0px;
+	border-right: 0px;
+}
+
+fieldset legend {
+	margin-left: 20px;
+	padding: 0px 5px;
+}
+
+h1 {
+	font-size: 2.2em;
+	color: #002F59;
+	border-bottom: 1px dotted #465465;
+	padding-bottom: 5px;
+}
+#wrapper {
+	width: 950px;
+	margin: 0 auto;
+}
+
+#header {
+	background: #017CC0 url('../images/logo.jpg') no-repeat left 50%;
+	height: 150px;
+	margin-bottom: 20px;
+	filter:progid:DXImageTransform.Microsoft.Shadow(color=#cccccc, Direction=180, Strength=8) progid:DXImageTransform.Microsoft.Shadow(color=#cccccc, Direction=90, Strength=8) 
+    progid:DXImageTransform.Microsoft.Shadow(color=#cccccc, Direction=270, Strength=8);
+    -moz-box-shadow: 0px 10px 15px #ccc;
+    -webkit-box-shadow:0px 10px 15px #ccc;
+    box-shadow:0px 10px 10px #ccc;
+}
+
+.userblock {
+    margin-left: 710px;
+    padding-top: 5px;
+    width: 220px;
+}
+
+.userblock div {
+    float: left;
+    width: 100%;
+}
+
+.userblock form div label {
+    display: block;
+    color: #fff;
+    margin: 0px;
+}
+
+.userblock form div input {
+    margin-top: 0px;
+    position: relative !important;
+    width: 120px;
+}
+
+.userblock form div span.button {
+    position: relative;
+}
+
+.userblock form div span.button input,
+.userblock form div span.button input.button {
+    width: 100px;
+    position: relative;
+    top: 0px;
+    margin-top: 0px !important;
+}
+
+#sidenav {
+	/*width: 200px;*/
+	float: left;
+	/*margin-right: 20px;*/
+	
+}
+
+ul.navigation {
+	list-style: none;
+	margin: 0px 10px 0px 0px;
+	padding: 10px 0px;
+	filter:progid:DXImageTransform.Microsoft.Shadow(color=#cccccc, Direction=135, Strength=8);
+    -moz-box-shadow: 5px 5px 15px #ccc;
+    -webkit-box-shadow:5px 5px 15px #ccc;
+    box-shadow:0px 5px 10px #ccc;
+}
+
+ul.navigation li {
+	font-size: 1.2em;
+	margin-bottom: 10px;
+	font-weight: bold;
+	text-indent: 7px;
+}
+
+ul.navigation li ul {
+	list-style: none;
+	margin: 0px;
+	padding: 0px;
+}
+
+ul.navigation li ul li {
+    font-size: 0.8em;
+	margin-bottom: 0px;
+	font-weight: normal;
+	margin: 3px 0px;
+}
+
+ul.navigation li ul li a {
+	display: block;
+	border-left: 5px solid #fff;
+	padding: 5px 5px 5px 15px
+}
+
+ul.navigation li ul li a:hover {
+    display: block;
+    border-left: 5px solid #002F59;
+}
+
+table.listing {
+	border-collapse: separate;
+	border-spacing:2px;
+    background:#ffffff;
+    filter:progid:DXImageTransform.Microsoft.Shadow(color=#cccccc, Direction=135, Strength=8);
+    -moz-box-shadow: 5px 5px 15px #ccc;
+    -webkit-box-shadow:5px 5px 15px #ccc;
+    box-shadow:0px 5px 15px #ccc;
+}
+
+table.listing th {
+	background: #002F59;
+	color: #fff;
+}
+
+table.listing th input {
+    width: 100%;
+}
+
+table.listing th a {
+	color: #fff;
+}
+
+table.listing th a:hover {
+    color: #fff;
+	text-decoration: underline;
+}
+
+table.listing tr th img {
+	vertical-align: middle;
+}
+
+table.listing th.tools a {
+	padding: 5px 3px;
+	border: 1px solid #002F59; 
+}
+
+table.listing th.tools a:hover {
+	text-decoration: none;
+	background: #26659B;
+	border: 1px solid #00219B;
+}
+
+table.listing tbody tr {
+	border-bottom: 1px solid #fff;
+}
+
+table.listing tbody tr:hover {
+	border-bottom: 1px solid #002F59;
+}
+
+table.listing tr .tools {
+    text-align: center;	
+	width: 160px;
+}
+
+table.listing td.tools a img{
+	margin-left: 3px;
+	padding: 2px;
+	border: 1px solid #fff;
+}
+
+table.listing td.tools a:hover img{
+	border: 1px solid #00219B;
+	background: #D7DBE8;
+}
+
+table.listing tr td.column_id {
+    width: 70px;
+}
+
+table.listing tr td.status0 {
+	background-image: url('../images/icons/16x16/status0.png');
+	background-repeat: no-repeat;
+	background-position: 50% 50%;	
+}
+
+table.listing tr td.status1 {
+	background-image: url('../images/icons/16x16/status1.png');
+	background-repeat: no-repeat;
+	background-position: 50% 50%;	
+}
+
+table.listing tr td span.online {
+    color: #007700;
+}
+
+table.listing tr td span.offline {
+    color: #990000;
+}
+
+.message p {
+	margin-bottom: 5px;
+}
+
+div.formelement {
+	padding: 5px;
+	float: left;
+}
+
+fieldset div.formelement {
+    margin-left: 10px;	
+}
+
+div.formelement label {
+	display: block;
+	width: 130px;
+	float: left;
+	margin: 0.5em 0;
+}
+
+div.formelement input {
+	float: left;
+}
+div.formelement.ui-accordion-content {
+    padding: 0px;	
+}
+
+
+div.formelement input.latlng {
+	width: 150px;
+}
+
+div.formelement ul.errors {
+	clear: left;
+	float: left;
+	color: #AA0000;
+	margin-bottom: 0px;
+}
+
+div.buttons {
+	margin-top: 5px;
+	padding-top: 10px;
+	border-top: 1px dotted #465465;
+}
+form div.buttons {
+	width: 100%;
+	float: left;
+}
+
+.jstree {
+	background: #fff !important;
+}
+
+.tools a {
+    margin-left: 4px;
+    padding: 2px;
+    border: 1px solid #fff;
+    cursor: pointer;
+}
+
+.tools a:hover {
+    border: 1px solid #97B400;
+    background: #FCFFED;
+}
+
+.tools a.icon {
+    text-indent: -1000px;
+    overflow: hidden;
+    padding: 2px !important;
+    background-repeat: no-repeat !important;
+    background-position: 50% 50% !important;
+    width: 28px;
+    height: 28px;
+    display: block;
+    float: left;
+}
+
+.tools a.icontext {
+    padding: 15px 3px 10px 32px;
+    background-repeat: no-repeat;
+    background-position: 3px 50%;
+}
+
+.tools a.filter {
+    background-image: url('../images/icons/24x24/search.png') !important;
+}
+
+.tools a.reset {
+    background-image: url('../images/icons/24x24/reset.png') !important;
+}
+
+.tools a.view,
+.tools a.reports {
+	background-image: url('../images/icons/24x24/view.png');
+}
+
+.tools a.icon.add {
+	background-image: url('../images/icons/24x24/add.png');
+}
+
+.tools a.edit {
+	background-image: url('../images/icons/24x24/edit.png');
+}
+
+.tools a.csv {
+	background-image: url('../images/icons/24x24/csv_file.png');
+}
+
+.tools a.pdf {
+        background-image: url('../images/icons/24x24/pdf.png');
+}
+
+.tools a.content {
+	background-image: url('../images/icons/24x24/edit_content.png');
+}
+
+.tools a.delete {
+	background-image: url('../images/icons/24x24/delete.png');
+}
+
+.tools a.enable {
+    background-image: url('../images/icons/24x24/unlock.png');
+}
+
+.tools a.disable {
+    background-image: url('../images/icons/24x24/lock.png');
+}
+
+.tools a.generate {
+    background-image: url('../images/icons/24x24/gear.png');
+}
+
+.tools a.generate {
+//    background-image: url('../images/icons/24x24/keys.png');
+}
+
+.tools a.instant {
+    background-image: url('../images/icons/24x24/instant.png');
+}
+
+
+/* buttons */
+span.button, a.button {display:inline-block;height:32px;color:#343434;font:bold 12px Tahoma,Helvetica,sans-serif !important;cursor:pointer !important;position:relative;left:5px;text-shadow:1px 1px 0px rgba(255,255,255,0.5);text-decoration:none;margin:0 5px 0 8px;padding-left:0px;vertical-align:middle;background:url("../images/buttons.png") top right no-repeat;white-space:nowrap;border:none;overflow:visible;}
+span.button button, span.button a span.button input {font-weight: bold !important;}
+a.button {margin-left:6px;}
+span.button button, span.button a, span.button input, a.button span {font-weight: bold !important; cursor: pointer!important;border: 0px !important; float:left;margin:0 13px 0 -10px;padding-left:15px;line-height:32px;height:32px;position:relative;background:url("../images/buttons.png") top left no-repeat;overflow:visible;}
+span.button:hover, a.button:hover {background-position:100% -216px;}
+span.button:hover button, span.button:hover a, span.button:hover input, a.button:hover span {text-decoration: none !important;background-position:0 -216px;}
+span.button.small, a.button.small {height:22px;font:bold 11px Arial,Helvetica,sans-serif !important;background-position:100% -128px;}
+span.button.small button, span.button.small a, span.button.small input, a.button.small span {line-height:22px;height:22px;background-position:0 -128px;}
+span.button.small:hover, a.button.small:hover {background-position:100% -344px;}
+span.button.small:hover button, span.button.small:hover a, span.button.small:hover input, a.button.small:hover span {background-position:0 -344px;}
+span.button.green, span.button.red, span.button.blue, a.button.green, a.button.red, a.button.blue {background-position:100% -32px;}
+span.button.green button, span.button.red button, span.button.blue button, span.button.green a, span.button.red a, span.button.blue a, span.button.green input, span.button.red input, span.button.blue input, a.button.green, a.button.red, a.button.blue {color:#fff !important;text-shadow:0 1px 0px rgba(0,0,0,0.5);}
+span.button.green button, span.button.green a, span.button.green input, a.button.green span {background-position:0 -32px;}
+span.button.green:hover, a.button.green:hover {background-position:100% -248px;}
+span.button.green:hover button, span.button.green:hover a, span.button.green:hover input, a.button.green:hover span {background-position:0 -248px;}
+span.button.green.small, a.button.green.small {background-position:100% -150px;}
+span.button.green.small button, span.button.green.small a, span.button.green.small input, a.button.green.small span {background-position:0 -150px;}
+span.button.green.small:hover, a.button.green.small:hover {background-position:100% -366px;}
+span.button.green.small:hover button, span.button.green.small:hover a, span.button.green.small:hover input, a.button.green.small:hover span {background-position:0 -366px;}
+span.button.red, a.button.red {background-position:100% -64px;}
+span.button.red button, span.button.red a, span.button.red input, a.button.red span {background-position:0 -64px;}
+span.button.red:hover, a.button.red:hover {background-position:100% -280px;}
+span.button.red:hover button, span.button.red:hover a, span.button.red:hover input, a.button.red:hover span {background-position:0 -280px;}
+span.button.red.small, a.button.red.small {background-position:100% -172px;}
+span.button.red.small button, span.button.red.small a, span.button.red.small input, a.button.red.small span {background-position:0 -172px;}
+span.button.red.small:hover, a.button.red.small:hover {background-position:100% -388px;}
+span.button.red.small:hover button, span.button.red.small:hover a, span.button.red.small:hover input, a.button.red.small:hover span {background-position:0 -388px;}
+span.button.blue, a.button.blue {background-position:100% -96px;}
+span.button.blue button, span.button.blue a, span.button.blue input, a.button.blue span {background-position:0 -96px;}
+span.button.blue:hover, a.button.blue:hover {background-position:100% -312px;}
+span.button.blue:hover button, span.button.blue:hover a, span.button.blue:hover input, a.button.blue:hover span {background-position:0 -312px;}
+span.button.blue.small, a.button.blue.small {background-position:100% -194px;}
+span.button.blue.small button, span.button.blue.small a, span.button.blue.small input, a.button.blue.small span {background-position:0 -194px;}
+span.button.blue.small:hover, a.button.blue.small:hover {background-position:100% -410px;}
+span.button.blue.small:hover button, span.button.blue.small:hover a, span.button.blue.small:hover input, a.button.blue.small:hover span {background-position:0 -410px;}
+
+#gmap {
+	overflow: hidden;
+	text-indent: -1000px;
+	float: left;
+	display: block;
+	width: 24px;
+	height: 24px;
+	margin: 3px 0px 0px 5px;
+	background: transparent url('../images/icons/24x24/map.png') no-repeat left bottom;
+}
+
+.fancymap {
+	width: 500px;
+	height: 410px;
+}
+.pagination {
+	text-align: right;
+}
+.message {
+	padding-left: 35px;
+    background-position: 5px 50%;
+    background-repeat: no-repeat;
+}
+
+.message.success {	background-image: url('../images/icons/24x24/accept.png'); }
+.message.info { background-image: url('../images/icons/24x24/info.png'); }
+.message.warning { background-image: url('../images/icons/24x24/warning.png'); }
+.message.error { background-image: url('../images/icons/24x24/block.png'); }
+
+.ml220 {
+	margin-left: 220px;
+}
+
+table.listing td.bold {font-weight: bold;}
+table.listing td.italic {font-style: italic;}
+table.listing td.right {float: none !important; text-align: right; }
+
+/* css for timepicker */
+.ui-timepicker-div .ui-widget-header { margin-bottom: 8px; }
+.ui-timepicker-div dl { text-align: left; }
+.ui-timepicker-div dl dt { height: 25px; margin-bottom: -25px; }
+.ui-timepicker-div dl dd { margin: 0 10px 10px 65px; }
+.ui-timepicker-div td { font-size: 90%; }
+.ui-tpicker-grid-label { background: none; border: none; margin: 0; padding: 0; }
+
+/* splashpage & template management */
+.column { padding-top: 5px; min-height:50px; padding-bottom: 5px; margin-bottom: 10px; margin-right: 8px}
+
+.widgetbutton {
+	width: 96px;
+	height: 96px;
+}
+
+ul#widgetSet {
+	list-style: none;
+}
+
+ul#widgetSet li {
+	display: inline;
+	margin: 0px 10px 10px 0px;
+	float: left;
+}
+.widgetbutton span {
+	padding-bottom: 65px !important;
+}
+
+.widgetbutton.htmlwidget span {
+	background: transparent url('../images/widgets/html.png') no-repeat bottom center;
+}
+.widgetbutton.linkswidget span {
+	background: transparent url('../images/widgets/links.png') no-repeat bottom center;
+}
+.widgetbutton.iframewidget span {
+	background: transparent url('../images/widgets/iframe.png') no-repeat bottom center;
+}
+.widgetbutton.loginwidget span {
+	background: transparent url('../images/widgets/login.png') no-repeat bottom center;
+}
+
+.portlet { margin: 0 5px 10px 5px; }
+.portlet-header { cursor: move; margin: 2px; padding-bottom: 4px; padding-left: 0.2em; }
+.static .portlet-header {cursor: default!important;}
+/*.portlet-header .ui-icon { cursor: pointer; float: right; }*/
+
+.portlet-header div.title {
+	float: left;
+	width: 135px;
+	line-height: 25px;
+	padding-top: 4px;
+	height: 25px;
+	overflow: hidden;
+}
+
+.span-18 .portlet-header div.title {
+	width: 600px;
+}
+
+.portlet-header .toolset {
+	width: 70px;
+	padding-top: 2px;
+	float: right;
+	text-align: right;
+}
+.portlet-content { padding: 0.4em; }
+.ui-tabs-panel { padding: 10px !important; }
+.ui-sortable-placeholder { margin: 0 5px 10px 5px;border: 1px dotted black; visibility: visible !important; height: 80px !important; }
+.ui-sortable-placeholder * { visibility: hidden; }
+.static .portlet-header.ui-widget-header { 
+	   background: #949494 url('jqueryui/images/ui-bg_gloss-wave_55_949494_500x100.png') repeat-x scroll 50% 50%;
+	   border: 1px solid #808080;
+}

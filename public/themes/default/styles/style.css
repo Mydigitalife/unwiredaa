@@ -484,3 +484,70 @@ table.listing td.right {float: none !important; text-align: right; }
 .ui-timepicker-div dl dd { margin: 0 10px 10px 65px; }
 .ui-timepicker-div td { font-size: 90%; }
 .ui-tpicker-grid-label { background: none; border: none; margin: 0; padding: 0; }
+
+/* splashpage & template management */
+.column { padding-top: 5px; min-height:50px; padding-bottom: 5px; margin-bottom: 10px; margin-right: 8px}
+
+.widgetbutton {
+    width: 96px;
+    height: 96px;
+}
+
+ul#widgetSet {
+    list-style: none;
+}
+
+ul#widgetSet li {
+    display: inline;
+    margin: 0px 10px 10px 0px;
+    float: left;
+}
+.widgetbutton span {
+    padding-bottom: 65px !important;
+}
+
+.widgetbutton.htmlwidget span {
+    background: transparent url('../images/widgets/html.png') no-repeat bottom center;
+}
+.widgetbutton.linkswidget span {
+    background: transparent url('../images/widgets/links.png') no-repeat bottom center;
+}
+.widgetbutton.iframewidget span {
+    background: transparent url('../images/widgets/iframe.png') no-repeat bottom center;
+}
+.widgetbutton.loginwidget span {
+    background: transparent url('../images/widgets/login.png') no-repeat bottom center;
+}
+
+.portlet { margin: 0 5px 10px 5px; }
+.portlet-header { cursor: move; margin: 2px; padding-bottom: 4px; padding-left: 0.2em; }
+.static .portlet-header {cursor: default!important;}
+/*.portlet-header .ui-icon { cursor: pointer; float: right; }*/
+
+.portlet-header div.title {
+    float: left;
+    width: 135px;
+    line-height: 25px;
+    padding-top: 4px;
+    height: 25px;
+    overflow: hidden;
+}
+
+.span-18 .portlet-header div.title {
+    width: 600px;
+}
+
+.portlet-header .toolset {
+    width: 70px;
+    padding-top: 2px;
+    float: right;
+    text-align: right;
+}
+.portlet-content { padding: 0.4em; }
+.ui-tabs-panel { padding: 10px !important; }
+.ui-sortable-placeholder { margin: 0 5px 10px 5px;border: 1px dotted black; visibility: visible !important; height: 80px !important; }
+.ui-sortable-placeholder * { visibility: hidden; }
+.static .portlet-header.ui-widget-header { 
+       background: #949494 url('jqueryui/images/ui-bg_gloss-wave_55_949494_500x100.png') repeat-x scroll 50% 50%;
+       border: 1px solid #808080;
+}

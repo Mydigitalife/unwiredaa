@@ -14,12 +14,14 @@
  * Report Group
  * @author G. Sokolov <joro@web-teh.net>
  */
-class Reports_Model_Group extends Unwired_Model_Generic  implements Zend_Acl_Role_Interface,
-																 Zend_Acl_Resource_Interface
+class Reports_Model_Group extends Unwired_Model_Generic implements Zend_Acl_Role_Interface,
+																   Zend_Acl_Resource_Interface
 {
 	protected $_reportGroupId = null;
 
 	protected $_codetemplateId = null;
+
+	protected $_codeTemplate = null;
 
 	protected $_title = null;
 
@@ -27,19 +29,33 @@ class Reports_Model_Group extends Unwired_Model_Generic  implements Zend_Acl_Rol
 
 	protected $_nodeId = null;
 
+	protected $_options = array();
+
+	protected $_groupDepthMax = null;
+
+	protected $_groupDepthChartMax = null;
+
+	protected $_groupDepthTableMax = null;
+
 	protected $_dateFrom = null;
 
 	protected $_dateTo = null;
 
 	protected $_reportType = null;
 
-	protected $_reportInterval = 'day';
+	protected $_reportInterval = 'none';
 
 	protected $_description = null;
 
 	protected $_groupsAssigned = array();
 
 	protected $_recepients = array();
+
+	protected $_timeframe = null;
+
+	protected $_innerInterval = 0;
+
+	protected $_formatSelected = null;
 
 	/**
 	 * @return the $_recepients
@@ -93,6 +109,25 @@ class Reports_Model_Group extends Unwired_Model_Generic  implements Zend_Acl_Rol
 		 * @todo Possible ACL problem with false as result
 		 */
 		return isset($this->_groupsAssigned[$groupId]) ? $this->_groupsAssigned[$groupId] : false;
+	}
+
+	/**
+	 * @return Reports_Model_CodeTemplate
+	 */
+	public function getCodeTemplate()
+	{
+	    return $this->_codeTemplate;
+	}
+
+	public function setCodeTemplate(Reports_Model_CodeTemplate $codeTemplate)
+	{
+	    if ($codeTemplate && !$this->getReportGroupId()) {
+	        $this->setGroupDepthMax($codeTemplate->getGroupDepthDefault());
+	        $this->setGroupDepthChartMax($codeTemplate->getGroupDepthChartDefault());
+	    }
+
+	    $this->_codeTemplate = $codeTemplate;
+	    return $this;
 	}
 
 	/**
@@ -152,6 +187,11 @@ class Reports_Model_Group extends Unwired_Model_Generic  implements Zend_Acl_Rol
 	public function setCodetemplateId($codetemplateId) {
 		$this->_codetemplateId = $codetemplateId;
 
+		$codeTemplate = $this->getCodeTemplate();
+		if ($codeTemplate && $codeTemplate->getCodeTemplateId() !== $codetemplateId) {
+		    $this->_codeTemplate = null;
+		}
+
 		return $this;
 	}
 
@@ -203,50 +243,113 @@ class Reports_Model_Group extends Unwired_Model_Generic  implements Zend_Acl_Rol
 		return $this;
 	}
 
-/**
-	 * @return sql date $dateFrom
+	/**
+	 * @return Zend_Date
 	 */
-	public function getDateFrom() {
-		if ($this->_dateFrom != '') {
-			return date('Y-m-d', strtotime($this->_dateFrom));
-		} else {
-			return date('Y-m-01');
-		}
+	public function getDateFrom()
+	{
+	    if (null == $this->_dateFrom) {
+	        $this->_dateFrom = new Zend_Date();
+
+	        $this->_dateFrom->setDay(1);
+	    }
+
+	    return $this->_dateFrom;
 	}
 
 	/**
-	 * @param sql date $dateFrom
+	 * @param Zend_Date|string $dateFrom
 	 */
-	public function setDateFrom($dateFrom) {
-		$this->_dateFrom = $dateFrom;
+	public function setDateFrom($dateFrom)
+	{
+	    if ($dateFrom instanceof Zend_Date) {
+	        $this->_dateFrom = $dateFrom;
+	    } else if (is_string($dateFrom)) {
+	        $format = Zend_Date::DATETIME_SHORT;
+	        if (preg_match('/\d{4}\-\d{2}\-\d{2}/i', $dateFrom)) {
+	            $format = 'yyyy-MM-dd HH:mm:ss';
+	        }
+            $this->getDateFrom()->set($dateFrom, $format);
+	    } else {
+	        $this->_dateFrom = null;
+	    }
 
 		return $this;
 	}
 
-/**
-	 * @return sql date $dateTo
+	/**
+	 * @return Zend_Date
 	 */
-	public function getDateTo() {
-		if ($this->_dateTo != '') {
-			return date('Y-m-d', strtotime($this->_dateTo));
-		} else {
-		    $dateTo = new Zend_Date();
+	public function getDateTo()
+	{
+	    if (null == $this->_dateTo) {
+	        $this->_dateTo = new Zend_Date();
 
-            $dateTo->setDay(1)
-                   ->addMonth(1)
-                   ->subDay(1);
+	        $this->_dateTo->setDay(1)
+                           ->addMonth(1)
+                           ->subDay(1);
+	    }
 
-			return $dateTo->toString('yyyy-MM-dd');
-		}
+	    return $this->_dateTo;
 	}
 
 	/**
-	 * @param sql date $dateTo
+	 * @param Zend_Date|string $dateTo
 	 */
 	public function setDateTo($dateTo) {
-		$this->_dateTo = $dateTo;
+	    if ($dateTo instanceof Zend_Date) {
+	        $this->_dateTo = $dateTo;
+	    } else if (is_string($dateTo)) {
+	        $format = Zend_Date::DATETIME_SHORT;
+	        if (preg_match('/\d{4}\-\d{2}\-\d{2}/i', $dateTo)) {
+	            $format = 'yyyy-MM-dd HH:mm:ss';
+	        }
+	        $this->getDateTo()->set($dateTo, $format);
+	    } else {
+	        $this->_dateTo = null;
+	    }
 
 		return $this;
+	}
+
+	public function getGroupDepthMax()
+	{
+	    if (null == $this->_groupDepthMax) {
+	        $codeTemplate = $this->getCodeTemplate();
+            if (null === $codeTemplate) {
+                $this->_groupDepthMax = -1;
+            } else {
+                $this->_groupDepthMax = $codeTemplate->getGroupDepthDefault();
+            }
+	    }
+
+	    return $this->_groupDepthMax;
+	}
+
+	public function setGroupDepthMax($depth)
+	{
+	    $this->_groupDepthMax = (int) $depth;
+	    return $this;
+	}
+
+	public function getGroupDepthChartMax()
+	{
+	    if (null == $this->_groupDepthChartMax) {
+	        $codeTemplate = $this->getCodeTemplate();
+            if (null === $codeTemplate) {
+                $this->_groupDepthChartMax = -1;
+            } else {
+                $this->_groupDepthChartMax = $codeTemplate->getGroupDepthChartDefault();
+            }
+	    }
+
+	    return $this->_groupDepthChartMax;
+	}
+
+	public function setGroupDepthChartMax($depth)
+	{
+	    $this->_groupDepthChartMax = (int) $depth;
+	    return $this;
 	}
 
 	/**
@@ -281,5 +384,104 @@ class Reports_Model_Group extends Unwired_Model_Generic  implements Zend_Acl_Rol
 	public function getResourceId() {
 		return 'reports_group';
 	}
+	/**
+     * @return the $_options
+     */
+    public function getOptions()
+    {
+        return $this->_options;
+    }
+
+	/**
+     * @param field_type $_options
+     */
+    public function setOptions($_options)
+    {
+        $this->_options = $_options;
+
+        return $this;
+    }
+
+	/**
+     * @return the $_timeframe
+     */
+    public function getTimeframe()
+    {
+        if (null == $this->_timeframe) {
+            $codeTemplate = $this->getCodeTemplate();
+
+            if (null === $codeTemplate) {
+                $this->_timeframe = 'today';
+            } else {
+                $this->_timeframe = $codeTemplate->getTimeframeDefault();
+            }
+        }
+        return $this->_timeframe;
+    }
+
+	/**
+     * @param field_type $_timeframe
+     */
+    public function setTimeframe($_timeframe)
+    {
+        $this->_timeframe = $_timeframe;
+
+        return $this;
+    }
+
+	/**
+     * @return the $_innerInterval
+     */
+    public function getInnerInterval()
+    {
+        return $this->_innerInterval;
+    }
+
+	/**
+     * @param field_type $_innerInterval
+     */
+    public function setInnerInterval($_innerInterval)
+    {
+        $this->_innerInterval = $_innerInterval;
+
+        return $this;
+    }
+
+	/**
+     * @return the $_formatSelected
+     */
+    public function getFormatSelected()
+    {
+        if (null == $this->_formatSelected) {
+            $codeTemplate = $this->getCodeTemplate();
+            if (null === $codeTemplate) {
+                $this->_formatSelected = 'Both';
+            } else {
+                $this->_formatSelected = $codeTemplate->getFormatDefault();
+            }
+        }
+
+        return $this->_formatSelected;
+    }
+
+	/**
+     * @param field_type $format
+     */
+    public function setFormatSelected($format)
+    {
+        $this->_formatSelected = $format;
+
+        return $this;
+    }
+
+    public function hasOutputGraph()
+    {
+        return (bool) ($this->_formatSelected == 'Graph' || $this->_formatSelected == 'Both');
+    }
+
+    public function hasOutputTable()
+    {
+        return (bool) ($this->_formatSelected == 'Table' || $this->_formatSelected == 'Both');
+    }
 
 }

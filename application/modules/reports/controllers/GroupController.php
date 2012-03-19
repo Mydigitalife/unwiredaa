@@ -43,16 +43,32 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 		$reportMapper = new Reports_Model_Mapper_Group();
 		$reportCodeTemplateMapper = new Reports_Model_Mapper_CodeTemplate();
 
+		$parentId = (int) $this->getRequest()->getParam('id');
+
+		if (!$parentId) {
+		    $this->view->uiMessage('reports_index_codetemplate_not_found');
+		    $this->_helper->redirector->gotoRouteAndExit(array('module' => 'reports',
+		                                                       'controller' => 'index',
+		                                                       'action' => 'index'),
+		                                                 'default',
+		                                                 true);
+		}
+
+		$parent = $reportCodeTemplateMapper->find($parentId);
+		if (!$parent) {
+		    $this->view->uiMessage('reports_index_codetemplate_not_found');
+		    $this->_helper->redirector->gotoRouteAndExit(array('module' => 'reports',
+		                                                       'controller' => 'index',
+		                                                       'action' => 'index'),
+		                                                 'default',
+		                                                 true);
+		}
 		$filter = $this->_getFilters ();
 
-		$filter['codetemplate_id'] = $this->getRequest()->getParam('id');
+		$filter['codetemplate_id'] = $parentId;
 
 		$groupService->prepareMapperListingByAdmin($reportMapper, null, false, $filter);
 		//$reportMapper->findby(array('codetemplate_id' => $this->getRequest()->getParam('id')), 0, 'date_added DESC');
-
-		$parentId = $this->getRequest()->getParam('id');
-
-		$parent = $reportCodeTemplateMapper->find($parentId);
 
 		$this->view->parent = $parent;
 
@@ -79,7 +95,8 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 		return $filter;
 	}
 
-	protected function _add(Unwired_Model_Mapper $mapper = null, Unwired_Model_Generic $entity = null, Zend_Form $form = null) {
+	protected function _add(Unwired_Model_Mapper $mapper = null, Unwired_Model_Generic $entity = null, Zend_Form $form = null)
+	{
 
 		$groupService = new Groups_Service_Group();
 
@@ -87,21 +104,28 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 
 		$this->view->rootGroup = $rootGroup;
 
-		parent::_add ( $mapper, $entity, $form );
+		parent::_add($mapper, $entity, $form);
 	}
 
-	public function addAction() {
-		$parent = ( int ) $this->getRequest ()->getParam ( 'id', 1 );
+	public function addAction()
+	{
+		$codeTemplateId = (int) $this->getRequest()->getParam('id', 1);
 
-		$entity = $this->_getDefaultMapper ()->getEmptyModel ();
+		$entity = $this->_getDefaultMapper()->getEmptyModel();
 
-		$entity->setCodetemplateId ( $parent );
-		$entity->setDateAdded ( date('Y-m-d H:i:s') );
+		$entity->setCodetemplateId($codeTemplateId);
+
+		$mapperTemplate = new Reports_Model_Mapper_CodeTemplate();
+
+		$template = $mapperTemplate->find($codeTemplateId);
+		$entity->setCodeTemplate($template);
+
+		$entity->setDateAdded(date('Y-m-d H:i:s'));
 		$entity->setRecepients($this->getRequest()->getParam('email'));
 
-		$this->_add ( null, $entity );
+		$this->_add(null, $entity);
 
-		$this->_helper->viewRenderer->setScriptAction ( 'edit' );
+		$this->_helper->viewRenderer->setScriptAction('edit');
 	}
 
 	public function editAction() {
@@ -144,11 +168,19 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 
 		$parent = $ctMapper->find($report->getCodetemplateId());
 
+		if (!$this->view->canGenerateManual($report)) {
+		    $this->view->uiMessage('reports_group_report_cannot_generate_manual','error');
+
+		    $this->_helper->redirector->gotoUrlAndExit('/reports/group/reports/id/'.$report->getReportGroupId());
+		}
 		$className = $parent->getClassName();
 		$reportGenerator = new $className;
 
+        $reportGenerator->setReportGroup($report);
 
-		$result = $reportGenerator->getData(array_keys($report->getGroupsAssigned()), $report->getDateFrom(), $report->getDateTo());
+		$result = $reportGenerator->getData(array_keys($report->getGroupsAssigned()),
+		                                    $report->getDateFrom()->toString('yyyy-MM-dd HH:mm:ss'),
+		                                    $report->getDateTo()->toString('yyyy-MM-dd HH:mm:ss'));
 
 		$entity = new Reports_Model_Items();
 		$entity->setDateAdded(date('Y-m-d H:i:s'));
@@ -171,36 +203,41 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 			$this->_gotoIndex();
 	    }
 
+	    if ($codeTemplate->getTimeframeLiveMax() === 0) {
+	        $this->view->uiMessage('reports_group_report_cannot_generate_manual', 'error');
+			$this->_gotoIndex();
+	    }
 	    $groupService = new Groups_Service_Group();
 
 		$rootGroup = $groupService->getGroupTreeByAdmin();
+
+		$report = new Reports_Model_Group();
+
+		$report->setCodetemplateId($codeTemplate->getCodetemplateId())
+		       ->setCodeTemplate($codeTemplate)
+		       ->setDateAdded(date('Y-m-d H:i:s'));
 
 		$this->view->rootGroup = $rootGroup;
 
 		$this->view->instant = true;
 
-	    $form = new Reports_Form_Instant(array('view' => $this->view));
+	    $form = new Reports_Form_Instant(array('view' => $this->view, 'entity' => $report));
 
 	    $this->view->form = $form;
 	    $this->_helper->viewRenderer->setScriptAction('edit');
 
-	    $report = new Reports_Model_Group();
-
-		$report->setCodetemplateId($codeTemplate->getCodetemplateId());
-		$report->setDateAdded(date('Y-m-d H:i:s'));
-
 		$this->view->entity = $report;
 
 	    if (!$this->getRequest()->isPost() && !$this->getRequest()->getParam('groups_assigned')) {
-	        $dateTo = new Zend_Date();
+	        /*$date = new Zend_Date();
+	        $date->setDay(1);
+	        $form->getElement('date_from')->setValue($date->toString(Zend_Date::DATETIME_SHORT));
 
-	        $dateTo->setDay(1)
-	               ->addMonth(1)
-	               ->subDay(1);
+	        $date = new Zend_Date();
+	        $date->addMonth(1)
+	             ->subDay(1);
 
-	        $form->getElement('date_from')->setValue(date('Y-m-01'));
-
-	        $form->getElement('date_to')->setValue($dateTo->toString('yyyy-MM-dd'));
+	        $form->getElement('date_to')->setValue($date->toString(Zend_Date::DATE_SHORT));*/
 
 	        return;
 	    }
@@ -241,7 +278,11 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 		$className = $codeTemplate->getClassName();
 		$reportGenerator = new $className;
 
-		$result = $reportGenerator->getData(array_keys($report->getGroupsAssigned()), $report->getDateFrom(), $report->getDateTo());
+		$reportGenerator->setReportGroup($report);
+
+		$result = $reportGenerator->getData(array_keys($report->getGroupsAssigned()),
+		                                    $report->getDateFrom()->toString('yyyy-MM-dd HH:mm:ss'),
+		                                    $report->getDateTo()->toString('yyyy-MM-dd HH:mm:ss'));
 
 		$this->view->parent_parent = $codeTemplate;
 		$this->view->parent = $report;

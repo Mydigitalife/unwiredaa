@@ -20,8 +20,8 @@ class Reports_Service_CodeTemplate_TopTLD extends Reports_Service_CodeTemplate_A
 					->from(array('dns_log'),array('count(*) as cnt','tld','sld'))
 			                ->where('tld NOT IN (?)', array('arpa','lan','local','mobi','home','_TCP','office'))
 			                ->where('sld != ""')
-			                ->where('DATE(time) >= ?', $dateFrom)
-			                ->where('DATE(time) <= ?', $dateTo)
+			                ->where('time >= ?', $dateFrom)
+			                ->where('time < ?', $dateTo)
 			                ->group(array('tld', 'sld'))
 					->order('cnt DESC');
 

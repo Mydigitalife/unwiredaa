@@ -25,9 +25,12 @@ $(function () {
 ?>
 	init_select.push('group_<?php echo $this->entity->getGroupId(); ?>');
 <?php
+    else :
+?>
+	init_select.push('group_<?php echo key($this->currentUser->getGroupsAssigned()); ?>');
+<?php
     endif;
 ?>
-
 	function showTemplateSelectGroup()
 	{
 		if ($('#template_id option').length > 0) {

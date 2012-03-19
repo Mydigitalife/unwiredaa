@@ -49,6 +49,7 @@ function createFileBrowser(cbkUrl, uplUrl)
 		title: 'File browser',
 		draggable: false,
 		autoOpen: false,
+		zIndex: 15000,
 		create: function() {
 			reloadFiles();
 		},

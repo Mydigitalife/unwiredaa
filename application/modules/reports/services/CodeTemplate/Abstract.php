@@ -15,6 +15,39 @@ abstract class Reports_Service_CodeTemplate_Abstract {
 	//default report generator, to be replaced if table is to be made, @todo cleanup when reports!!!
 	protected $_group = 'group';
 
+	protected $_reportGroup = null;
+
+	public function __construct(array $options = array())
+	{
+
+	}
+
+	public function setOptions(array $options)
+	{
+	    foreach ($options as $key => $value) {
+	        $method = 'set' . ucfirst($key);
+
+	        if (!method_exists($this, $method)) {
+	            continue;
+	        }
+
+	        $this->$method($value);
+	    }
+
+	    return $this;
+	}
+
+	public function setReportGroup(Reports_Model_Group $reportGroup)
+	{
+	    $this->_reportGroup = $reportGroup;
+	    return $this;
+	}
+
+	public function getReportGroup()
+	{
+	    return $this->_reportGroup;
+	}
+
 	protected function _getGroupRelations($groupIds) {
 		$db = Zend_Db_Table_Abstract::getDefaultAdapter ();
 

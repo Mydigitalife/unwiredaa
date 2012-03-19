@@ -12,6 +12,7 @@
 	<script type="text/javascript" src="<?php echo $this->httpScheme(); ?>://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js"></script>
 	<script type="text/javascript" src="<?php echo $this->baseUrl("scripts/tipsy/javascripts/jquery.tipsy.js"); ?>"></script>
 	<script type="text/javascript" src="<?php echo $this->baseUrl("scripts/jquery-ui-timepicker-addon.js"); ?>"></script>
+	<script type="text/javascript" src="<?php echo $this->baseUrl("scripts/jquery-ui-i18n.min.js"); ?>"></script>
 
 	<link rel="stylesheet" media="screen,projection" href="<?php echo $this->baseUrl("styles/blueprint/screen.css"); ?>" />
 	<link rel="stylesheet" media="print" href="<?php echo $this->baseUrl("styles/blueprint/print.css"); ?>" />
@@ -26,6 +27,9 @@
     	All core meta, link, styles and scripts must be here.
     	Everything else is loaded as needed with the appropriate helpers below.
     -->
+    <script type="text/javascript">
+    var uiLanguage = '<?php echo $this->translate()->getLocale(); ?>'.substring(0,2);
+    </script>
     <script type="text/javascript" src="<?php echo $this->baseUrl("scripts/unwired.js"); ?>"></script>
 
 	<?php

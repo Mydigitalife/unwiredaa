@@ -31,31 +31,33 @@
 	</thead>
 	<tbody>
 		<?php
-			foreach ($this->paginator as $user) :
+			foreach ($this->paginator as $template) :
 		?>
 		<tr class="<?php echo $this->cycle(array('odd', 'even'))->next(); ?>">
-			<td class="column_id"><?php echo $user->getCodetemplateId(); ?></td>
-			<td><?php echo $user->getTitle(); ?></td>
+			<td class="column_id"><?php echo $template->getCodetemplateId(); ?></td>
+			<td><?php echo $template->getTitle(); ?></td>
 
 			<td class="tools">
 					<a href="<?php echo $this->url(array('module' => 'reports',
 													     'controller' => 'group',
 													     'action' => 'index',
-													     'id'	=> $user->getCodetemplateId()),
+													     'id'	=> $template->getCodetemplateId()),
 												   null,
 												   true); ?>" class="icon view"><?php
 
 						echo $this->translate('report_index_button_index');
 				   ?></a>
+				   <?php if ($template->getTimeframeLiveMax() !== 0) :?>
 					<a href="<?php echo $this->url(array('module' => 'reports',
 													     'controller' => 'group',
 													     'action' => 'instant',
-													     'id'	=> $user->getCodetemplateId()),
+													     'id'	=> $template->getCodetemplateId()),
 												   null,
 												   true); ?>" class="icon instant"><?php
 
 						echo $this->translate('report_index_button_instant');
 				   ?></a>
+				   <?php endif; ?>
 			</td>
 		</tr>
 		<?php endforeach; ?>

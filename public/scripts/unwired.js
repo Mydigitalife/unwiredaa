@@ -13,6 +13,7 @@
 		modal: true,
 		draggable: false,
 		resizable: false,
+		zIndex: 19999,
 		title: 'Alert',
 		buttons: { "Ok": function() { $(this).dialog("close"); } },
 		close: function(event, ui) { 
@@ -39,7 +40,7 @@ $(document).ready(function(){
 	/**
 	 * Hook delete buttons
 	 */
-	$('.tools a.delete').live('click', function(){
+	$('.tools a.delete, .portlet-header a.delete').live('click', function(){
 		return confirm('Are you sure you want to delete this entry?');
 	});
 	
@@ -154,7 +155,7 @@ $(document).ready(function(){
 		return false;
 	});
 	
-	$('td.tools a.icon').tipsy({
+	$('.tools a.icon, .portlet-header a').tipsy({
 		delayIn: 500,
 		delayOut: 0,
 		title: function() { return $(this).text(); }, 
@@ -162,12 +163,19 @@ $(document).ready(function(){
 		opacity: 0.8
 	});
 	
-	$('.datepicker').datepicker({
+	if (uiLanguage == 'en') {
+		$.datepicker.setDefaults($.datepicker.regional['']);
+		$.timepicker.setDefaults($.datepicker.regional['']);
+	} else if ($.datepicker.regional[uiLanguage]) {
+		$.datepicker.setDefaults($.datepicker.regional[uiLanguage]);
+		$.timepicker.setDefaults($.datepicker.regional[uiLanguage]);
+	}
+	$('.datepicker').datepicker(/*{
 		dateFormat: 'mm/dd/yy'
 		
-	});
-	$('.datetimeselector').datetimepicker({
+	}*/);
+	$('.datetimepicker').datetimepicker(/*{
 		dateFormat: 'mm/dd/yy',
-		timeFormat: 'h:m'
-	});
+		timeFormat: 'hh:mm'
+	}*/);
 });

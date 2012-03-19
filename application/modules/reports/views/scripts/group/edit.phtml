@@ -10,17 +10,23 @@
 	$this->headLink()->appendStylesheet($this->baseUrl('scripts/jstree/themes/default/style.css'));
 
 	$groupsAssigned = $this->entity->getGroupsAssigned();
-	
+
 	if (empty($groupsAssigned)) {
 		$groupsAssigned = $this->currentUser->getGroupsAssigned();
 		$groupsAssigned = array_slice($groupsAssigned, 0, 1, true);
 	}
-	
+
 	$this->headScript()->captureStart();
 
 ?>
 var adminGroups = <?php echo Zend_Json::encode($this->currentUser->getGroupsAssigned());?>;
 var groupsAssigned = <?php echo Zend_Json::encode($groupsAssigned);?>;
+var innerCountMin = <?php echo $this->entity->getCodeTemplate()->getInnerCountMin();?>;
+var innerCountMax = <?php echo $this->entity->getCodeTemplate()->getInnerCountMax();?>;
+var innerCountDefault = <?php echo $this->entity->getCodeTemplate()->getInnerCountDefault();?>;
+var timeframeLiveMax = <?php echo $this->entity->getCodeTemplate()->getTimeframeLiveMax() ?
+                                        $this->entity->getCodeTemplate()->getTimeframeLiveMax() :
+                                        527040; ?>;
 
 $(function () {
 	$("label[for=groups_assigned]").siblings('label').remove();
@@ -55,11 +61,11 @@ $(function () {
 
 				$(newRole).children('label').attr('for', 'selgrp' + groupId)
 											.html(data.rslt.obj.children('a:first').text() + ' ');
-											
+
 				$(newRole).children('input').attr('id', 'selgrp' + groupId)
 											 .attr('name', 'groups_assigned[' + groupId + ']')
-											 .val(groupId);											
-											
+											 .val(groupId);
+
 				$("label[for=available_roles]").parent().before(newRole);
 
 				newRole.show();
@@ -74,16 +80,267 @@ $(function () {
 				groupIds.splice(idx, 1);
 				$('#selgrp'+groupId).parent().remove();
 			}
-	     })
+	     });
 
+	  $('#inner_interval').change(function(){
+	  		if ($(this).val() > 0) {
+	  			var timeDiff = ($('#date_to').datetimepicker('getDate').getTime()-$('#date_from').datetimepicker('getDate').getTime())/60000;
+
+	  			innerCountDefault = Math.round(timeDiff / $(this).val());
+  			}
+	  });
+
+	  $('#timeframe').change(function() {
+	  	if ($(this).val() == 'manual') {
+	  		$(this).parent().next().show().next().show();
+	  		return;
+	  	} else {
+	  		$(this).parent().next().hide().next().hide();
+
+			var dateFrom = new Date();
+			var dateTo = new Date();
+
+	  		switch ($(this).val()) {
+	  			case 'yesterday':
+	  				dateFrom = new Date(dateFrom.getTime()-24*3600*1000);
+	  				dateTo.setTime(dateFrom.getTime());
+	  			break;
+
+	  			case 'lastweek':
+					/**
+					 * @todo Fix if date is less than 7
+					 */
+					dateFrom.setTime(dateFrom.getTime()-7*24*3600*1000);
+	  			case 'currweek':
+					var dayOfWeek = dateFrom.getDay();
+
+					if (dayOfWeek == 0) {
+						dateFrom.setTime(dateFrom.getTime()-6*24*3600*1000);
+					} else {
+						dayOfWeek = dayOfWeek-1;
+						dateFrom.setTime(dateFrom.getTime()-dayOfWeek*24*3600*1000);
+					}
+
+					dateTo.setTime(dateFrom.getTime()+6*24*3600*1000);
+	  			break;
+
+	  			case 'lastmonth':
+					if (dateFrom.getMonth() == 0) {
+						dateFrom.setFullYear(dateFrom.getFullYear()-1);
+						dateFrom.setMonth(11);
+					} else {
+						dateFrom.setMonth(dateFrom.getMonth()-1);
+					}
+
+	  			case 'currmonth':
+					dateFrom.setDate(1);
+					dateTo.setTime(dateFrom.getTime());
+					if (dateTo.getMonth() == 11) {
+						dateTo.setYear(dateTo.getYear()+1);
+						dateTo.setMonth(0);
+					} else {
+						dateTo.setMonth(dateTo.getMonth()+1);
+					}
+
+					dateTo.setTime(dateTo.getTime()-24*3600*1000);
+	  			break;
+
+	  			case 'lastyear':
+					dateFrom.setFullYear(dateFrom.getFullYear()-1);
+
+	  			case 'curryear':
+					dateFrom.setDate(1);
+					dateFrom.setMonth(0);
+					dateTo.setTime(dateFrom.getTime());
+					dateTo.setMonth(11);
+					dateTo.setDate(31);
+	  			break;
+	  		}
+
+		  	dateFrom.setHours(0);
+			dateFrom.setMinutes(0);
+			dateFrom.setSeconds(0);
+			dateTo.setHours(24);
+			dateTo.setMinutes(0);
+			dateTo.setSeconds(0);
+	  	}
+
+		$('#date_from').unbind('change');
+		$('#date_to').unbind('change');
+
+	  	$('#date_from').datetimepicker('setDate', dateFrom);
+	  	$('#date_to').datetimepicker('setDate', dateTo);
+
+	  	$('#date_from').change(filterInnerInterval);
+	  	$('#date_to').change(filterInnerInterval).change();
+	  });
+
+	  if ($('#report_type').length) {
+    	  $('#report_type').change(function(){
+    	  	$('#timeframe option').removeAttr('disabled');
+    	  	if ($(this).val() == 'manual') {
+    	  		$(this).parent().next().hide();
+      			  if (timeframeLiveMax < 10080) {
+            	  	$('#timeframe option:gt(2)').attr('disabled','disabled');
+            	  } else if (timeframeLiveMax < 44640) {
+            	  	$('#timeframe option:gt(4)').attr('disabled','disabled');
+            	  } else if (timeframeLiveMax < 527040) {
+            	  	$('#timeframe option:gt(6)').attr('disabled','disabled');
+            	  }
+    	  	} else {
+    	  		$(this).parent().next().show();
+    	  	}
+    	  });
+
+		  $('#report_type').change();
+	  } else {
+  		  if (timeframeLiveMax < 10080) {
+    	  	$('#timeframe option:gt(2)').attr('disabled','disabled');
+    	  } else if (timeframeLiveMax < 44640) {
+    	  	$('#timeframe option:gt(4)').attr('disabled','disabled');
+    	  } else if (timeframeLiveMax < 527040) {
+    	  	$('#timeframe option:gt(6)').attr('disabled','disabled');
+    	  }
+	  }
+
+	  $('#group_depth_max').change(function(){
+
+	  	var currentDepth = parseInt($(this).val());
+		$('#group_depth_chart_max option').removeAttr('disabled');
+
+		if (currentDepth <= 0) {
+    	  	var filterIndex = $(this).find('option:selected').prevAll().length;
+    	  	$('#group_depth_chart_max option').filter(':lt(' + filterIndex + ')').attr('disabled','disabled');
+		} else {
+			$('#group_depth_chart_max option').each(function(){
+				var optValue = parseInt($(this).val());
+				if (optValue <= 0 || optValue > currentDepth) {
+					$(this).attr('disabled','disabled');
+				}
+			});
+		}
+
+		if ($('#group_depth_chart_max option:selected').is(':disabled')) {
+			$('#group_depth_chart_max option:not(:disabled):first').attr('selected','selected');
+		}
+
+	  }).change();
+
+      $('#format_selected').change(function(){
+      	var filterIndex = $('#group_depth_chart_max').find('option:selected').prevAll().length;
+
+      	switch ($(this).val()) {
+			case 'Graph':
+				$('#group_depth_max option:first').attr('selected','selected');
+				$('#group_depth_max').change().parent().hide();
+      			$('#group_depth_chart_max').parent().show();
+			break;
+			case 'Table':
+				$('#group_depth_max option:eq(' + filterIndex + ')').attr('selected','selected');
+				$('#group_depth_max').change().parent().show();
+      			$('#group_depth_chart_max').parent().hide();
+			break;
+      		default:
+      			$('#group_depth_max option:eq(' + filterIndex + ')').attr('selected','selected');
+      			$('#group_depth_max').change().parent().show();
+      			$('#group_depth_chart_max').parent().show();
+      		break;
+      	}
+      }).change();
+
+	  $('#date_from').change(filterInnerInterval);
+	  $('#date_to').change(filterInnerInterval);
+
+	 // $('#date_to').change();
+	  $('#timeframe').change();
+
+	  $('#email').before('<input type="text" id="email_search" class="span-5" />');
+	  $('#email_search').autocomplete({
+			source: "<?php echo $this->url(array('module' => 'users',
+			                                     'controller' => 'admin',
+			                                     'action' => 'autocomplete',
+			                                     'field' => 'email'));?>",
+			minLength: 3,
+			select: function( event, ui ) {
+				if (!ui.item) {
+					return;
+				}
+
+				$('#email').val(($('#email').val() + ',' + ui.item.value).trim().replace(/^,+/, '').replace(/,+$/,''));
+				this.value = '';
+				return false;
+			}
+		});
 });
+
+function filterInnerInterval()
+{
+	if (!$('#date_to').val().length || !$('#date_from').val().length) {
+		return true;
+	}
+	var timeDiff = ($('#date_to').datetimepicker('getDate').getTime()-$('#date_from').datetimepicker('getDate').getTime())/60000;
+	if ($('#report_type').val() == 'manual' && timeDiff > timeframeLiveMax) {
+		alert('<?php echo $this->translate('reports_group_edit_timeframe_overlimit',
+		                                   round($this->entity->getCodeTemplate()->getTimeframeLiveMax() / 24 / 60)); ?>');
+		return true;
+	}
+
+	var lastCount = 9999999999999;
+
+  	$('#inner_interval option').each(function() {
+
+  		var innerCount = timeDiff / parseInt($(this).val());
+  		if (parseInt($(this).val()) > timeDiff || (innerCountMin > 0 && innerCount < innerCountMin) || (innerCountMax > 0 && innerCount > innerCountMax)) {
+  			$(this).attr('disabled','disabled');
+  		} else {
+  			$(this).removeAttr('disabled');
+
+  			if (innerCountDefault > 0 && Math.abs(innerCountDefault - lastCount) > Math.abs(innerCountDefault - innerCount)) {
+  				lastCount = innerCount;
+  				$('#inner_interval').val($(this).val());
+  				$(this).attr('selected','selected');
+  			}
+  		}
+  	});
+
+    if (innerCountMin <= 0) {
+    	$('#inner_interval option:first').removeAttr('disabled');
+    	if ($('#inner_interval option:selected').is(':disabled')) {
+  			$('#inner_interval').val(0);
+  		}
+    }
+/*
+	$('#report_interval option').removeAttr('disabled').removeAttr('selected');
+
+    if (timeDiff > 1440) {
+    		$('#report_interval option:first').attr('disabled','disabled');
+	}
+
+    if (timeDiff > 10080) {
+    		$('#report_interval option:eq(1)').attr('disabled','disabled');
+	}
+
+    if (timeDiff > 44640) {
+    		$('#report_interval option:eq(2)').attr('disabled','disabled');
+	}
+
+    $('#report_interval option:not(:disabled):first').attr('selected','selected');
+*/
+}
+
 <?php
 	$this->headScript()->captureEnd();
 
 
 	echo $this->form;
+
+	if ($this->entity->getCodeTemplate()->isGroupSelectionSupported()) :
 ?>
 
 <div class="grouptree span-8">
 	<?php echo $this->tree($this->rootGroup, null, array('prefix' => 'group_')); ?>
 </div>
+
+<?php
+    endif;
+?>

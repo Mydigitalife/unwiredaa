@@ -86,6 +86,9 @@ $acl = Zend_Registry::get('acl');
 					continue;
 				}
 
+			    if ($action == 'generate' && !$this->canGenerateManual($reportGroup)) {
+				    continue;
+				}
 				?>
 					<a
 					href="<?php

@@ -18,14 +18,13 @@ class Reports_Service_CodeTemplate_TopDNS extends Reports_Service_CodeTemplate_A
 			/*$groupRel = $this->_getGroupRelations($groupIds);*/
 
 			$select = $db->select()
-					->from(array('dns_log'),array('count(*) as cnt','tld','sld'))
+					->from(array('dns_log2'),array('count(*) as cnt','tld','sld'))
 			                ->where('tld NOT IN (?)', array('arpa','lan','local','mobi','home','_TCP','office'))
 			                ->where('sld != ""')
 			                ->where('DATE(time) >= ?', $dateFrom)
 			                ->where('DATE(time) <= ?', $dateTo)
 			                ->group(array('tld', 'sld'))
 					->order('cnt DESC');
-
 
 			$items = $db->fetchAll($select);
 
@@ -102,17 +101,17 @@ class Reports_Service_CodeTemplate_TopDNS extends Reports_Service_CodeTemplate_A
 			                                           'rows' => array()),
 			                            'tld' => array('name' => 'report_result_tld',
 			                                           'type' => 'PieChart',
-													   'headers' => array('report_result_tld', 'report_result_request_count'),
+								   'headers' => array('report_result_tld', 'report_result_request_count'),
 			                                           'rows' => array()));
 
 			foreach ($result['tables']['sld']['rows'] as $data) {
 			    $result['graphics']['sld']['rows'][] = array(is_array($data['data']['name']) ? $data['data']['name']['data'] : $data['data']['name'],
-			                                                 $data['data']['value']);
+			                                                 ($data['data']['value']*1));
 			}
 
 	        foreach ($result['tables']['tld']['rows'] as $data) {
 			    $result['graphics']['tld']['rows'][] = array(is_array($data['data']['name']) ? $data['data']['name']['data'] : $data['data']['name'],
-			                                                 $data['data']['value']);
+			                                                 ($data['data']['value']*1));
 			}
 	        return $result;
 	}

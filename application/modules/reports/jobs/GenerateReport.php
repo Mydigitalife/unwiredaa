@@ -148,6 +148,7 @@ class Reports_Job_GenerateReport {
     		$className = $codeTemplate->getClassName();
 
     		$reportGenerator = new $className;
+            $reportGenerator->setReportGroup($report);
 
     		$result = $reportGenerator->getData(array_keys($report->getGroupsAssigned()), $report->getDateFrom(), $report->getDateTo());
 

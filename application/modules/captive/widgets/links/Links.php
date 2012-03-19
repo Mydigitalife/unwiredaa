@@ -2,7 +2,7 @@
 
 class Widget_Links extends Unwired_Widget_Abstract
 {
-    protected $_config = array('decorate' => true);
+    protected $_config = array('decorate' => true, 'showtitle' => false, 'class' => '');
 
     public function render($content)
     {
@@ -25,6 +25,7 @@ class Widget_Links extends Unwired_Widget_Abstract
         $view = Zend_Layout::getMvcInstance()->getView();
 
         $templatePath = $view->baseUrl('data/templates/' . $view->splashPage->getTemplateId());
+        $splashpagePath = $view->baseUrl('data/splashpages/' . $view->splashPage->getSplashId());
 
         foreach ($data as $linkProperties) {
             $link = null;
@@ -35,11 +36,12 @@ class Widget_Links extends Unwired_Widget_Abstract
                 $link = $linkProperties['other'];
             }
 
-            if (!$link) {
+            if (!$link || empty($link['href']) || empty($link['content'])) {
                 continue;
             }
 
             $link['content'] = str_replace(':templatePath:', $templatePath, $link['content']);
+            $link['content'] = str_replace(':splashpagePath:', $splashpagePath, $link['content']);
 
             $deviceLinks[] = $link;
         }
@@ -54,7 +56,11 @@ class Widget_Links extends Unwired_Widget_Abstract
             }
 
             if (file_exists("{$viewPath}/views/scripts/{$viewScript}")) {
+
+                $this->getView()->content = $content;
                 $this->getView()->deviceLinks = $deviceLinks;
+                $this->getView()->linksConfig = $this->_config;
+
                 return $this->getView()->render($viewScript);
             }
         }
@@ -78,24 +84,29 @@ class Widget_Links extends Unwired_Widget_Abstract
     {
         $this->getView()->assign($params);
 
-        $data = @unserialize($content->getContent());
+        foreach ($content->getData() as $data) {
+            $dataContent = $data->getContent();
 
-        if (!$data) {
-            $data = array();
+            if ($dataContent !== null && is_string($dataContent)) {
+                $dataContent = @unserialize($dataContent);
+            }
+
+            if (!is_array($dataContent)) {
+                $dataContent = array();
+            }
+
+            if (!isset($dataContent['links'])) {
+                $dataContent = array('links' => $dataContent);
+            }
+
+            $dataContent = array_merge($this->_config, $dataContent);
+
+            if (!is_array($dataContent['links']) || empty($dataContent['links'])) {
+                $dataContent['links'] = array(array('other' => array('href' => '', 'content' => '')));
+            }
+
+            $data->setContent($dataContent);
         }
-
-        if (!isset($data['links'])) {
-            $data = array('links' => $data);
-        }
-
-        $data = array_merge($this->_config, $data);
-
-        if (!is_array($data['links']) || empty($data['links'])) {
-            $data['links'] = array(array('other' => array('href' => '', 'content' => '')));
-        }
-
-        $this->getView()->linksData = $data['links'];
-        $this->getView()->linksDecorate = $data['decorate'];
 
         $this->getView()->content = $content;
 
