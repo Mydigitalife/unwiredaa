@@ -15,7 +15,7 @@ class Reports_Service_CodeTemplate_Uplink extends Reports_Service_CodeTemplate_A
 	private function getTable($rows)
 	{
 		return 		array(/*table definition*/
-					'type'=>strtolower($this->getReportGroup()->getCodeTemplate()->getFormatDefault())
+					'type'=>strtolower($this->getReportGroup()->getFormatSelected())
                                         ,'name'=>'Server Uplink Usage'
                                         ,'chartOptions'=>array(
                                                 'type'=>'AreaChart'

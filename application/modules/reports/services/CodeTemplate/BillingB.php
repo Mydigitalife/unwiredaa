@@ -78,31 +78,35 @@ class Reports_Service_CodeTemplate_BillingB extends Reports_Service_CodeTemplate
                 $tstmt=$db->query("SET @last_bytes_down = 0;");
                 $tstmt=$db->query("SET @temp_last_node_id = 0;");
                 $tstmt=$db->query("SET @last_node_id = 0;");
-		$tstmt=$db->query("SELECT LEFT(time,@tlen) as epoch, g.group_id, SUM(delta_bytes_up) as interval_bytes_up, SUM(delta_bytes_down) as interval_bytes_down, g.name
-FROM (SELECT i1.session_id, i1.time
+		$tstmt=$db->query("SET @dateFrom = '$dateFrom';");
+		$tstmt=$db->query("SET @dateTo = '$dateTo';");
+		$tstmt=$db->query("SELECT LEFT(time,@tlen) as epoch, g.group_id, SUM(delta_bytes_up) as interval_bytes_up, SUM(delta_bytes_down) as interval_bytes_down, g.name FROM (SELECT i1.session_id, i1.time
 , if((@temp_last_bytes_up:=@last_bytes_up)=@last_bytes_up,if((@last_bytes_up:=bytes_up)=bytes_up,if(type='Start',0,bytes_up-@temp_last_bytes_up),-1),-2) as delta_bytes_up 
 , if((@temp_last_bytes_down:=@last_bytes_down)=@last_bytes_down,if((@last_bytes_down:=bytes_down)=bytes_down,if(type='Start',0,bytes_down-@temp_last_bytes_down),-1),-2) as delta_bytes_down 
 , if((@temp_last_node_id:=@last_node_id)=@last_node_id,if((@last_node_id:=node_id)=node_id,if(type='Roaming',@temp_last_node_id,node_id),-1),-2) as delta_node_id
 FROM (
-(SELECT session_id, roaming_count, bytes_up, bytes_down, time, type, node_id from acct_internet_interim 
+(SELECT session_id, roaming_count, bytes_up, bytes_down, time, type, node_id
+FROM acct_internet_interim
 WHERE type IN ('Start','Roaming') AND NOT ISNULL(node_id)
-AND time BETWEEN DATE_SUB('$dateFrom',INTERVAL 1 HOUR) AND '$dateTo'
+AND time BETWEEN DATE_SUB(@dateFrom,INTERVAL 1 HOUR) AND @dateTo
 ORDER BY session_id, roaming_count, time)
 UNION
-(SELECT session_id, roaming_count, MAX(bytes_up), MAX(bytes_down), MAX(time) as time, type, node_id from acct_internet_interim 
+(SELECT session_id, roaming_count, MAX(bytes_up), MAX(bytes_down), MAX(time) as time, type, node_id 
+FROM acct_internet_interim
 WHERE type in ('Interim','Stop') AND NOT ISNULL(node_id)
-AND time BETWEEN DATE_SUB('$dateFrom',INTERVAL 1 HOUR) AND '$dateTo'
+AND time BETWEEN DATE_SUB(@dateFrom,INTERVAL 1 HOUR) AND @dateTo
 GROUP BY session_id, roaming_count, LEFT(time,@tlen)
 ORDER BY session_id, roaming_count, time)
 ORDER BY session_id, roaming_count, time
 ) as i1
-) as i2 INNER JOIN node n on i2.delta_node_id = n.node_id INNER JOIN `group` g ON g.group_id = n.group_id
+) as i2 INNER JOIN node n on i2.delta_node_id = n.node_id 
+INNER JOIN `group` g ON g.group_id = n.group_id
 WHERE delta_node_id >= 0 AND (delta_bytes_up>0 OR delta_bytes_down>0)
 AND n.billable=1 and n.status='enabled'
 GROUP BY group_id, epoch
-HAVING epoch >= '$dateFrom'
+HAVING epoch >= LEFT(@dateFrom,@tlen)
 ORDER BY g.name, epoch;
-");
+");//!!?? filter traffic to billable nodes ?
 		$tables=array();
 		$rows=array();
 		$g_header=array('labels');$g_data=array();
