@@ -156,7 +156,7 @@ class Reports_Form_Group extends Unwired_Form
     		if ($this->getEntity()->getCodeTemplate()->isGroupDepthSupported()) {
     		    $this->addElement('select', 'group_depth_max', array('label' => 'report_group_edit_depth',
     		                                                   'required' => true,
-    		                                                   'value' => -1,
+    		                                                   'value' => $this->getEntity()->getGroupDepthMax(),
     		                                                   'multiOptions' => array(-1 => 'report_group_edit_depth_nolimit',
     		                                                                           0 => 'report_group_edit_depth_groups',
     		                                                                           1 => 'report_group_edit_depth_groups_1',
@@ -168,7 +168,7 @@ class Reports_Form_Group extends Unwired_Form
 
     		    $this->addElement('select', 'group_depth_chart_max', array('label' => 'report_group_edit_depth_chart',
     		                                                   'required' => true,
-    		                                                   'value' => -1,
+    		                                                   'value' => $this->getEntity()->getGroupDepthChartMax(),
     		                                                   'multiOptions' => array(-1 => 'report_group_edit_depth_nolimit',
     		                                                                           0 => 'report_group_edit_depth_groups',
     		                                                                           1 => 'report_group_edit_depth_groups_1',
