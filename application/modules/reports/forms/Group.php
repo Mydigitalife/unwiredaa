@@ -33,12 +33,12 @@ class Reports_Form_Group extends Unwired_Form
 		$this->addElement('date', 'date_from', array('label' => 'report_group_date_from',
 													 'required' => true,
 													 'class' => 'span-5 datetimepicker',
-													 'format' => Zend_Date::DATETIME_SHORT));
+													 'format' => 'dd.MM.yyyy HH:mm'/*Zend_Date::DATETIME_SHORT*/));
 
 		$this->addElement('date', 'date_to', array('label' => 'report_group_date_to',
 												   'required' => true,
 												   'class' => 'span-5 datetimepicker',
-												   'format' => Zend_Date::DATETIME_SHORT));
+												   'format' => 'dd.MM.yyyy HH:mm'/*Zend_Date::DATETIME_SHORT*/));
 
 		$this->addElement('select', 'report_type', array('label' => 'report_group_report_type',
 				'required' => true,
