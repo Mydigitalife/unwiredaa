@@ -265,7 +265,8 @@ class Reports_Model_Group extends Unwired_Model_Generic implements Zend_Acl_Role
 	    if ($dateFrom instanceof Zend_Date) {
 	        $this->_dateFrom = $dateFrom;
 	    } else if (is_string($dateFrom)) {
-	        $format = Zend_Date::DATETIME_SHORT;
+	        //$format = Zend_Date::DATETIME_SHORT;
+	        $format = 'dd.MM.yyyy HH:mm';
 	        if (preg_match('/\d{4}\-\d{2}\-\d{2}/i', $dateFrom)) {
 	            $format = 'yyyy-MM-dd HH:mm:ss';
 	        }
@@ -300,7 +301,8 @@ class Reports_Model_Group extends Unwired_Model_Generic implements Zend_Acl_Role
 	    if ($dateTo instanceof Zend_Date) {
 	        $this->_dateTo = $dateTo;
 	    } else if (is_string($dateTo)) {
-	        $format = Zend_Date::DATETIME_SHORT;
+	        //$format = Zend_Date::DATETIME_SHORT;
+	        $format = 'dd.MM.yyyy HH:mm';
 	        if (preg_match('/\d{4}\-\d{2}\-\d{2}/i', $dateTo)) {
 	            $format = 'yyyy-MM-dd HH:mm:ss';
 	        }

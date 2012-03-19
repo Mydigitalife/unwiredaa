@@ -114,7 +114,11 @@ class Captive_ContentController extends Unwired_Controller_Crud
         $widget = $this->getRequest()->getParam('widget', 'Html');
         $contentType = $this->getRequest()->getParam('type', 'content');
 
-        $column = (int) $this->getRequest()->getParam('column', 0);
+        if (!$content) {
+            $column = (int) $this->getRequest()->getParam('column', 0);
+        } else {
+            $column = $content->getColumn();
+        }
 
         if (!in_array($contentType, array('content', 'terms', 'imprint'))) {
             $contentType = 'content';

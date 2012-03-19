@@ -163,19 +163,19 @@ $(document).ready(function(){
 		opacity: 0.8
 	});
 	
-	if (uiLanguage == 'en') {
+	/*if (uiLanguage == 'en') {
 		$.datepicker.setDefaults($.datepicker.regional['']);
 		$.timepicker.setDefaults($.datepicker.regional['']);
 	} else if ($.datepicker.regional[uiLanguage]) {
 		$.datepicker.setDefaults($.datepicker.regional[uiLanguage]);
 		$.timepicker.setDefaults($.datepicker.regional[uiLanguage]);
-	}
-	$('.datepicker').datepicker(/*{
-		dateFormat: 'mm/dd/yy'
+	}*/
+	$('.datepicker').datepicker({
+		dateFormat: 'dd.mm.yy'
 		
-	}*/);
-	$('.datetimepicker').datetimepicker(/*{
-		dateFormat: 'mm/dd/yy',
+	});
+	$('.datetimepicker').datetimepicker({
+		dateFormat: 'dd.mm.yy',
 		timeFormat: 'hh:mm'
-	}*/);
+	});
 });
