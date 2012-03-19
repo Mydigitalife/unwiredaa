@@ -584,7 +584,7 @@ blockChangeEvent = false;
     		<div class="portlet-header ui-helper-clearfix">
     		    <div class="title"><?php echo $data->getTitle(); ?></div>
                 <?php
-    		        if (isset($this->splashPage) && $data->getParent()->isEditable()) :
+    		        if (!isset($this->splashPage) || $data->getParent()->isEditable()) :
     		    ?>
     		    	<div class="toolset">
         			<input type="hidden" name="content_id" value="<?php echo $data->getContentId(); ?>" />
