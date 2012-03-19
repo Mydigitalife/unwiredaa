@@ -227,6 +227,8 @@ $(function () {
 	  }).change();
 
       $('#format_selected').change(function(){
+      	var filterIndex = $('#group_depth_chart_max').find('option:selected').prevAll().length;
+
       	switch ($(this).val()) {
 			case 'Graph':
 				$('#group_depth_max option:first').attr('selected','selected');
@@ -234,10 +236,12 @@ $(function () {
       			$('#group_depth_chart_max').parent().show();
 			break;
 			case 'Table':
+				$('#group_depth_max option:eq(' + filterIndex + ')').attr('selected','selected');
 				$('#group_depth_max').parent().show();
       			$('#group_depth_chart_max').parent().hide();
 			break;
       		default:
+      			$('#group_depth_max option:eq(' + filterIndex + ')').attr('selected','selected');
       			$('#group_depth_max').parent().show();
       			$('#group_depth_chart_max').parent().show();
       		break;
