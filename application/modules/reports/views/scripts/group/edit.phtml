@@ -236,12 +236,16 @@ $(function () {
       			$('#group_depth_chart_max').parent().show();
 			break;
 			case 'Table':
-				$('#group_depth_max').val($('#group_depth_max option:eq(' + filterIndex + ')').val());
+				if (!$('#group_depth_max').is(':visible')) {
+					$('#group_depth_max').val($('#group_depth_max option:eq(' + filterIndex + ')').val());
+				}
 				$('#group_depth_max').change().parent().show();
       			$('#group_depth_chart_max').parent().hide();
 			break;
       		default:
-      			$('#group_depth_max').val($('#group_depth_max option:eq(' + filterIndex + ')').val());
+      			if (!$('#group_depth_max').is(':visible')) {
+					$('#group_depth_max').val($('#group_depth_max option:eq(' + filterIndex + ')').val());
+				}
       			$('#group_depth_max').change().parent().show();
       			$('#group_depth_chart_max').parent().show();
       		break;
