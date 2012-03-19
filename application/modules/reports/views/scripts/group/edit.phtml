@@ -237,12 +237,12 @@ $(function () {
 			break;
 			case 'Table':
 				$('#group_depth_max option:eq(' + filterIndex + ')').attr('selected','selected');
-				$('#group_depth_max').parent().show();
+				$('#group_depth_max').change().parent().show();
       			$('#group_depth_chart_max').parent().hide();
 			break;
       		default:
       			$('#group_depth_max option:eq(' + filterIndex + ')').attr('selected','selected');
-      			$('#group_depth_max').parent().show();
+      			$('#group_depth_max').change().parent().show();
       			$('#group_depth_chart_max').parent().show();
       		break;
       	}
