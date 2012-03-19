@@ -55,20 +55,16 @@ class Reports_Service_CodeTemplate_DNS extends Reports_Service_CodeTemplate_Abst
 	}
 
 /*abstractable default line handler!?*/
-	private function handleLine($name,$value,$perc,$bold,$hide,$link)
+	private function handleLine($name,$value,$total,$bold,$hide,$link)
 	{
-		/*if (!$link) $a_start=$a_end='';
-		else {
-			$a_start='<a href="'.$_SERVER['REQUEST_URI'].'?domain='.$name.'">';
-			$a_end='</a>';
-		}*/
+		$perc=(round(1000*$value/$total)/10)."%";
 		$a=array(/*data row*/
-			'data'=>array($a_start.$name.$a_end,$value,$perc."%")
+			'data'=>array($a_start.$name.$a_end,$value,$perc)
 			,'translatable'=>false
 			,'device'=>$hide
 			,'class'=>array(($bold?'bold':''),($bold?'bold right':'right'),($bold?'bold right':'right'))
 		); /*end of data row*/
-		if ($link) return array_merge($a,array('url'=>$_SERVER['REQUEST_URI'].'?domain='.$name));
+		if ($link) return array_merge($a,array('url'=>$_SERVER['REQUEST_URI'].'?domain='.$name.'&total='.$total));
 		else return $a;
 	}
 
@@ -87,13 +83,17 @@ class Reports_Service_CodeTemplate_DNS extends Reports_Service_CodeTemplate_Abst
 			$where.=" AND sld = '".$_GET['domain']."'";
 
 			$total=$db->fetchAll("SELECT SUM(count) $from $where");
-			$stmt=$db->query("SELECT CONCAT(prefix,'.',sld) as domain, SUM(count) as cnt $from $where GROUP BY domain HAVING cnt > ".ceil($total[0][0]/667)." ORDER BY cnt desc $limit");
-			$name='DNS detail report of '.$_GET['domain'];
+			if (isset($_GET['total'])) $tperc=" <a href='/reports/group/view/id/".$_GET['parent']."' > (".(round(($total[0][0]*1000)/$_GET['total'])/10)."%) </a>";
+			else $tperc="";
+
+			$stmt=$db->query("SELECT CONCAT(prefix,IF(LENGTH(prefix)>0,'.',''),sld) as domain, SUM(count) as cnt $from $where GROUP BY domain HAVING cnt > ".ceil($total[0][0]/667)." ORDER BY cnt desc $limit");
+			$name='DNS detail report of '.$_GET['domain'].$tperc;
 			$link=false;
 		}
 		else {
 			$from="FROM dns_log_sum_sld";
 
+//			parent=$db->fetchAll("select max(item_id) from report_items;");
 			$total=$db->fetchAll("SELECT SUM(count) $from $where");
 			$stmt=$db->query("SELECT sld as domain, SUM(count) as cnt $from $where GROUP BY domain HAVING cnt > ".ceil($total[0][0]/667)." ORDER BY cnt desc $limit");
 			$name='DNS overview';
@@ -102,10 +102,10 @@ class Reports_Service_CodeTemplate_DNS extends Reports_Service_CodeTemplate_Abst
 
 		$rows=array();
 		$other=$totalcount=$total[0][0];
-		if ($other>0) $rows[]=$this->handleLine("Total",$other,round($other*1000/$totalcount)/10,true,true,false);
+		if ($totalcount>0) $rows[]=$this->handleLine("Total",$totalcount,$totalcount,true,true,false);
 
 		while ($row=$stmt->fetch()) {
-			$rows[]=$this->handleLine($row[0],$row[1],round(1000*$row[1]/$totalcount)/10,false,false,$link);
+			$rows[]=$this->handleLine($row[0],$row[1],$totalcount,false,false,$link);
 			$other-=$row[1];
 			$empty=false;
 		}
@@ -114,12 +114,10 @@ class Reports_Service_CodeTemplate_DNS extends Reports_Service_CodeTemplate_Abst
                         $rows[]=$this->handleLine("[No Data!]",0,0,true,false,false);
                 }
                 else if ($other>0) {
-                        $rows[]=$this->handleLine("Other",$other,round($other*1000/$totalcount)/10,true,false,false);
+                        $rows[]=$this->handleLine((!$link?"Other ".$_GET['domain']." subdomains":"Other domains"),$other,$totalcount,true,false,false);
                 }
-/*
-print('<pre>');
-print_r($this->getTables($rows,$name));
-die('</pre>');*/
+		if ($totalcount>0) $rows[]=$this->handleLine("Total",$totalcount,$totalcount,true,true,false);
+
 		return $this->getTables($rows,$name);
 	}
 }

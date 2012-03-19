@@ -154,7 +154,7 @@ $acl = Zend_Registry::get ( 'acl' );
 				<?php } ?>
 
 				var chart = new google.visualization.<?=isset($opt->type)?$opt->type:"PieChart"?>(document.getElementById("chart_div_<?=$ccnt?>_<?php echo $key ?>"));
-				chart.draw(data, {width: <?=isset($opt->width)?$opt->width:"350"?>, height: <?=isset($opt->height)?$opt->height:"300"?>, title: "<?=$this->translate($name)?>"<?=isset($opt->nativeOptions)?','.$opt->nativeOptions:''?>});
+				chart.draw(data, {width: <?=isset($opt->width)?$opt->width:"350"?>, height: <?=isset($opt->height)?$opt->height:"300"?>, title: "<?=$this->translate(strip_tags($name))?>"<?=isset($opt->nativeOptions)?','.$opt->nativeOptions:''?>});
 			}
 			</script>
 			<div id="chart_div_<?=$ccnt?>_<?php echo $key; ?>" style="float: left;"></div>
@@ -181,7 +181,7 @@ $acl = Zend_Registry::get ( 'acl' );
 			<?php endforeach; ?>
 			<?php if (isset($value->rows)): ?>
 				<?php foreach ($value->rows as $k => $v): 
-					if (isset($v->url)) $url=$v->url;
+					if (isset($v->url)) $url=$v->url.'&parent='.$this->report->getItemId();
 					else $url=false;
 				?>
 				<tr class="<?php echo $this->cycle(array('odd', 'even'))->next(); ?>">

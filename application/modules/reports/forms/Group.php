@@ -156,7 +156,7 @@ class Reports_Form_Group extends Unwired_Form
     		if ($this->getEntity()->getCodeTemplate()->isGroupDepthSupported()) {
     		    $this->addElement('select', 'group_depth_max', array('label' => 'report_group_edit_depth',
     		                                                   'required' => true,
-    		                                                   'value' => -1,
+    		                                                   'value' => $this->getEntity()->getGroupDepthMax(),
     		                                                   'multiOptions' => array(-1 => 'report_group_edit_depth_nolimit',
     		                                                                           0 => 'report_group_edit_depth_groups',
     		                                                                           1 => 'report_group_edit_depth_groups_1',
@@ -168,7 +168,7 @@ class Reports_Form_Group extends Unwired_Form
 
     		    $this->addElement('select', 'group_depth_chart_max', array('label' => 'report_group_edit_depth_chart',
     		                                                   'required' => true,
-    		                                                   'value' => -1,
+    		                                                   'value' => $this->getEntity()->getGroupDepthChartMax(),
     		                                                   'multiOptions' => array(-1 => 'report_group_edit_depth_nolimit',
     		                                                                           0 => 'report_group_edit_depth_groups',
     		                                                                           1 => 'report_group_edit_depth_groups_1',
@@ -295,10 +295,14 @@ class Reports_Form_Group extends Unwired_Form
 	public function getValues($suppressArrayNotation = false) {
 		$values = parent::getValues($suppressArrayNotation );
 
-		if (!isset($values['groups_assigned']) && $values['groups_assigned'] == null) {
+		if (!isset($values['groups_assigned']) || $values['groups_assigned'] == null) {
 		    if (!$this->getEntity()->getCodeTemplate()->isGroupSelectionSupported()) {
 		        $adminUserGroups = Zend_Auth::getInstance()->getIdentity()->getGroupsAssigned();
-			    $values['groups_assigned'] = array(key($adminUserGroups));
+		        
+		        $mapperGroups = new Groups_Model_Mapper_Group();
+		        $group = $mapperGroups->find(key($adminUserGroups));
+		        
+			    $values['groups_assigned'] = array(key($adminUserGroups) => $group);
 		    } else {
 		        $values['groups_assigned'] = array();
 		    }
