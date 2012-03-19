@@ -295,7 +295,7 @@ class Reports_Form_Group extends Unwired_Form
 	public function getValues($suppressArrayNotation = false) {
 		$values = parent::getValues($suppressArrayNotation );
 
-		if (!isset($values['groups_assigned']) && $values['groups_assigned'] == null) {
+		if (!isset($values['groups_assigned']) || $values['groups_assigned'] == null) {
 		    if (!$this->getEntity()->getCodeTemplate()->isGroupSelectionSupported()) {
 		        $adminUserGroups = Zend_Auth::getInstance()->getIdentity()->getGroupsAssigned();
 			    $values['groups_assigned'] = array(key($adminUserGroups));
