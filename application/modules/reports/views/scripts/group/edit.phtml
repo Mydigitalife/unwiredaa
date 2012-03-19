@@ -231,17 +231,17 @@ $(function () {
 
       	switch ($(this).val()) {
 			case 'Graph':
-				$('#group_depth_max option:first').attr('selected','selected');
+				$('#group_depth_max').val($('#group_depth_max option:first').val());
 				$('#group_depth_max').change().parent().hide();
       			$('#group_depth_chart_max').parent().show();
 			break;
 			case 'Table':
-				$('#group_depth_max option:eq(' + filterIndex + ')').attr('selected','selected');
+				$('#group_depth_max').val($('#group_depth_max option:eq(' + filterIndex + ')').val());
 				$('#group_depth_max').change().parent().show();
       			$('#group_depth_chart_max').parent().hide();
 			break;
       		default:
-      			$('#group_depth_max option:eq(' + filterIndex + ')').attr('selected','selected');
+      			$('#group_depth_max').val($('#group_depth_max option:eq(' + filterIndex + ')').val());
       			$('#group_depth_max').change().parent().show();
       			$('#group_depth_chart_max').parent().show();
       		break;
