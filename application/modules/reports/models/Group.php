@@ -33,6 +33,10 @@ class Reports_Model_Group extends Unwired_Model_Generic implements Zend_Acl_Role
 
 	protected $_groupDepthMax = null;
 
+	protected $_groupDepthChartMax = null;
+
+	protected $_groupDepthTableMax = null;
+
 	protected $_dateFrom = null;
 
 	protected $_dateTo = null;
@@ -119,6 +123,7 @@ class Reports_Model_Group extends Unwired_Model_Generic implements Zend_Acl_Role
 	{
 	    if ($codeTemplate && !$this->getReportGroupId()) {
 	        $this->setGroupDepthMax($codeTemplate->getGroupDepthDefault());
+	        $this->setGroupDepthChartMax($codeTemplate->getGroupDepthChartDefault());
 	    }
 
 	    $this->_codeTemplate = $codeTemplate;
@@ -324,6 +329,26 @@ class Reports_Model_Group extends Unwired_Model_Generic implements Zend_Acl_Role
 	public function setGroupDepthMax($depth)
 	{
 	    $this->_groupDepthMax = (int) $depth;
+	    return $this;
+	}
+
+	public function getGroupDepthChartMax()
+	{
+	    if (null == $this->_groupDepthChartMax) {
+	        $codeTemplate = $this->getCodeTemplate();
+            if (null === $codeTemplate) {
+                $this->_groupDepthChartMax = -1;
+            } else {
+                $this->_groupDepthChartMax = $codeTemplate->getGroupDepthChartDefault();
+            }
+	    }
+
+	    return $this->_groupDepthChartMax;
+	}
+
+	public function setGroupDepthChartMax($depth)
+	{
+	    $this->_groupDepthChartMax = (int) $depth;
 	    return $this;
 	}
 

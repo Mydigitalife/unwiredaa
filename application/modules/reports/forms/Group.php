@@ -102,24 +102,6 @@ class Reports_Form_Group extends Unwired_Form
 		                                                          'value' => key(Zend_Auth::getInstance()->getIdentity()->getGroupsAssigned())));
 		}*/
 
-		/**
-		 * Report supports depth limiting
-		 */
-		if ($this->getEntity()->getCodeTemplate()->isGroupDepthSupported()) {
-		    $this->addElement('select', 'group_depth_max', array('label' => 'report_group_edit_depth',
-		                                                   'required' => true,
-		                                                   'value' => -1,
-		                                                   'multiOptions' => array(-1 => 'report_group_edit_depth_nolimit',
-		                                                                           0 => 'report_group_edit_depth_groups',
-		                                                                           1 => 'report_group_edit_depth_groups_1',
-		                                                                           2 => 'report_group_edit_depth_groups_2',
-		                                                                           3 => 'report_group_edit_depth_groups_3',
-		                                                                           4 => 'report_group_edit_depth_groups_4',
-		                                                                           5 => 'report_group_edit_depth_groups_5',
-		                                                                           )));
-		}
-
-
 		$this->addElement('select', 'timeframe', array('label' => 'report_group_edit_timeframe',
 		                                               'required' => true,
 		                                               'value' => $this->getEntity()->getCodeTemplate()->getTimeframeDefault(),
@@ -167,6 +149,35 @@ class Reports_Form_Group extends Unwired_Form
         		                                                     'Table' => 'report_group_edit_format_table',
         		                                                     'Both'  => 'report_group_edit_format_both'
     		                                                     )));
+
+    		/**
+    		 * Report supports depth limiting
+    		 */
+    		if ($this->getEntity()->getCodeTemplate()->isGroupDepthSupported()) {
+    		    $this->addElement('select', 'group_depth_max', array('label' => 'report_group_edit_depth',
+    		                                                   'required' => true,
+    		                                                   'value' => -1,
+    		                                                   'multiOptions' => array(-1 => 'report_group_edit_depth_nolimit',
+    		                                                                           0 => 'report_group_edit_depth_groups',
+    		                                                                           1 => 'report_group_edit_depth_groups_1',
+    		                                                                           2 => 'report_group_edit_depth_groups_2',
+    		                                                                           3 => 'report_group_edit_depth_groups_3',
+    		                                                                           4 => 'report_group_edit_depth_groups_4',
+    		                                                                           5 => 'report_group_edit_depth_groups_5',
+    		                                                                           )));
+
+    		    $this->addElement('select', 'group_depth_chart_max', array('label' => 'report_group_edit_depth_chart',
+    		                                                   'required' => true,
+    		                                                   'value' => -1,
+    		                                                   'multiOptions' => array(-1 => 'report_group_edit_depth_nolimit',
+    		                                                                           0 => 'report_group_edit_depth_groups',
+    		                                                                           1 => 'report_group_edit_depth_groups_1',
+    		                                                                           2 => 'report_group_edit_depth_groups_2',
+    		                                                                           3 => 'report_group_edit_depth_groups_3',
+    		                                                                           4 => 'report_group_edit_depth_groups_4',
+    		                                                                           5 => 'report_group_edit_depth_groups_5',
+    		                                                                           )));
+    		}
 		} else {
             $this->addElement('hidden', 'format_selected', array('value' => $this->getEntity()->getCodeTemplate()->getFormatDefault()));
 		}
@@ -210,8 +221,9 @@ class Reports_Form_Group extends Unwired_Form
 		                            'inner_interval',
 									'report_type',
 									'report_interval',
+		                            'format_selected',
 									'group_depth_max',
-		                            'format_selected' ),
+									'group_depth_chart_max' ),
 							   'report_preferences' );
 
 		$this->addDisplayGroup(array('email',

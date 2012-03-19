@@ -108,7 +108,8 @@
     		}
     	});
 
-		var prevPlaceHolderIndex = -1;
+		var prevPlaceholderIndex = -1;
+		var blockChangeEvent = false;
 
 		$(".column:not(.special)").sortable({
 			connectWith: ".column:not(.special)",
@@ -122,10 +123,17 @@
 				}
 			},
 			cancel: ".portlet.static",
-			start: function(event,ui) {
-				prevPlaceHolderIndex = ui.placeholder.index();
-			},
             change: function(event,ui) {
+            	if (blockChangeEvent) {
+            		return;
+            	}
+
+            	blockChangeEvent = true;
+
+            	if (prevPlaceholderIndex == -1) {
+            		prevPlaceholderIndex = ui.item.index();
+            	}
+
 				var columnId = $(ui.item).parents(".column").attr('id');
 				var itemIndex = ui.item.index();
 				var placeholderIndex = ui.placeholder.index();
@@ -138,35 +146,50 @@
 				}
 
 
-				/* if (correctIndex[columnId].indexOf(placeholderIndex) !== false) {
-					return false;
-				} */
-
 
 				/**
 				 * Move down
 				 */
 				if (ui.item.index() < ui.placeholder.index()) {
-					for (i = correctIndex[columnId].length-1; i >= 0; i--) {
+	/*				for (i = correctIndex[columnId].length-1; i >= 0; i--) {
 						var position = correctIndex[columnId][i];
+						console.log('pos: ' +position);
 
-						if (position <= ui.item.index() || position > ui.placeholder.index()) {
+						if (position <= prevPlaceholderIndex || position > ui.placeholder.index()) {
 							continue;
 						}
+*/
 
-						if (position == ui.placeholder.index()) {
-							ui.placeholder.insertAfter($('#' + columnId + ' div.portlet:eq(' + ui.placeholder.index() + ')'));
-							continue;
-						}
+console.log(prevPlaceholderIndex + ' - ' + ui.placeholder.index());
+						var staticItem = null;
+						var sortableItem = ui.item;
 
-						if (position == ui.placeholder.index()-1) {
-							ui.placeholder.insertAfter($('#' + columnId + ' div.portlet:eq(' + ui.placeholder.index() + ')'));
-							continue;
-						}
+						$('#'+columnId+' div.portlet').filter(':gt('+prevPlaceholderIndex+'):lt('+ui.placeholder.index()+')').each(function(){
+							console.log($(this).attr('class'));
+							if (staticItem) {
+								console.log ('if static');
+								if ($(this).hasClass('static')) {
+									console.log('second static');
+									return true;
+								}
+								console.log('prepend item');
+								$(this).insertBefore(staticItem);
+								staticItem = null;
+							}
 
-						$(correctItems[columnId][i]).insertAfter($(correctItems[columnId][i]).next());
-					}
-				// alert(ui.item.nextAll('.ui-sortable-placeholder').length,1);
+							console.log('no previous static');
+							if ($(this).hasClass('static')) {
+								console.log('added new prev static');
+								staticItem = this;
+								return true;
+							}
+						});
+
+
+	/*				}*/
+
+					prevPlaceholderIndex = ui.placeholder.index();
+blockChangeEvent = false;
 				return true;
 					$('#'+ columnId +' div.portlet:lt('+placeholderIndex+'):gte('+itemIndex+')').each(function(){
 						if (!$(this).hasClass('static')) {
@@ -185,6 +208,7 @@
                 }
 				console.log(ui.item.index());
 				console.log(ui.placeholder.index());
+				blockChangeEvent = false;
             },
 
 			update: function(event, ui) {

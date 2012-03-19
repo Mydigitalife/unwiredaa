@@ -203,6 +203,36 @@ $(function () {
     	  }
 	  }
 
+	  $('#group_depth_max').change(function(){
+	  	var filterIndex = $(this).find('option:selected').prevAll().length;
+
+		$('#group_depth_chart_max option').removeAttr('disabled')
+									      .filter(':lt(' + filterIndex + ')').attr('disabled','disabled');
+
+		if ($('#group_depth_chart_max option:selected').is(':disabled')) {
+			$('#group_depth_chart_max option:not(:disabled):first').attr('selected','selected');
+		}
+
+	  }).change();
+
+      $('#format_selected').change(function(){
+      	switch ($(this).val()) {
+			case 'Graph':
+				$('#group_depth_max option:first').attr('selected','selected');
+				$('#group_depth_max').change().parent().hide();
+      			$('#group_depth_chart_max').parent().show();
+			break;
+			case 'Table':
+				$('#group_depth_max').parent().show();
+      			$('#group_depth_chart_max').parent().hide();
+			break;
+      		default:
+      			$('#group_depth_max').parent().show();
+      			$('#group_depth_chart_max').parent().show();
+      		break;
+      	}
+      }).change();
+
 	  $('#date_from').change(filterInnerInterval);
 	  $('#date_to').change(filterInnerInterval);
 

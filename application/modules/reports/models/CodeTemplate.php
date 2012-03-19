@@ -29,6 +29,8 @@ class Reports_Model_CodeTemplate extends Unwired_Model_Generic implements Zend_A
 
 	protected $_groupDepthDefault = -1;
 
+	protected $_groupDepthChartDefault = -1;
+
 	protected $_innerIntervalSupported = 0;
 
 	protected $_innerCountMin = 0;
@@ -176,6 +178,18 @@ class Reports_Model_CodeTemplate extends Unwired_Model_Generic implements Zend_A
 	public function setGroupDepthDefault($depth = -1)
 	{
 	    $this->_groupDepthDefault = (int) $depth;
+
+	    return $this;
+	}
+
+	public function getGroupDepthChartDefault()
+	{
+	    return $this->_groupDepthChartDefault;
+	}
+
+	public function setGroupDepthChartDefault($depth = -1)
+	{
+	    $this->_groupDepthChartDefault = (int) $depth;
 
 	    return $this;
 	}
