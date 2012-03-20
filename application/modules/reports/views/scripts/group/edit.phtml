@@ -24,9 +24,12 @@ var groupsAssigned = <?php echo Zend_Json::encode($groupsAssigned);?>;
 var innerCountMin = <?php echo $this->entity->getCodeTemplate()->getInnerCountMin();?>;
 var innerCountMax = <?php echo $this->entity->getCodeTemplate()->getInnerCountMax();?>;
 var innerCountDefault = <?php echo $this->entity->getCodeTemplate()->getInnerCountDefault();?>;
-var timeframeLiveMax = <?php echo $this->entity->getCodeTemplate()->getTimeframeLiveMax() ?
-                                        $this->entity->getCodeTemplate()->getTimeframeLiveMax() :
-                                        527040; ?>;
+var timeframeLiveMax = <?php
+    $timeFrameLiveMax = $this->entity->getCodeTemplate()->getTimeframeLiveMax() ?
+                                    $this->entity->getCodeTemplate()->getTimeframeLiveMax() :
+                                    527040;
+    echo $timeFrameLiveMax;
+    ?>;
 
 $(function () {
 	$("label[for=groups_assigned]").siblings('label').remove();
@@ -285,7 +288,7 @@ function filterInnerInterval()
 	var timeDiff = ($('#date_to').datetimepicker('getDate').getTime()-$('#date_from').datetimepicker('getDate').getTime())/60000;
 	if ($('#report_type').val() == 'manual' && timeDiff > timeframeLiveMax) {
 		alert('<?php echo $this->translate('reports_group_edit_timeframe_overlimit',
-		                                   round($this->entity->getCodeTemplate()->getTimeframeLiveMax() / 24 / 60)); ?>');
+		                                   round($timeFrameLiveMax / 24 / 60)); ?>');
 		return true;
 	}
 
