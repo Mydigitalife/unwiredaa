@@ -297,8 +297,8 @@ class Reports_Form_Group extends Unwired_Form
 
 		if (!isset($values['groups_assigned']) || $values['groups_assigned'] == null) {
 		    if (!$this->getEntity()->getCodeTemplate()->isGroupSelectionSupported()) {
-		        /*$adminUserGroups = Zend_Auth::getInstance()->getIdentity()->getGroupsAssigned();
-
+		        $adminUserGroups = Zend_Auth::getInstance()->getIdentity()->getGroupsAssigned();
+/*
 		        $mapperGroups = new Groups_Model_Mapper_Group();
 		        $group = $mapperGroups->find(key($adminUserGroups));*/
 
