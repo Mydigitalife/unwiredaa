@@ -111,7 +111,7 @@ FROM proxy_log WHERE category='$row[0]' and stamp BETWEEN '$dateFrom' AND '$date
 
 			$total=array();
                         $total[]=$this->handleLine('Total',$totaltotal,100,true,true);
-			$overview['overview']=$this->getTable(array_merge($total,$tltotal,$total),'Thread Overview');
+			$overview['overview']=$this->getTable(array_merge($total,$tltotal,$total),'Threat Overview');
 		}
 
 		return array('tables'=>array_merge($overview,$tables));
