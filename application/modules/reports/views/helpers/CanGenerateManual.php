@@ -34,7 +34,7 @@ class Reports_View_Helper_CanGenerateManual extends Zend_View_Helper_Abstract
 
     	$dateFrom->addMinute($liveMax);
 
-    	$allowedGenerate = $dateFrom->isLater($dateTo);
+    	$allowedGenerate = ($dateFrom->isLater($dateTo) || $dateFrom->equals($dateTo));
 
     	return $allowedGenerate;
     }
