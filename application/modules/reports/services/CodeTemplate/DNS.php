@@ -83,7 +83,7 @@ class Reports_Service_CodeTemplate_DNS extends Reports_Service_CodeTemplate_Abst
 			$where.=" AND sld = '".$_GET['domain']."'";
 
 			$total=$db->fetchAll("SELECT SUM(count) $from $where");
-			if (isset($_GET['total'])) $tperc=" <a href='/reports/group/view/id/".$_GET['parent']."' > (".(round(($total[0][0]*1000)/$_GET['total'])/10)."%) </a>";
+			if (isset($_GET['total'])) $tperc=" <a href='/reports/group/view/id/".$_GET['parent']."' > (".(round(($total[0][0]*1000)/$_GET['total'])/10)."% of all requests) </a>";
 			else $tperc="";
 
 			$stmt=$db->query("SELECT CONCAT(prefix,IF(LENGTH(prefix)>0,'.',''),sld) as domain, SUM(count) as cnt $from $where GROUP BY domain HAVING cnt > ".ceil($total[0][0]/667)." ORDER BY cnt desc $limit");
