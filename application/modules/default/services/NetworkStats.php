@@ -38,7 +38,7 @@ class Default_Service_NetworkStats
             $data['devicesOnline'] = $db->fetchOne("select count(*) from `{$nodeTableName}` where `online_status` = 1 AND `deleted` = 0;");
             $data['devicesOffline'] = $db->fetchOne("select count(*) from `{$nodeTableName}` where `online_status` = 0 AND `deleted` = 0;");
         } catch (Exception $e) {
-            // recover
+            Unwired_Exception::getLog()->error($e->getMessage());
         }
 
         $networkStats = new Default_Model_NetworkStats();
