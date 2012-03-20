@@ -148,7 +148,7 @@ $acl = Zend_Registry::get ( 'acl' );
 
 		                	data.addRows([
         		        	<?php $rii=0; foreach ($value->rows as $k => $v):?>
-						<?php if ((!$depth_list||!isset($v->depth)||array_search($v->depth,$depth_list)!=false) && (!isset($v->device)||$v->device==0) ):?>
+						<?php if((!$depth_list||!isset($v->depth)||array_search($v->depth,$depth_list)!==false) && (!isset($v->device)||$v->device==0) ):?>
 	                	        		<?=($rii++==0?"":",")?>[<?php foreach ($v->data as $kk => $vv): echo ($kk==0?"":",").($vv==""?0:(is_numeric($vv)?$vv:'"'.$vv.'"')); endforeach; ?>]
 						<?php endif; ?>
 	                		<?php endforeach; ?>
