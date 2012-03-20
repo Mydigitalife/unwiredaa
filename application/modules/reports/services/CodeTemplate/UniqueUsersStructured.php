@@ -145,14 +145,14 @@ GROUP BY reportgroup");
 		} else if (($mode=='billingb')||($mode=='traffic')) {/*traffic mode*/
 			$resi=$this->db->fetchall("SELECT i.reportgroup, GROUP_CONCAT(i.intv), GROUP_CONCAT(i.cnt) FROM
 (SELECT rg.reportgroup, ((UNIX_TIMESTAMP(time)-UNIX_TIMESTAMP('$dateFrom')) DIV $this->innerInterval) as intv, SUM(bytes_up+bytes_down) as cnt
-FROM acct_internet_node_sums ns
+FROM acct_total_node_sums ns
 INNER JOIN node_reportgroup rg ON ns.node_id = rg.node_id
 WHERE ns.time BETWEEN '$dateFrom' AND '$dateTo'
 GROUP BY reportgroup, intv) i
 GROUP BY i.reportgroup");
 
 			$res=$this->db->fetchall("SELECT rg.reportgroup, -1 as intv, SUM(bytes_up+bytes_down)
-FROM acct_internet_node_sums ns
+FROM acct_total_node_sums ns
 INNER JOIN node_reportgroup rg ON ns.node_id = rg.node_id
 WHERE ns.time BETWEEN '$dateFrom' AND '$dateTo'
 GROUP BY reportgroup");
