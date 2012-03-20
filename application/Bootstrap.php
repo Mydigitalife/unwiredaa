@@ -61,6 +61,20 @@ class Unwired_Bootstrap extends Zend_Application_Bootstrap_Bootstrap
     	return $broker;
     }
 
+    public function _initErrorHandler()
+    {
+        $this->bootstrap('log');
+
+        $log = $this->getResource('log');
+
+        Unwired_Exception::setLog($log);
+
+        Unwired_Exception::registerErrorHandler();
+
+        //$log->registerErrorHandler();
+
+        return $log;
+    }
     /**
      * Init session namespace for current project
      *
