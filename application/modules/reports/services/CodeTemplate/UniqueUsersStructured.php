@@ -83,6 +83,8 @@ if (($plimit++)>10) {$path.="/[ploop!]";break;}
 			$this->innerInterval=$this->getReportGroup()->getInnerInterval()*60;
 			if (($this->innerInterval)&&($this->innerInterval>0)) $this->innerCount=ceil($this->duration/$this->innerInterval);
 			else $this->innerInterval=$this->duration;
+//with inner intervals summing does not work currently!?
+$this->summable=false;
 		}
 		else $this->innerInterval=$this->duration;
 
@@ -144,15 +146,16 @@ INNER JOIN node_reportgroup rg ON um.node_id = rg.node_id
 GROUP BY reportgroup");
 		} else if (($mode=='billingb')||($mode=='traffic')) {/*traffic mode*/
 			$resi=$this->db->fetchall("SELECT i.reportgroup, GROUP_CONCAT(i.intv), GROUP_CONCAT(i.cnt) FROM
-(SELECT rg.reportgroup, ((UNIX_TIMESTAMP(time)-UNIX_TIMESTAMP('$dateFrom')) DIV $this->innerInterval) as intv, SUM(bytes_up+bytes_down) as cnt
-FROM acct_internet_node_sums ns
+(SELECT rg.reportgroup, ((UNIX_TIMESTAMP(time)-UNIX_TIMESTAMP('$dateFrom')) DIV $this->innerInterval) as intv, ceiling(SUM(bytes_up+bytes_down)/(1024*1024)) as cnt
+FROM acct_total_node_sum ns
 INNER JOIN node_reportgroup rg ON ns.node_id = rg.node_id
 WHERE ns.time BETWEEN '$dateFrom' AND '$dateTo'
 GROUP BY reportgroup, intv) i
 GROUP BY i.reportgroup");
+//die(serialize($resi));
 
-			$res=$this->db->fetchall("SELECT rg.reportgroup, -1 as intv, SUM(bytes_up+bytes_down)
-FROM acct_internet_node_sums ns
+			$res=$this->db->fetchall("SELECT rg.reportgroup, -1 as intv, ceiling(SUM(bytes_up+bytes_down)/(1024*1024))
+FROM acct_total_node_sum ns
 INNER JOIN node_reportgroup rg ON ns.node_id = rg.node_id
 WHERE ns.time BETWEEN '$dateFrom' AND '$dateTo'
 GROUP BY reportgroup");
@@ -178,7 +181,8 @@ die("</pre>".microtime());
 				$last_rid=$line[0];
 //experimental inner count append 
 //!!?? append structure range does not fill with zeros !!??
-				if ((!$this->summable) && ($this->innerCount>1)) {
+//!!?? innerintervals are not summed up with summable reports
+				if ($this->innerCount>1) {
 					$idx=explode(",",$resi[$ri][1]);
 					$vals=explode(",",$resi[$ri][2]);
 					//precreate cells (to be able to access them over their numeric index)
@@ -197,11 +201,14 @@ die("</pre>".microtime());
 			//print line
 			/*at this depth level printing the single resultlines of this node list report is pointless*/
 			/*and if not summable, every group has its own result presented with structure anyways*/
-			if (($this->maxdepth!=-1) && ($this->summable==true)) 
+			if (($this->maxdepth!=-1) && ($this->summable==true))
+				$c1style='" style="padding-left:'.($last_depth+1).'0px;" title="'.$path;
 				$rows[]=array( /*if we have only one result per reportgroup we can use rgroup array to get its name*/
-				'data'=>array("<span title='".$path."/'>".str_repeat("&nbsp;.&nbsp; ",$last_depth+1).$this->rgroup[$line[0]][0]."!</span>",$line[2])
+				//'data'=>array("<span title='".$path."/'>".str_repeat("&nbsp;.&nbsp; ",$last_depth+1).$this->rgroup[$line[0]][0]."!</span>",$line[2])
+				'data'=>array($this->rgroup[$line[0]][0],$line[2])
 				,'translatable'=>false
-				,'class'=>array('','right')
+				,'depth'=>$last_depth+1
+				,'class'=>array(''.$c1style,'right')
 				);
                 }
 		/*if ($last_rid >= (count($this->rgroup)-1) )*/
@@ -247,7 +254,7 @@ if ($this->innerCount>0) {
                                 'main'=>array( /*table 1*/
 /*use title specifed by user?*/
 					'type'=>$type
-					,'name'=>($mode!='unique'?'Traffic':'Unique Users')/*!!?? move to chartOptions?*/
+					,'name'=>($mode!='unique'?'Traffic in MByte':'Unique Users')/*!!?? move to chartOptions?*/
 					,'chartOptions'=>array(
 						'type'=>(($this->innerCount>1)?'LineChart':'ColumnChart')
 						,'width'=>770 /*max 370 for 2 charts sidebyside*/
@@ -272,7 +279,7 @@ if ($this->innerCount>0) {
 						,*/
 						array_merge(
 							array(
-								array('name'=>($mode!='unique'?'Traffic':'Unique').' Users of','translatable'=>false,'class'=>'bold')
+								array('name'=>($mode!='unique'?'Traffic':'Unique Users').' of','translatable'=>false,'class'=>'bold')
 								,array('name'=>'Total','translatable'=>false,'class'=>'bold')
 							)
 							,$innerColumns
