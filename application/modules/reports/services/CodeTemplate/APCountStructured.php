@@ -16,17 +16,18 @@ class Reports_Service_CodeTemplate_APCountStructured extends Reports_Service_Cod
 /*reportsspecific chart and table headers/options*/
 	private function getResult($rows,$type)
 	{
-	        return array(
+	        return 
+//die(serialize(
+		array(
 			'tables'=>array(/*array of tables*/
                                 'main'=>array( /*table 1*/
-/*use title specifed by user?*/
 					'type'=>$type
-					,name=>'AP Count'/*!!?? move to chartOptions?*/
+					,'name'=>($this->billingreport?'Billable Access Points':'AP Count')
 					,'chartOptions'=>array(
 						'type'=>($this->billingreport?'PieChart':'BarChart')
 						,'width'=>780 /*max 370 for 2 charts sidebyside*/
 						,'height'=>500
-						,'depths'=>1/*either single value, or an array -> multiple charts*/
+						,'depths'=>array(1)/*either single value, or an array -> multiple charts*/
 						/*nativeOptions are passed 1:1 to googleCharts options*/
 						,'nativeOptions'=>($this->billingreport?
 							"legend:{position :'rigth'}"
@@ -54,14 +55,16 @@ class Reports_Service_CodeTemplate_APCountStructured extends Reports_Service_Cod
                                         ,'rows'=>$rows
                                 ) /*end of table*/
                         )/*end of array of tables*/
-		);
+		)
+//))
+;
 	}
 
 	private function setReportOptions()
 	{
 		//$this->summable=true;
-		//this->getReportGroup()->getCodeTemplate()->getOptions does not work!?
-		if (strpos($this->getReportGroup()->getCodeTemplate()->getTitle(),"Bill")!==false) $this->billingreport=true;
+		if ($this->getReportGroup()->getCodeTemplate()->getOption('mode')=='billable') $this->billingreport=true;
+		else $this->billingreport=false;
 	}
 
 /*reportspecific query (column 2++ can be reportspecific)*/
@@ -143,6 +146,7 @@ if (($limit++)>100) {die("/[dloop!]".$last_depth);}
 		$rid++;
 $limit=0;
 		/*print out missing structures*/
+		$path="";
 		while ($rid<=$last_rid)
 		{
 if (($limit++)>1000) {die("/[kloop!]");}
