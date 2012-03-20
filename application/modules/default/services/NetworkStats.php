@@ -38,7 +38,10 @@ class Default_Service_NetworkStats
             $data['devicesOnline'] = $db->fetchOne("select count(*) from `{$nodeTableName}` where `online_status` = 1 AND `deleted` = 0;");
             $data['devicesOffline'] = $db->fetchOne("select count(*) from `{$nodeTableName}` where `online_status` = 0 AND `deleted` = 0;");
         } catch (Exception $e) {
-            Unwired_Exception::getLog()->log($e->getMessage(),Zend_Log::CRIT);
+           $log = Unwired_Exception::getLog();
+           if ($log) {
+               $log->log($e->getMessage(),Zend_Log::CRIT);
+           }
         }
 
         $networkStats = new Default_Model_NetworkStats();
