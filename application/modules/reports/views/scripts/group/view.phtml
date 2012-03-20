@@ -45,9 +45,11 @@
 <tr>
 	<td><?php echo $this->translate('report_result_parameters_datefrom'); ?></td><td><?php echo $this->parent->getDateFrom();?></td><td><?php echo $this->translate('report_result_parameters_dateto'); ?></td><td><?php echo $this->parent->getDateTo();?></td>
 </tr>
+<?php if ($this->parent->getCodeTemplate()->isGroupSelectionSupported()) :?>
 <tr>
 	<td><?php echo $this->translate('report_result_parameters_devicegroups'); ?></td><td colspan="3"><?php echo str_replace("\n", ", ", $this->parent->getGroupsAssignedFormatted());?></td>
 </tr>
+<?php endif; ?>
 </table>
 
 <h3>Results</h3>
@@ -180,7 +182,7 @@ $acl = Zend_Registry::get ( 'acl' );
 			</tr>
 			<?php endforeach; ?>
 			<?php if (isset($value->rows)): ?>
-				<?php foreach ($value->rows as $k => $v): 
+				<?php foreach ($value->rows as $k => $v):
 					if (isset($v->url)) $url=$v->url.'&parent='.$this->report->getItemId();
 					else $url=false;
 				?>

@@ -296,16 +296,16 @@ class Reports_Form_Group extends Unwired_Form
 		$values = parent::getValues($suppressArrayNotation );
 
 		if (!isset($values['groups_assigned']) || $values['groups_assigned'] == null) {
-		    if (!$this->getEntity()->getCodeTemplate()->isGroupSelectionSupported()) {
+		    /*if (!$this->getEntity()->getCodeTemplate()->isGroupSelectionSupported()) {
 		        $adminUserGroups = Zend_Auth::getInstance()->getIdentity()->getGroupsAssigned();
-		        
+
 		        $mapperGroups = new Groups_Model_Mapper_Group();
 		        $group = $mapperGroups->find(key($adminUserGroups));
-		        
+
 			    $values['groups_assigned'] = array(key($adminUserGroups) => $group);
-		    } else {
+		    } else {*/
 		        $values['groups_assigned'] = array();
-		    }
+		    /*}*/
 		}
 
 		return $values;

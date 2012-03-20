@@ -13,25 +13,16 @@
 class Reports_IndexController extends Unwired_Controller_Crud
 {
 
-	public function preDispatch() {
-
-		$reportMapper = new Reports_Model_Mapper_CodeTemplate();
-
-		$this->_defaultMapper = $reportMapper;
-
-		parent::preDispatch();
-	}
+    protected $_defaultMapper = 'Reports_Model_Mapper_CodeTemplate';
 
 	public function indexAction()
 	{
-		//$groupService = new Groups_Service_Group();
+		$filter = $this->_getFilters();
 
+		$mapperCodeTemplate = $this->_getDefaultMapper();
 
-
-
-		//$filter = $this->_getFilters();
-
-		//$groupService->prepareMapperListingByAdmin($reportMapper, null, false, $filter);
+		$filter[] = new Zend_Db_Expr('`title` not like "\_%"');
+		$mapperCodeTemplate->findBy($filter, 0, 'title ASC');
 
 		$this->_index();
 	}
