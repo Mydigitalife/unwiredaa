@@ -50,11 +50,11 @@ class Reports_Service_CodeTemplate_AuthLog extends Reports_Service_CodeTemplate_
 
 	private function getTables($rows,$mode)
 	{
-		$names=array('lang'=>'Most Frequent browser language'
-		,'langf'=>'Most Frequent browser language flavour'
-		,'os'=>'Most frequent operating system'
-		,'vendor'=>'Most frequent device vendor'
-		,'start'=>'Most frequent startpages');
+		$names=array('lang'=>'Languages'
+		,'langf'=>'Language flavours'
+		,'os'=>'Operating systems'
+		,'vendor'=>'Device vendors'
+		,'start'=>'Top 50 startpages');
 		$windowsnames=array('NT 6.2'=>'8'/*probably*/
 		,'NT 6.1'=>'7'
 		,'NT 6.0'=>'Vista'
