@@ -175,11 +175,11 @@ die("</pre>".microtime());
 //echo serialize($line)."<br>";
 			if ($line[0]!=$last_rid) {
 				//print missing headers since last group
-				if ($this->summable) $path=$this->appendStructureRange(&$rows,&$running_sum,$last_rid,$line[0],&$last_depth);
+				if ($this->summable) $path=$this->appendStructureRange($rows,$running_sum,$last_rid,$line[0],$last_depth);
 				/*instead of running sum give db result -> !!! causes value to be lost!!*/
-				else $path=$this->appendStructureRange(&$rows,&$line[2],$last_rid,$line[0],&$last_depth);
+				else $path=$this->appendStructureRange($rows,$line[2],$last_rid,$line[0],$last_depth);
 				$last_rid=$line[0];
-//experimental inner count append 
+//experimental inner count append
 //!!?? append structure range does not fill with zeros !!??
 //!!?? innerintervals are not summed up with summable reports
 				if ($this->innerCount>1) {
@@ -212,7 +212,7 @@ die("</pre>".microtime());
 				);
                 }
 		/*if ($last_rid >= (count($this->rgroup)-1) )*/
-		$this->appendStructureRange(&$rows,&$running_sum,$last_rid,count($this->rgroup)-1,&$last_depth); /*sometimes causes a endless loop*/
+		$this->appendStructureRange($rows,$running_sum,$last_rid,count($this->rgroup)-1,$last_depth); /*sometimes causes a endless loop*/
 /*
 echo "<pre>";
 print_r($this->rgroup);

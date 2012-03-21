@@ -214,7 +214,7 @@ if (($plimit++)>100) {$path.="/[ploop!]";break;}
 				$last_rid=$line[0];
 			}
 			//do the running sums on the values (if applicable)
-			if ($this->summable) $this->sumLine(&$values,$line);
+			if ($this->summable) $this->sumLine($values,$line);
 			//print line
 			/*at this depth level printing the single resultlines of this node list report is pointless*/
 			/*and if not summable, every group has its own result presented with structure anyways*/
