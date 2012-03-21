@@ -16,7 +16,7 @@ class Reports_Service_CodeTemplate_APCountStructured extends Reports_Service_Cod
 /*reportsspecific chart and table headers/options*/
 	private function getResult($rows,$type)
 	{
-	        return 
+	        return
 //die(serialize(
 		array(
 			'tables'=>array(/*array of tables*/
@@ -208,9 +208,9 @@ if (($plimit++)>100) {$path.="/[ploop!]";break;}
 			$ri++;
 			if ($line[0]!=$last_rid) {
 				//print missing headers since last group
-				if ($this->summable) $path=$this->appendStructureRange(&$rows,&$values,$last_rid,$line[0],&$last_depth);
+				if ($this->summable) $path=$this->appendStructureRange($rows,$values,$last_rid,$line[0],$last_depth);
 				/*instead of running sum give db result -> !!! causes value to be lost!!*/
-				else $path=$this->appendStructureRange(&$rows,&$line[2],$last_rid,$line[0],&$last_depth);
+				else $path=$this->appendStructureRange($rows,$line[2],$last_rid,$line[0],$last_depth);
 				$last_rid=$line[0];
 			}
 			//do the running sums on the values (if applicable)
@@ -218,12 +218,12 @@ if (($plimit++)>100) {$path.="/[ploop!]";break;}
 			//print line
 			/*at this depth level printing the single resultlines of this node list report is pointless*/
 			/*and if not summable, every group has its own result presented with structure anyways*/
-			if (($this->maxdepth!=-1) && ($this->summable==true) && ($last_depth < $this->maxdepth) ) 
+			if (($this->maxdepth!=-1) && ($this->summable==true) && ($last_depth < $this->maxdepth) )
 				/*if we have only one result per reportgroup we can use rgroup array to get its name*/
 				$rows[]=$this->handleLine($this->rgroup[$line[0]][0],array_slice($line,2),($last_depth+1),$path,true);
                 }
 		/*if ($last_rid >= (count($this->rgroup)-1) )*/
-		$this->appendStructureRange(&$rows,&$values,$last_rid,count($this->rgroup)-1,&$last_depth); /*sometimes causes a endless loop*/
+		$this->appendStructureRange($rows,$values,$last_rid,count($this->rgroup)-1,$last_depth); /*sometimes causes a endless loop*/
 
 		$dtype=strtolower($this->getReportGroup()->getCodeTemplate()->getFormatDefault());
 		if ($dtype=='notuserdefineable') $type='both'; /*our own hardcoded default*/
