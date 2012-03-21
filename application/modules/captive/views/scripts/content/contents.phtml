@@ -31,68 +31,94 @@
 ?>
 	var htmlEditors = false;
 
+	function copyCurrentTabToOthers()
+	{
+		var visibleTab = $('.subtabs .ui-tabs-panel:visible:first');
+
+		if (!visibleTab.length) {
+			alert('no visible tab found!',1);
+			return false;
+		}
+
+		/*
+		 * Sync all nicEditors content
+		 */
+		if (nicEditors) {
+			visibleTab.find('textarea').each(function(){
+				nicEditors.findEditor($(this).attr('id')).saveContent();
+			});
+		}
+alert(visibleTab.find('textarea:first').val(),1);
+		var visibleContentInfo = $(visibleTab).attr('id').split('-');
+
+		var otherTabs = $('.subtabs .ui-tabs-panel').not(visibleTab);
+
+		otherTabs.each(function(){
+
+			var currentTab = this;
+
+			var contentInfo = $(this).attr('id').split('-');
+
+			/*
+			 * Match desktop-1 or mobile-2
+			 */
+			var idRegexp = new RegExp(visibleTab.attr('id'), "gi");
+
+			/*
+			 * Match content[desktop][2] or content[mobile][1]
+			 */
+			var nameRegexp = new RegExp("\\[" + visibleContentInfo[0] + "\\]\\[" + visibleContentInfo[1] + "\\]", "gi");
+
+			/*
+			 * Replace matched strings with current tab values
+			 */
+			var newTabContent = visibleTab.children().clone(true);
+
+			newTabContent.find("*").each(function(){
+				var oldId = $(this).attr('id');
+
+				if (idRegexp.test($(this).attr('id'))) {
+					$(this).attr('id',$(this).attr('id').replace(idRegexp, $(currentTab).attr('id')));
+				}
+
+				if (nameRegexp.test($(this).attr('name'))) {
+					$(this).attr('name',$(this).attr('name').replace(nameRegexp, '[' + contentInfo[0] + '][' + contentInfo[1] + ']'));
+				}
+
+				if ($(this).get(0).tagName == 'TEXTAREA' || $(this).get(0).tagName == 'textarea') {
+					$(this).val(visibleTab.find('#' + oldId).val());
+				}
+			});
+
+
+			$(this).html('')
+				   .append(newTabContent);
+		});
+
+		if (nicEditors) {
+			$('.subtabs textarea').siblings().remove();
+
+			$('.subtabs textarea').each(function(){
+				alert($(this).val(),1);
+			});
+			nicEditors.editors = new Array();
+			nicEditors.allTextAreas({iconsPath : '<?php echo $this->baseUrl('scripts/nicedit/nicEditorIcons.gif'); ?>'});
+		}
+
+		return true;
+	}
+
 	$(document).ready(function() {
 		$('div.tabs').tabs();
 
 		$('.portlet-header a.edit').button({icons: { primary: 'ui-icon-pencil'}, text: false});
 		$('.portlet-header a.delete').button({icons: { primary: 'ui-icon-circle-close'}, text: false});
 
+		/*
         $("#fancybox-content .tabs:not(.subtabs)" ).live( "tabsselect", function(event, ui) {
 
-            if (!$('.ui-tabs-panel:visible:last input[name*=title]:first').val().length) {
-            	return;
-            }
-
-			if ($('.ui-tabs-panel:visible:last').siblings().find('input[name*=title]:first').val().length) {
-				return;
-			}
-
-			/*
-         	if (!confirm('<?php echo $this->translate('captive_content_edit_use_defaults'); ?>')) {
-          		return;
-          	} */
-
-            var otherPanels = $('.tabs .tabs .ui-tabs-panel:not(:visible)');
-
-            $('.ui-tabs-panel:visible:last input').each(function(){
-            	var targetName = $(this).attr('name').replace(/.*\[([a-z]+)\]$/gi, '$1');
-
-            	otherPanels.find('input[name*='+targetName+']').val($(this).val());
-
-            	if ($(this).attr('type') == 'checkbox') {
-            		if ($(this).is(':checked')) {
-            			otherPanels.find('input[name*='+targetName+']').attr('checked','checked');
-        			} else {
-        				otherPanels.find('input[name*='+targetName+']').removeAttr('checked');
-        			}
-            	}
-            	/**
-            	 * @todo Add check for radio buttons
-            	 */
-            });
-
-            $('.ui-tabs-panel:visible:last select').each(function(){
-                var targetName = $(this).attr('name').replace(/.*\[([a-z]+)\]$/gi, '$1');
-                otherPanels.find('select[name*='+targetName+']').val($(this).val());
-            });
-
-            $('.ui-tabs-panel:visible:last textarea').each(function(){
-                var targetName = $(this).attr('name').replace(/.*\[([a-z]+)\]$/gi, '$1');
-
-				if (nicEditors) {
-					nicEditors.findEditor($(this).attr('id')).saveContent();
-
-    				var prefilledTextArea = this;
-
-                    otherPanels.find('textarea[name*='+targetName+']').each(function(){
-    					nicEditors.findEditor($(this).attr('id')).setContent($(prefilledTextArea).val());
-    					nicEditors.findEditor($(this).attr('id')).saveContent();
-                    });
-    			} else {
-					otherotherPanels.find('textarea[name*='+targetName+']').val($(this).val());
-    			}
-            });
         });
+		*/
 
 		var locked = {};
 		var correctItems = {};
@@ -270,6 +296,13 @@ blockChangeEvent = false;
 
 		$(".column").disableSelection();
 
+		$('#fancybox-content a.copycontent').live('click', function(){
+			if (!confirm('<?php echo $this->translate('captive_content_edit_use_defaults'); ?>')) {
+				return false;
+			}
+			copyCurrentTabToOthers();
+		});
+
 		$('#fancybox-content a.cancel').live('click', function(){
 			$.fancybox.close();
 			htmlEditors = false;
@@ -282,11 +315,11 @@ blockChangeEvent = false;
 				});
 			}
 
-			var filledTitle = false;
+			var filledTitle = true;
 
 			$('#fancybox-content form:first input[name*=title]').each(function(){
-				if ($(this).val().length) {
-					filledTitle = this;
+				if (!$(this).val().length) {
+					filledTitle = false;
 					return false;
 				}
 			});
@@ -295,12 +328,12 @@ blockChangeEvent = false;
 				alert('<?php echo $this->translate('captive_content_edit_fill_content');?>');
 				return false;
 			}
-
+/*
 			$(filledTitle).parents('.tabs:first').tabs("select", $(filledTitle).parents(".ui-tabs-panel:first").prevAll("div").length);
 			$(filledTitle).parents('.tabs:eq(1)').tabs("select", $(filledTitle).parents(".ui-tabs-panel:eq(1)").prevAll("div").length);
 
 			$("#fancybox-content .tabs:not(.subtabs)" ).trigger("tabsselect");
-
+*/
 			var postVars = $('#fancybox-content form:first').serialize();
 			$('#fancybox-content form:first').find('input, textarea, select').attr('disabled','disabled');
 
