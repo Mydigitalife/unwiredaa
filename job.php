@@ -64,7 +64,7 @@ try {
     $class = ucfirst($filter->filter($jobClassParts[0])) . '_Job_' . ucfirst($filter->filter($jobClassParts[1]));
 
     if (!class_exists($class, true)) {
-        echo 'Cannot find job ' . $job;
+        echo 'Cannot find job ' . $job . "\n\n";
         exit;
     }
     $jobInstance = new $class;
