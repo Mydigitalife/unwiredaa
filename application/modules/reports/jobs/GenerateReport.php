@@ -48,6 +48,7 @@ class Reports_Job_GenerateReport {
         foreach ($reports as $report) {
             $result = $this->generateReport($report);
             if (!$result) {
+                Unwired_Exception::getLog()->log("Cannot generate report (ID:{$report->getReportGroupId()}", Zend_Log::WARN);
                 continue;
             }
 
@@ -194,6 +195,10 @@ class Reports_Job_GenerateReport {
 
     		return $entity;
         } catch (Exception $e) {
+            if (APPLICATION_ENV == 'development') {
+                Unwired_Exception::getLog()->log($e->getMessage(), Zend_Log::ALERT);
+                Unwired_Exception::getLog()->log($e->getTraceAsString(), Zend_Log::DEBUG);
+            }
             return false;
         }
     }
@@ -239,6 +244,10 @@ class Reports_Job_GenerateReport {
                        ->send();
             }
         } catch (Exception $e) {
+            if (APPLICATION_ENV == 'development') {
+                Unwired_Exception::getLog()->log($e->getMessage(), Zend_Log::ALERT);
+                Unwired_Exception::getLog()->log($e->getTraceAsString(), Zend_Log::DEBUG);
+            }
             return false;
         }
 
