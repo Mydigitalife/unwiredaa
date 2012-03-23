@@ -295,22 +295,22 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 		                                    $report->getDateFrom()->toString('yyyy-MM-dd HH:mm:ss'),
 		                                    $report->getDateTo()->toString('yyyy-MM-dd HH:mm:ss'));
 
-		$this->view->parent_parent = $codeTemplate;
-		$this->view->parent = $report;
-
 		$items = new Reports_Model_Items();
 		$items->setDateAdded(date('Y-m-d H:i:s'));
 		$items->setData($result);
 		$items->setReportGroupId($codeTemplate->getCodetemplateId());
 
+		if ($this->getRequest()->isPost() && $report->getRecepients()) {
+		    $this->_emailReport($report, $items);
+		}
+
+		$this->view->parent_parent = $codeTemplate;
+		$this->view->parent = $report;
+
 		$this->view->report = $items;
 
 		$this->view->data = $items->getData(true);
 		$this->_helper->viewRenderer->setScriptAction('view');
-
-	    if ($this->getRequest()->isPost() && $report->getRecepients()) {
-		    $this->_emailReport($report, $items);
-		}
 
 		$this->_exportReportData($report, $items);
 	}
@@ -402,7 +402,7 @@ class Reports_GroupController extends Unwired_Controller_Crud {
             $recepients = explode(',', $recepients);
         }
 
-        $view = $this->getView();
+        $view = $this->view;
 
         try {
             $view->report = $result;
