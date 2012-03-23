@@ -270,7 +270,7 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 	    }
 
 	    $report->fromArray($form->getValues());
-
+        $report->setRecepients($this->getRequest()->getParam('email',''));
 	    $report->setTitle('Instant report');
 
 	    $groupsAssigned = $report->getGroupsAssigned();
@@ -307,7 +307,7 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 
 		$this->view->data = $items->getData(true);
 		$this->_helper->viewRenderer->setScriptAction('view');
-Unwired_Exception::getLog()->log(Zend_Debug::dump($report->getRecepients(), null, false), Zend_Log::DEBUG);
+
 	    if ($this->getRequest()->isPost() && $report->getRecepients()) {
 		    $this->_emailReport($report, $items);
 		}
