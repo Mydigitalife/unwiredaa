@@ -181,7 +181,9 @@ class Reports_Job_GenerateReport {
     		$reportGenerator = new $className;
             $reportGenerator->setReportGroup($report);
 
-    		$result = $reportGenerator->getData(array_keys($report->getGroupsAssigned()), $report->getDateFrom(), $report->getDateTo());
+    		$result = $reportGenerator->getData(array_keys($report->getGroupsAssigned()),
+		                                        $report->getDateFrom()->toString('yyyy-MM-dd HH:mm:ss'),
+		                                        $report->getDateTo()->toString('yyyy-MM-dd HH:mm:ss'));
 
     		$resultMapper = new Reports_Model_Mapper_Result();
     		$entity = $resultMapper->getEmptyModel();
