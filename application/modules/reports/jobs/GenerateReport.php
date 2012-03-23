@@ -32,7 +32,7 @@ class Reports_Job_GenerateReport {
     {
         $this->_view = $view;
 
-        $this->_view->addBasePath(APPLICATION_PATH . '/modules/report/views', 'Reports_View')
+        $this->_view->addBasePath(APPLICATION_PATH . '/modules/reports/views', 'Reports_View')
                    /* ->setScriptPath(APPLICATION_PATH . '/report/views/scripts')*/;
         return $this;
     }
