@@ -48,7 +48,7 @@ class Reports_Job_GenerateReport {
         foreach ($reports as $report) {
             $result = $this->generateReport($report);
             if (!$result) {
-                Unwired_Exception::getLog()->log("Cannot generate report (ID:{$report->getReportGroupId()}", Zend_Log::WARN);
+                Unwired_Exception::getLog()->log("Cannot generate report (ID:{$report->getReportGroupId()})", Zend_Log::WARN);
                 continue;
             }
 
