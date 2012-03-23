@@ -135,7 +135,7 @@ class Reports_Job_GenerateReport {
 
             $dateAdded->setHour($fromDate->getHour())
                       ->setMinute($fromDate->getMinute())
-                      ->setSecond($fromDate->getSeconds());
+                      ->setSecond($fromDate->getSecond());
 
             $fromDate = clone $dateAdded;
             $fromDate = $fromDate->sub($offsetFromDateAdded);
