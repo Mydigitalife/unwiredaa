@@ -32,7 +32,7 @@ class Reports_Job_GenerateReport {
     {
         $this->_view = $view;
 
-        $this->_view->addBasePath(APPLICATION_PATH . '/modules/report/views', 'Reports_View')
+        $this->_view->addBasePath(APPLICATION_PATH . '/modules/reports/views', 'Reports_View')
                    /* ->setScriptPath(APPLICATION_PATH . '/report/views/scripts')*/;
         return $this;
     }
@@ -48,6 +48,7 @@ class Reports_Job_GenerateReport {
         foreach ($reports as $report) {
             $result = $this->generateReport($report);
             if (!$result) {
+                Unwired_Exception::getLog()->log("Cannot generate report (ID:{$report->getReportGroupId()})", Zend_Log::WARN);
                 continue;
             }
 
@@ -72,7 +73,7 @@ class Reports_Job_GenerateReport {
     {
         $reportGroupMapper = new Reports_Model_Mapper_Group();
 
-        $periodicalReports = $reportGroupMapper->findBy(array('report_type' => 1));
+        $periodicalReports = $reportGroupMapper->findBy(array('report_type' => 'interval'));
 
         $pendingReports = array();
 
@@ -83,6 +84,13 @@ class Reports_Job_GenerateReport {
             //$report = new Reports_Model_Group();
             $interval = $report->getReportInterval();
 
+            $dateAdded = $report->getDateAdded();
+
+            if (is_string($dateAdded)) {
+                $dateAdded = new Zend_Date($dateAdded, 'yyyy-MM-dd HH:mm');
+            }
+
+
             $now = new Zend_Date();
 
             $toDate = new Zend_Date($report->getDateTo());
@@ -90,38 +98,55 @@ class Reports_Job_GenerateReport {
 
             $period = $toDate->sub($fromDate);
 
+            $offsetFromDateAdded = $dateAdded->sub($fromDate);
+
             switch ($interval) {
-                case 4:
-                    $fromDate->setYear($now->getYear());
+                case 'year':
+                    $dateAdded->setYear($now->getYear());
                 break;
 
-                case 3:
-                    $fromDate->setYear($now->getYear());
-                    $fromDate->setMonth($now->getMonth());
+                case 'month':
+                    $dateAdded->setYear($now->getYear());
+                    $dateAdded->setMonth($now->getMonth());
                 break;
 
-                case 2:
+                case 'week':
                     $diffStamp = $now->getDate()
                                           ->subDate($fromDate->getDate())
                                                ->getTimestamp();
 
                     if (fmod($diffStamp, (7 * 24 * 3600)) == 0) {
-                        $fromDate->setDate($now);
+                        $dateAdded->setDate($now);
                     }
                 ;
                 break;
 
-                case 1:
+                case 'day':
                 default:
-                    $fromDate = $now;
+                    /**
+                     * Assumed that the report job will be ran once daily
+                     */
+                    $dateAdded = $now;
                 break;
             }
 
-            if (!$fromDate->isToday()) {
+            if (!$dateAdded->isToday()) {
                 continue;
             }
 
+            $dateAdded->setHour($fromDate->getHour())
+                      ->setMinute($fromDate->getMinute())
+                      ->setSecond($fromDate->getSecond());
+
+            $fromDate = clone $dateAdded;
+            $fromDate = $fromDate->sub($offsetFromDateAdded);
+            $toDate = clone $fromDate;
             $toDate->add($period);
+
+            if ($report->getReportGroupId() == 120) {
+                echo "From: {$fromDate}\n";
+                echo "To: {$toDate}\n";
+            }
 
             /**
              * $fromDate and $toDate hold the shifted time frame for report
@@ -130,6 +155,12 @@ class Reports_Job_GenerateReport {
              */
 
             $pendingReports[] = $report;
+
+            /**
+             * Generate with shifted timeframe
+             */
+            $report->setDateFrom($fromDate)
+                   ->setDateTo($toDate);
         }
 
         return $pendingReports;
@@ -150,7 +181,9 @@ class Reports_Job_GenerateReport {
     		$reportGenerator = new $className;
             $reportGenerator->setReportGroup($report);
 
-    		$result = $reportGenerator->getData(array_keys($report->getGroupsAssigned()), $report->getDateFrom(), $report->getDateTo());
+    		$result = $reportGenerator->getData(array_keys($report->getGroupsAssigned()),
+		                                        $report->getDateFrom()->toString('yyyy-MM-dd HH:mm:ss'),
+		                                        $report->getDateTo()->toString('yyyy-MM-dd HH:mm:ss'));
 
     		$resultMapper = new Reports_Model_Mapper_Result();
     		$entity = $resultMapper->getEmptyModel();
@@ -164,6 +197,10 @@ class Reports_Job_GenerateReport {
 
     		return $entity;
         } catch (Exception $e) {
+            if (APPLICATION_ENV == 'development') {
+                Unwired_Exception::getLog()->log($e->getMessage(), Zend_Log::ALERT);
+                Unwired_Exception::getLog()->log($e->getTraceAsString(), Zend_Log::DEBUG);
+            }
             return false;
         }
     }
@@ -209,6 +246,10 @@ class Reports_Job_GenerateReport {
                        ->send();
             }
         } catch (Exception $e) {
+            if (APPLICATION_ENV == 'development') {
+                Unwired_Exception::getLog()->log($e->getMessage(), Zend_Log::ALERT);
+                Unwired_Exception::getLog()->log($e->getTraceAsString(), Zend_Log::DEBUG);
+            }
             return false;
         }
 
