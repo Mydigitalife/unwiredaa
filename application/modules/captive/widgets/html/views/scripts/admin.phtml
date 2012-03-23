@@ -67,6 +67,7 @@
     			<label for="title-desktop-<?php echo $languageId; ?>"><?php echo $this->translate('widget_html_admin_title');?>:</label>
     			<input class="span-12 last" type="text" name="content[desktop][<?php echo $languageId; ?>][title]"
     			id="title-desktop-<?php echo $languageId; ?>" value="<?php echo $content['desktop'][$languageId]->getTitle(); ?>" />
+    			<input type="hidden" name="content[desktop][<?php echo $languageId; ?>][order]" value="<?php echo $content['desktop'][$languageId]->getOrder(); ?>" />
 			</div>
 			<div class="formelement span-16 last">
     			<label for="content-desktop-<?php echo $languageId; ?>"><?php echo $this->translate('widget_html_admin_content');?>:</label>
@@ -105,6 +106,7 @@
     			<label for="title-mobile-<?php echo $languageId; ?>"><?php echo $this->translate('widget_html_admin_title');?>:</label>
     			<input class="span-12 last" type="text" name="content[mobile][<?php echo $languageId; ?>][title]"
     			id="title-mobile-<?php echo $languageId; ?>" value="<?php echo $content['mobile'][$languageId]->getTitle(); ?>" />
+    			<input type="hidden" name="content[mobile][<?php echo $languageId; ?>][order]" value="<?php echo $content['mobile'][$languageId]->getOrder(); ?>" />
 			</div>
 			<div class="formelement span-16 last">
     			<label for="content-mobile-<?php echo $languageId; ?>"><?php echo $this->translate('widget_html_admin_content');?>:</label>

@@ -48,7 +48,7 @@
 				nicEditors.findEditor($(this).attr('id')).saveContent();
 			});
 		}
-alert(visibleTab.find('textarea:first').val(),1);
+
 		var visibleContentInfo = $(visibleTab).attr('id').split('-');
 
 		var otherTabs = $('.subtabs .ui-tabs-panel').not(visibleTab);
@@ -98,9 +98,6 @@ alert(visibleTab.find('textarea:first').val(),1);
 		if (nicEditors) {
 			$('.subtabs textarea').siblings().remove();
 
-			$('.subtabs textarea').each(function(){
-				alert($(this).val(),1);
-			});
 			nicEditors.editors = new Array();
 			nicEditors.allTextAreas({iconsPath : '<?php echo $this->baseUrl('scripts/nicedit/nicEditorIcons.gif'); ?>'});
 		}
@@ -274,10 +271,16 @@ blockChangeEvent = false;
 					cache: false,
     				type: 'POST',
     				success: function(data){
-						alert('success',1);
+						$('.fixednotice').remove();
+						$('<div class="fixednotice"><div class="message success ui-corner-all"><p><?php echo $this->translate('captive_content_edit_reorder_success'); ?></p></div></div>').hide().appendTo($('body')).fadeIn();
+
+						setTimeout("$('.fixednotice').fadeOut('slow', function(){$(this).remove()});", 5000);
     				},
     				error: function(data){
-						alert('error',1);
+						$('.fixednotice').remove();
+						$('<div class="fixednotice"><div class="message error ui-corner-all"><p><?php echo $this->translate('captive_content_edit_reorder_error'); ?></p></div></div>').hide().appendTo($('body')).fadeIn();
+
+						setTimeout("$('.fixednotice').fadeOut('slow', function(){$(this).remove()});", 5000);
     				},
 				});
 			}
@@ -308,6 +311,7 @@ blockChangeEvent = false;
 			htmlEditors = false;
 			return false;
 		});
+
 		$('#fancybox-content a.save').live('click', function(){
 			if (nicEditors) {
 				$('#fancybox-content textarea').each(function(){
@@ -334,6 +338,13 @@ blockChangeEvent = false;
 
 			$("#fancybox-content .tabs:not(.subtabs)" ).trigger("tabsselect");
 */
+
+			var tabTarget = 'desktop';
+
+			if ($('#mobile').is(':visible')) {
+				tabTarget = 'mobile';
+			}
+
 			var postVars = $('#fancybox-content form:first').serialize();
 			$('#fancybox-content form:first').find('input, textarea, select').attr('disabled','disabled');
 
@@ -345,6 +356,10 @@ blockChangeEvent = false;
 				cache: false,
 				type: 'POST',
 				success: function(data){
+					var currentLocation = window.location.href.replace(/#.*$/gi, '') + '#' + tabTarget;
+
+					window.location.href = currentLocation;
+
 					window.location.reload();
 					//$.fancybox.hideActivity();
 					//$.fancybox.close();
@@ -362,7 +377,8 @@ blockChangeEvent = false;
 
 		$('a.icon.edit').live('click',function(){
 			$.fancybox.showActivity();
-			var column = $(this).parents(".column:first").attr('id').replace(/[^0-9]/gi,'');
+			var columnInfo = $(this).parents(".column:first").attr('id').split('-');
+			var column = columnInfo[2].replace(/[^0-9]/gi,'');
 
 			if (!column.length) {
 				column = 0;
@@ -384,7 +400,13 @@ blockChangeEvent = false;
 						hideOnOverlayClick: false,
 						showCloseButton: true,
 						onComplete: function() {
-							$('#fancybox-content').find('.tabs').tabs();
+							var tabSelected = 0;
+
+							if (columnInfo[0] == 'mobile') {
+								tabSelected = 1;
+							}
+							$('#fancybox-content').find('.subtabs').tabs();
+							$('#fancybox-content').find('.tabs:not(.subtabs)').tabs({selected: tabSelected});
 							$.fancybox.resize();
 							$.fancybox.center();
 						}
@@ -399,7 +421,8 @@ blockChangeEvent = false;
 		});
 
 		$('a.icon.add').click(function(){
-			var column = $(this).parents(".column:first").attr('id').replace(/[^0-9]/gi,'');
+			var columnInfo = $(this).parents(".column:first").attr('id').split('-');
+			var column = columnInfo[2].replace(/[^0-9]/gi,'');
 
 			if (!column.length) {
 				column = 0;
@@ -409,7 +432,7 @@ blockChangeEvent = false;
 			var orderMobile = 1;
 
 			if ($(this).parents("#desktop").length) {
-				order = $(this).parent().siblings().length+1;
+				order = $(this).parent().siblings(".portlet").length+1;
 			} else {
 				order = $('#desktop-column-main .portlet').length+1;
 			}
@@ -455,17 +478,20 @@ blockChangeEvent = false;
 									hideOnOverlayClick: false,
 									showCloseButton: true,
 									onComplete: function() {
-										$('#fancybox-content').find('.tabs').tabs();
+    									var tabSelected = 0;
 
-                            			$('.desktop-content').each(function(){
-                            				var languageId = $(this).attr('id').replace(/[^\d]/gi, '');
+            							if (columnInfo[0] == 'mobile') {
+            								tabSelected = 1;
+            							}
+										$('#fancybox-content').find('.subtabs').tabs();
+										$('#fancybox-content').find('.tabs:not(.subtabs)').tabs({selected: tabSelected});
 
-                            				$(this).append('<input type="hidden" name="content[desktop][' + languageId +'][order]" value="' + order + '" />');
+                            			$('.desktop-content input[type=hidden][name*=order]').each(function(){
+											$(this).val(order);
                             			});
-                            			$('.mobile-content').each(function(){
-                            				var languageId = $(this).attr('id').replace(/[^\d]/gi, '');
 
-                            				$(this).append('<input type="hidden" name="content[mobile][' + languageId +'][order]" value="' + orderMobile + '" />');
+                            			$('.mobile-content input[type=hidden][name*=order]').each(function(){
+                            				$(this).val(orderMobile);
                             			});
 
 										$.fancybox.resize();
@@ -658,5 +684,11 @@ blockChangeEvent = false;
       endforeach;
 	?>
   	</div>
+  </div>
+  <div class="formelement buttons span-19 last">
+  	<a href="<?php echo $this->url(array('module' => 'captive',
+  	                                     'controller' => !isset($this->splashPage) ? 'template' : 'index'),
+  	                               'default',
+  	                               true); ?>" class="button blue right"><span><?php echo $this->translate('captive_content_edit_button_back');?></span></a>
   </div>
 </div>
