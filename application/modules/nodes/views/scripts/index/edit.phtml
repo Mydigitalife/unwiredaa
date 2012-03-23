@@ -239,7 +239,14 @@ $(function () {
 <?php
 	$this->headScript()->captureEnd();
 ?>
-<?php echo $this->form;?>
+<?php if (isset($this->isViewOnly)) :?>
+<div class="span-19 last">
+	<a href="<?php echo $this->refererUrl; ?>" class="button small blue right">
+		<span><?php echo $this->translate('nodes_index_edit_form_button_back'); ?></span>
+	</a>
+</div>
+<?php endif; ?>
+<?php echo $this->form; ?>
 <div class="grouptree span-8">
 	<?php echo $this->tree($this->rootGroup, null, array('prefix' => 'group_')); ?>
 </div>
@@ -271,3 +278,10 @@ $(function () {
         echo $this->showEntityLog($this->entity, $this->entity->getNodeId());
     }
 ?>
+<?php if (isset($this->isViewOnly)) :?>
+<div class="buttons span-19 last">
+	<a href="<?php echo $this->refererUrl; ?>" class="button small blue right">
+		<span><?php echo $this->translate('nodes_index_edit_form_button_back'); ?></span>
+	</a>
+</div>
+<?php endif; ?>
