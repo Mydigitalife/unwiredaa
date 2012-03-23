@@ -83,6 +83,13 @@ class Reports_Job_GenerateReport {
             //$report = new Reports_Model_Group();
             $interval = $report->getReportInterval();
 
+            $dateAdded = $report->getDateAdded();
+
+            if (is_string($dateAdded)) {
+                $dateAdded = new Zend_Date($dateAdded, 'yyyy-MM-dd HH:mm');
+            }
+
+
             $now = new Zend_Date();
 
             $toDate = new Zend_Date($report->getDateTo());
@@ -90,14 +97,16 @@ class Reports_Job_GenerateReport {
 
             $period = $toDate->sub($fromDate);
 
+            $offsetFromDateAdded = $dateAdded->sub($fromDate);
+
             switch ($interval) {
                 case 4:
-                    $fromDate->setYear($now->getYear());
+                    $dateAdded->setYear($now->getYear());
                 break;
 
                 case 3:
-                    $fromDate->setYear($now->getYear());
-                    $fromDate->setMonth($now->getMonth());
+                    $dateAdded->setYear($now->getYear());
+                    $dateAdded->setMonth($now->getMonth());
                 break;
 
                 case 2:
@@ -106,22 +115,35 @@ class Reports_Job_GenerateReport {
                                                ->getTimestamp();
 
                     if (fmod($diffStamp, (7 * 24 * 3600)) == 0) {
-                        $fromDate->setDate($now);
+                        $dateAdded->setDate($now);
                     }
                 ;
                 break;
 
                 case 1:
                 default:
-                    $fromDate = $now;
+                    /**
+                     * Assumed that the report job will be ran once daily
+                     */
+                    $dateAdded = $now;
                 break;
             }
 
-            if (!$fromDate->isToday()) {
+            if (!$dateAdded->isToday()) {
                 continue;
             }
 
+            $dateAdded->setHour($fromDate->getHour())
+                      ->setMinute($fromDate->getMinute())
+                      ->setSecond($fromDate->getSeconds());
+
+            $fromDate = clone $dateAdded;
+            $fromDate = $fromDate->sub($offsetFromDateAdded);
+            $toDate = clone $fromDate;
             $toDate->add($period);
+
+            echo "From: {$fromDate}\n";
+            echo "To: {$toDate}\n";
 
             /**
              * $fromDate and $toDate hold the shifted time frame for report
@@ -130,6 +152,12 @@ class Reports_Job_GenerateReport {
              */
 
             $pendingReports[] = $report;
+
+            /**
+             * Generate with shifted timeframe
+             */
+            $report->setDateFrom($fromDate)
+                   ->setDateTo($toDate);
         }
 
         return $pendingReports;
