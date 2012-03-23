@@ -72,7 +72,7 @@ class Reports_Job_GenerateReport {
     {
         $reportGroupMapper = new Reports_Model_Mapper_Group();
 
-        $periodicalReports = $reportGroupMapper->findBy(array('report_type' => 1));
+        $periodicalReports = $reportGroupMapper->findBy(array('report_type' => 'interval'));
 
         $pendingReports = array();
 
@@ -100,16 +100,16 @@ class Reports_Job_GenerateReport {
             $offsetFromDateAdded = $dateAdded->sub($fromDate);
 
             switch ($interval) {
-                case 4:
+                case 'year':
                     $dateAdded->setYear($now->getYear());
                 break;
 
-                case 3:
+                case 'month':
                     $dateAdded->setYear($now->getYear());
                     $dateAdded->setMonth($now->getMonth());
                 break;
 
-                case 2:
+                case 'week':
                     $diffStamp = $now->getDate()
                                           ->subDate($fromDate->getDate())
                                                ->getTimestamp();
@@ -120,7 +120,7 @@ class Reports_Job_GenerateReport {
                 ;
                 break;
 
-                case 1:
+                case 'day':
                 default:
                     /**
                      * Assumed that the report job will be ran once daily
