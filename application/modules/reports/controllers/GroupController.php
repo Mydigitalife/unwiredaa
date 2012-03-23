@@ -187,7 +187,18 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 		$entity->setData($result);
 		$entity->setReportGroupId($this->getRequest()->getParam('id'));
 		$iMapper->save($entity);
-		$this->_helper->redirector->gotoUrlAndExit('/reports/group/view/id/'.$entity->getItemId());
+
+		if ($report->getRecepients()) {
+		    $this->_emailReport($report, $entity);
+		}
+
+		//$this->_helper->redirector->gotoUrlAndExit('/reports/group/view/id/'.$entity->getItemId());
+		$this->_helper->redirector->gotoRouteAndExit(array('module' => 'reports',
+		                                                   'controller' => 'group',
+		                                                   'action' => 'view',
+		                                                   'id' => $entity->getItemId()),
+		                                             'default',
+		                                             true);
 	}
 
 	public function instantAction() {
@@ -297,6 +308,10 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 		$this->view->data = $items->getData(true);
 		$this->_helper->viewRenderer->setScriptAction('view');
 
+	    if ($this->getRequest()->isPost() && $report->getRecepients()) {
+		    $this->_emailReport($report, $items);
+		}
+
 		$this->_exportReportData($report, $items);
 	}
 
@@ -378,5 +393,56 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 															'id' => $entity->getReportGroupId()), 'default', true);
 
 	}
+
+    protected function _emailReport(Reports_Model_Group $report, Reports_Model_Items $result)
+    {
+        $recepients = $report->getRecepients();
+
+        if (!is_array($recepients)) {
+            $recepients = explode(',', $recepients);
+        }
+
+        $view = $this->getView();
+
+        try {
+            $view->report = $result;
+            $view->reportGroup = $report;
+
+            $csv = $view->render('group/view.csv.phtml');
+
+            if (!$csv) {
+                return false;
+            }
+
+            $mailer = new Zend_Mail();
+
+            $at = new Zend_Mime_Part($csv);
+            $at->type        = 'text/csv';
+            $at->disposition = Zend_Mime::DISPOSITION_INLINE;
+            $at->encoding    = Zend_Mime::ENCODING_BASE64;
+            $at->filename    = str_replace(' ', '_', 'Reports_' . $report->getTitle() . '_' . $result->getDateAdded() . '.csv');
+
+            $mailer->addAttachment($at);
+
+            $mailer->setSubject($view->systemName . ' Report: ' . $report->getTitle() . ' ' . $result->getDateAdded());
+
+            $mailBody = $view->render('group/report-email.phtml');
+            $mailer->setBodyText($mailBody, 'utf-8');
+
+            foreach ($recepients as $to) {
+                $mailer->clearRecipients()
+                       ->addTo($to)
+                       ->send();
+            }
+        } catch (Exception $e) {
+            if (APPLICATION_ENV == 'development') {
+                Unwired_Exception::getLog()->log($e->getMessage(), Zend_Log::ALERT);
+                Unwired_Exception::getLog()->log($e->getTraceAsString(), Zend_Log::DEBUG);
+            }
+            return false;
+        }
+
+        return true;
+    }
 
 }
