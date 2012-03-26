@@ -97,7 +97,7 @@ class Reports_Service_CodeTemplate_MostActiveUsers extends Reports_Service_CodeT
         $report = array(
         	'graphics' => array(
         			array(
-        					'name' => 'report_status_ap_count',
+        					'name' => 'Top Users by traffic',
         					'type' => 'PieChart',
         					'headers' => array('report_result_user', 'report_result_traffic'),
         					'rows' => $graphics
