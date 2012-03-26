@@ -76,8 +76,8 @@ if (($plimit++)>10) {$path.="/[ploop!]";break;}
 			else $this->maxdepth=2;
 		} else $this->maxdepth=1;
 
-		$this->startTime=$this->duration=$this->getReportGroup()->getDateTo()->getTimestamp();
-		$this->duration=$this->startTime-$this->getReportGroup()->getDateFrom()->getTimestamp();
+                $this->startTime=$this->duration=$this->getReportGroup()->getDateFrom()->getTimestamp();
+                $this->duration=$this->getReportGroup()->getDateTo()->getTimestamp()-$this->startTime;
 		$this->innerCount=0;//means no inner interval
 		if (($mode!='billingb')&&($this->getReportGroup()->getCodeTemplate()->isInnerIntervalSupported())) {
 			$this->innerInterval=$this->getReportGroup()->getInnerInterval()*60;
