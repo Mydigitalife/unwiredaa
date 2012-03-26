@@ -61,7 +61,7 @@ class Reports_Service_CodeTemplate_MostActiveUsers extends Reports_Service_CodeT
         }
         
         foreach ($user as $key => $value):
-        	$graphics[] = array($key, $value);
+        	$graphics[] = array($key, round($value/(1024*1024)));
         endforeach;
         
         foreach ($groupTotals as $k => $v) {
