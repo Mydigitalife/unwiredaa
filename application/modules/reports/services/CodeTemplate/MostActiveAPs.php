@@ -87,7 +87,7 @@ class Reports_Service_CodeTemplate_MostActiveAPs extends Reports_Service_CodeTem
                                             'device' => '', 'group'=>'', 'down' => "right", 'up' => "right", 'total' => "right"
                                           ));
 
-            $graphics[/*$record['node_id']*/] = array($record['node_name'], $record['bytes_total']);
+            $graphics[/*$record['node_id']*/] = array($record['node_name'], round($record['bytes_total']/(1024*1024)));
 
             $totals['data']['down'] += $record['bytes_down'];
             $totals['data']['up'] += $record['bytes_up'];
@@ -114,7 +114,7 @@ class Reports_Service_CodeTemplate_MostActiveAPs extends Reports_Service_CodeTem
                         )
                       ));
 
-
+/* what is this never reached code doing?
 
         $user = array();
         foreach ($groupTotals as $k => $v) {
@@ -169,6 +169,6 @@ class Reports_Service_CodeTemplate_MostActiveAPs extends Reports_Service_CodeTem
         	'tables' => $tables
         );
 
-        return $report;
+        return $report;*/
 	}
 }
