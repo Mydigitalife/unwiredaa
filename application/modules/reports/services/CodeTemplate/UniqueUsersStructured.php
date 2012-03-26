@@ -237,10 +237,10 @@ $innerColumns=array();
 if ($this->innerCount>0) {
   //use somewhat sane time-formats (always a bit too m,uch as starttime might be not necesarrily midnight)
   if ($this->innerInterval >= 200000) $format='Y/m/d';
-  else if ($this->innerInterval >= 8000) $format='Y/m/d H\h';
+  else if ($this->innerInterval >= 8000) $format='Y/m/d H:';
   else $format='Y/m/d H:i';
-  for ($x=0;$x<$this->innerCount;$x++) {
-    $s=($this->startTime*1)+($this->innerInterval*($x))+(3600);
+  for ($x=0;$x < $this->innerCount;$x++) {
+    $s=($this->startTime*1)+($this->innerInterval*($x));
     $e=$s+$this->innerInterval;
     $n=date($format,$s)." - ".date($format,$e);
     $innerColumns[]=array('name'=>$n,'class'=>'bold');
