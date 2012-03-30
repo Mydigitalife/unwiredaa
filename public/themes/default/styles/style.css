@@ -351,6 +351,10 @@ form div.buttons {
 	background-image: url('../images/icons/24x24/view.png');
 }
 
+.tools a.icon.add {
+    background-image: url('../images/icons/24x24/add.png');
+}
+
 .tools a.edit {
 	background-image: url('../images/icons/24x24/edit.png');
 }
