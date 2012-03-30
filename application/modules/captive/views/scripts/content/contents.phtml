@@ -162,7 +162,6 @@
 				var itemIndex = ui.item.index();
 				var placeholderIndex = ui.placeholder.index();
 
-				console.log('col: ' + columnId + ', item pos: ' + ui.item.index() + ', placeholder pos: ' + ui.placeholder.index());
 				var direction = 'up';
 
 				if (ui.item.index() < ui.placeholder.index()) {
@@ -177,33 +176,25 @@
 				if (ui.item.index() < ui.placeholder.index()) {
 	/*				for (i = correctIndex[columnId].length-1; i >= 0; i--) {
 						var position = correctIndex[columnId][i];
-						console.log('pos: ' +position);
 
 						if (position <= prevPlaceholderIndex || position > ui.placeholder.index()) {
 							continue;
 						}
 */
 
-console.log(prevPlaceholderIndex + ' - ' + ui.placeholder.index());
 						var staticItem = null;
 						var sortableItem = ui.item;
 
 						$('#'+columnId+' div.portlet').filter(':gt('+prevPlaceholderIndex+'):lt('+ui.placeholder.index()+')').each(function(){
-							console.log($(this).attr('class'));
 							if (staticItem) {
-								console.log ('if static');
 								if ($(this).hasClass('static')) {
-									console.log('second static');
 									return true;
 								}
-								console.log('prepend item');
 								$(this).insertBefore(staticItem);
 								staticItem = null;
 							}
 
-							console.log('no previous static');
 							if ($(this).hasClass('static')) {
-								console.log('added new prev static');
 								staticItem = this;
 								return true;
 							}
@@ -230,8 +221,7 @@ blockChangeEvent = false;
 
 
                 }
-				console.log(ui.item.index());
-				console.log(ui.placeholder.index());
+
 				blockChangeEvent = false;
             },
 
@@ -319,11 +309,11 @@ blockChangeEvent = false;
 				});
 			}
 
-			var filledTitle = true;
+			var filledTitle = false;
 
 			$('#fancybox-content form:first input[name*=title]').each(function(){
-				if (!$(this).val().length) {
-					filledTitle = false;
+				if ($(this).val().length) {
+					filledTitle = true;
 					return false;
 				}
 			});
@@ -547,6 +537,11 @@ blockChangeEvent = false;
              foreach ($contents->getData() as $data) {
                 if ($data->isMobile()) {
                     $dataMobile = $data;
+                    if (!$dataMobile->getTitle()) {
+                        continue;
+                    }
+                } elseif (!$data->getTitle()) {
+                    continue;
                 }
 
                 if ($data && $dataMobile) {

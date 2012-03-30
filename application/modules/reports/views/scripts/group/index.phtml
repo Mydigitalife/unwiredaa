@@ -68,6 +68,7 @@ $acl = Zend_Registry::get('acl');
 				  <?php
 			$actions = array(
 			                array('action' => 'reports', 'permission' => 'view'),
+			                array('action' => 'edit', 'permission' => 'edit'),
 			                array('action' => 'generate', 'permission' => 'add', 'resource' => 'reports_items'),
 			                'delete'
 			           );

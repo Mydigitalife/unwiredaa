@@ -100,11 +100,11 @@
 			var cloned = $(this).parents(".formelement:first").prev().clone();
 
 			$(cloned).find('.devicelink:gt(0)').remove();
-			var elemNumber = $(cloned).find('.devicelink').find('input:first').attr('name').replace(/content\[\d+\]\[content\]\[links\]\[(\d+)\].*/gi,
-																								    '$1');
+			var elemNumber = $(cloned).find('.devicelink').find('input:first').attr('name').replace(/content\[(mobile|desktop)\]\[\d+\]\[content\]\[links\]\[(\d+)\].*/gi,
+																								    '$2');
 			$(cloned).find('.devicelink').find('input').each(function(){
-				$(this).attr('name', $(this).attr('name').replace(/(content\[\d+\]\[content\]\[links\])\[\d+\](.*)/gi,
-																  '$1[' + (parseInt(elemNumber)+1) +']$2'));
+				$(this).attr('name', $(this).attr('name').replace(/content\[(mobile|desktop)\]\[(\d+)\]\[content\]\[links\]\[\d+\](.*)/gi,
+																  'content[$1][$2][content][links][' + (parseInt(elemNumber)+1) +']$3'));
 			})
 
 			$(this).parent().before(cloned);
