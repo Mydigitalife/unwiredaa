@@ -2,7 +2,7 @@
 	if ($this->entity->getReportGroupId()) {
 		echo $this->translate('report_group_title_edit').' '.$this->entity->getTitle();
 	} else {
-		echo $this->translate('report_group_title_add');
+		echo $this->translate('report_group_title_add') . ': ' . $this->entity->getCodeTemplate()->getTitle();
 	}
 ?></h1>
 <?php
