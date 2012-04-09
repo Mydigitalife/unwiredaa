@@ -42,10 +42,10 @@ class Unwired_Bootstrap extends Zend_Application_Bootstrap_Bootstrap
      * Get rid of the annoying message "It is not safe to rely on systems timezone..."
      *
      */
-    protected function _initTimeZone()
+  /*  protected function _initTimeZone()
     {
         date_default_timezone_set('Europe/Sofia');
-    }
+    } */
 
     /**
      * Init event broker
