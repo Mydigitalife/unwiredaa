@@ -8,7 +8,7 @@ class Captive_TemplateController extends Unwired_Controller_Crud
     {
         $groupService = new Groups_Service_Group();
 
-        $templateMapper = $groupService->prepareMapperListingByAdmin($this->_getDefaultMapper());
+        $templateMapper = $groupService->prepareMapperListingByAdmin($this->_getDefaultMapper(), null, false);
 
         $this->_index($templateMapper);
     }
