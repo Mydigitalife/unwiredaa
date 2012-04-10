@@ -288,6 +288,10 @@ div.buttons {
 	padding-top: 10px;
 	border-top: 1px dotted #465465;
 }
+div.stats{
+	margin-top:5px;
+}
+
 form div.buttons {
 	width: 100%;
 	float: left;
@@ -548,3 +552,52 @@ ul#widgetSet li {
 	margin: 0px auto;
 }
 
+#infowindowcontainer h5{
+	padding:0px;
+	margin:0px;
+}
+#infowindowcontainer table{
+	margin:0px;
+	padding:0px;
+}
+
+.overlay {
+ 
+    display:none;
+    z-index:10000;
+ 	position:absolute;
+ 	
+ 	top:50%;
+ 	left:40%;
+    
+    background-color:#017cc0;
+ 
+    width:400px;
+    min-height:200px;
+    border:1px solid #666;
+ 
+    -moz-box-shadow:0 0 90px 5px #000;
+    -webkit-box-shadow: 0 0 90px #000;
+}
+.overlay .head{
+	height:20px;
+	background-color:#fff;
+	color:#000;
+	font-size:10pt;
+	margin-bottom:5px;
+	padding-left:5px;	
+}
+.overlay .nodes{
+	padding-left:5px;
+}
+ .overlay .close {
+    position:absolute;
+    right:-15px;
+    top:0px;
+    cursor:pointer;
+    height:35px;
+    width:35px;
+}
+.overlay .nodeElem{
+	cursor:pointer;
+}

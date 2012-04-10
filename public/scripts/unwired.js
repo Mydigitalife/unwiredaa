@@ -141,7 +141,7 @@ $(document).ready(function(){
 			}
 			url = url + '/' + attr_name + '/' + value;
 		})
-		
+		//alert(url);
 		window.location.href=url;
 	});
 	
