@@ -15,7 +15,7 @@ class Captive_IndexController extends Unwired_Controller_Crud
     {
         $groupService = new Groups_Service_Group();
 
-        $splashMapper = $groupService->prepareMapperListingByAdmin($this->_getDefaultMapper());
+        $splashMapper = $groupService->prepareMapperListingByAdmin($this->_getDefaultMapper(), null, false);
 
         $this->_index($splashMapper);
     }
