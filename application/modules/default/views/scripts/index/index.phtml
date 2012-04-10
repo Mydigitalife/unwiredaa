@@ -8,15 +8,9 @@
 	    $this->headScript()->appendFile($this->httpScheme() . '://google-maps-utility-library-v3.googlecode.com/svn/trunk/markerclusterer/src/markerclusterer_compiled.js');
 	}
 
-	
 	$this->headScript()->captureStart();
-	
-
 	echo $this->jscript;
 ?>
-
-	
-	
 		<?php if ($markerClusteringLevel > 0) :?>
 		var markerClusterer = new MarkerClusterer(map, markers, {maxZoom: <?php echo $markerClusteringLevel; ?>});
 		<?php
@@ -30,7 +24,6 @@
 <?php
 	$this->headScript()->captureEnd();
 ?>
-
 
 <form method="get" action="<?php echo $this->url(array('module' => 'default',
 													   'controller' => 'index',
