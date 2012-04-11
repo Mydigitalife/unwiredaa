@@ -72,10 +72,12 @@ endif;
     <p>
     <?php 
     $cnt = 0;
+	echo '<ul>';
     foreach($this->nodes as $node):
-    echo '<div id="'.$cnt.'" class="nodeElem">'.$node->getName().'</div><br />';
+    echo '<li id="'.$cnt.'" class="nodeElem">'.$node->getName().'</li>';
     $cnt++;
     endforeach;
+	echo '</ul>';
     ?>
     </p>
   </div>

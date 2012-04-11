@@ -6242,3 +6242,344 @@
   'interface' => 'total',
   'module' => 'default',
 )
+2012-04-11T17:45:19+02:00 WARN (4): Invalid argument supplied for foreach() at /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/application/modules/default/views/scripts/index/index.phtml:12
+2012-04-11T17:45:30+02:00 CRIT (2): Exception: Unable to Connect to tcp://10.255.0.67:80. Error #60: Operation timed out
+	Trace: #0 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Http/Client.php(1005): Zend_Http_Client_Adapter_Socket->connect('10.255.0.67', 80, false)
+#1 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/application/modules/default/services/Chilli.php(81): Zend_Http_Client->request()
+#2 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/application/modules/default/controllers/IndexController.php(456): Default_Service_Chilli->getInterfaceStatistics('total')
+#3 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Action.php(516): Default_IndexController->statsAction()
+#4 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Dispatcher/Standard.php(295): Zend_Controller_Action->dispatch('statsAction')
+#5 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Front.php(954): Zend_Controller_Dispatcher_Standard->dispatch(Object(Zend_Controller_Request_Http), Object(Zend_Controller_Response_Http))
+#6 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Application/Bootstrap/Bootstrap.php(97): Zend_Controller_Front->dispatch()
+#7 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Application.php(366): Zend_Application_Bootstrap_Bootstrap->run()
+#8 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/public/index.php(54): Zend_Application->run()
+#9 {main}
+	Request: array (
+  'controller' => 'index',
+  'action' => 'stats',
+  'interface' => 'total',
+  'module' => 'default',
+)
+2012-04-11T17:47:03+02:00 CRIT (2): Exception: Unable to Connect to tcp://10.255.0.67:80. Error #60: Operation timed out
+	Trace: #0 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Http/Client.php(1005): Zend_Http_Client_Adapter_Socket->connect('10.255.0.67', 80, false)
+#1 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/application/modules/default/services/Chilli.php(81): Zend_Http_Client->request()
+#2 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/application/modules/default/controllers/IndexController.php(456): Default_Service_Chilli->getInterfaceStatistics('total')
+#3 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Action.php(516): Default_IndexController->statsAction()
+#4 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Dispatcher/Standard.php(295): Zend_Controller_Action->dispatch('statsAction')
+#5 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Front.php(954): Zend_Controller_Dispatcher_Standard->dispatch(Object(Zend_Controller_Request_Http), Object(Zend_Controller_Response_Http))
+#6 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Application/Bootstrap/Bootstrap.php(97): Zend_Controller_Front->dispatch()
+#7 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Application.php(366): Zend_Application_Bootstrap_Bootstrap->run()
+#8 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/public/index.php(54): Zend_Application->run()
+#9 {main}
+	Request: array (
+  'controller' => 'index',
+  'action' => 'stats',
+  'interface' => 'total',
+  'module' => 'default',
+)
+2012-04-11T17:47:19+02:00 CRIT (2): Exception: Unable to Connect to tcp://10.255.0.67:80. Error #60: Operation timed out
+	Trace: #0 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Http/Client.php(1005): Zend_Http_Client_Adapter_Socket->connect('10.255.0.67', 80, false)
+#1 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/application/modules/default/services/Chilli.php(81): Zend_Http_Client->request()
+#2 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/application/modules/default/controllers/IndexController.php(456): Default_Service_Chilli->getInterfaceStatistics('total')
+#3 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Action.php(516): Default_IndexController->statsAction()
+#4 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Dispatcher/Standard.php(295): Zend_Controller_Action->dispatch('statsAction')
+#5 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Front.php(954): Zend_Controller_Dispatcher_Standard->dispatch(Object(Zend_Controller_Request_Http), Object(Zend_Controller_Response_Http))
+#6 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Application/Bootstrap/Bootstrap.php(97): Zend_Controller_Front->dispatch()
+#7 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Application.php(366): Zend_Application_Bootstrap_Bootstrap->run()
+#8 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/public/index.php(54): Zend_Application->run()
+#9 {main}
+	Request: array (
+  'controller' => 'index',
+  'action' => 'stats',
+  'interface' => 'total',
+  'module' => 'default',
+)
+2012-04-11T17:48:13+02:00 CRIT (2): Exception: Unable to Connect to tcp://10.255.0.67:80. Error #60: Operation timed out
+	Trace: #0 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Http/Client.php(1005): Zend_Http_Client_Adapter_Socket->connect('10.255.0.67', 80, false)
+#1 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/application/modules/default/services/Chilli.php(81): Zend_Http_Client->request()
+#2 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/application/modules/default/controllers/IndexController.php(456): Default_Service_Chilli->getInterfaceStatistics('total')
+#3 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Action.php(516): Default_IndexController->statsAction()
+#4 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Dispatcher/Standard.php(295): Zend_Controller_Action->dispatch('statsAction')
+#5 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Front.php(954): Zend_Controller_Dispatcher_Standard->dispatch(Object(Zend_Controller_Request_Http), Object(Zend_Controller_Response_Http))
+#6 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Application/Bootstrap/Bootstrap.php(97): Zend_Controller_Front->dispatch()
+#7 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Application.php(366): Zend_Application_Bootstrap_Bootstrap->run()
+#8 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/public/index.php(54): Zend_Application->run()
+#9 {main}
+	Request: array (
+  'controller' => 'index',
+  'action' => 'stats',
+  'interface' => 'total',
+  'module' => 'default',
+)
+2012-04-11T17:48:28+02:00 CRIT (2): Exception: Unable to Connect to tcp://10.255.0.67:80. Error #60: Operation timed out
+	Trace: #0 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Http/Client.php(1005): Zend_Http_Client_Adapter_Socket->connect('10.255.0.67', 80, false)
+#1 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/application/modules/default/services/Chilli.php(81): Zend_Http_Client->request()
+#2 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/application/modules/default/controllers/IndexController.php(456): Default_Service_Chilli->getInterfaceStatistics('total')
+#3 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Action.php(516): Default_IndexController->statsAction()
+#4 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Dispatcher/Standard.php(295): Zend_Controller_Action->dispatch('statsAction')
+#5 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Front.php(954): Zend_Controller_Dispatcher_Standard->dispatch(Object(Zend_Controller_Request_Http), Object(Zend_Controller_Response_Http))
+#6 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Application/Bootstrap/Bootstrap.php(97): Zend_Controller_Front->dispatch()
+#7 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Application.php(366): Zend_Application_Bootstrap_Bootstrap->run()
+#8 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/public/index.php(54): Zend_Application->run()
+#9 {main}
+	Request: array (
+  'controller' => 'index',
+  'action' => 'stats',
+  'interface' => 'total',
+  'module' => 'default',
+)
+2012-04-11T17:49:24+02:00 CRIT (2): Exception: Unable to Connect to tcp://10.255.0.67:80. Error #60: Operation timed out
+	Trace: #0 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Http/Client.php(1005): Zend_Http_Client_Adapter_Socket->connect('10.255.0.67', 80, false)
+#1 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/application/modules/default/services/Chilli.php(81): Zend_Http_Client->request()
+#2 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/application/modules/default/controllers/IndexController.php(456): Default_Service_Chilli->getInterfaceStatistics('total')
+#3 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Action.php(516): Default_IndexController->statsAction()
+#4 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Dispatcher/Standard.php(295): Zend_Controller_Action->dispatch('statsAction')
+#5 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Front.php(954): Zend_Controller_Dispatcher_Standard->dispatch(Object(Zend_Controller_Request_Http), Object(Zend_Controller_Response_Http))
+#6 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Application/Bootstrap/Bootstrap.php(97): Zend_Controller_Front->dispatch()
+#7 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Application.php(366): Zend_Application_Bootstrap_Bootstrap->run()
+#8 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/public/index.php(54): Zend_Application->run()
+#9 {main}
+	Request: array (
+  'controller' => 'index',
+  'action' => 'stats',
+  'interface' => 'total',
+  'module' => 'default',
+)
+2012-04-11T17:49:43+02:00 CRIT (2): Exception: Unable to Connect to tcp://10.255.0.67:80. Error #60: Operation timed out
+	Trace: #0 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Http/Client.php(1005): Zend_Http_Client_Adapter_Socket->connect('10.255.0.67', 80, false)
+#1 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/application/modules/default/services/Chilli.php(81): Zend_Http_Client->request()
+#2 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/application/modules/default/controllers/IndexController.php(456): Default_Service_Chilli->getInterfaceStatistics('total')
+#3 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Action.php(516): Default_IndexController->statsAction()
+#4 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Dispatcher/Standard.php(295): Zend_Controller_Action->dispatch('statsAction')
+#5 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Front.php(954): Zend_Controller_Dispatcher_Standard->dispatch(Object(Zend_Controller_Request_Http), Object(Zend_Controller_Response_Http))
+#6 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Application/Bootstrap/Bootstrap.php(97): Zend_Controller_Front->dispatch()
+#7 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Application.php(366): Zend_Application_Bootstrap_Bootstrap->run()
+#8 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/public/index.php(54): Zend_Application->run()
+#9 {main}
+	Request: array (
+  'controller' => 'index',
+  'action' => 'stats',
+  'interface' => 'total',
+  'module' => 'default',
+)
+2012-04-11T17:51:38+02:00 CRIT (2): Exception: Unable to Connect to tcp://10.255.0.67:80. Error #60: Operation timed out
+	Trace: #0 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Http/Client.php(1005): Zend_Http_Client_Adapter_Socket->connect('10.255.0.67', 80, false)
+#1 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/application/modules/default/services/Chilli.php(81): Zend_Http_Client->request()
+#2 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/application/modules/default/controllers/IndexController.php(456): Default_Service_Chilli->getInterfaceStatistics('total')
+#3 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Action.php(516): Default_IndexController->statsAction()
+#4 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Dispatcher/Standard.php(295): Zend_Controller_Action->dispatch('statsAction')
+#5 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Front.php(954): Zend_Controller_Dispatcher_Standard->dispatch(Object(Zend_Controller_Request_Http), Object(Zend_Controller_Response_Http))
+#6 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Application/Bootstrap/Bootstrap.php(97): Zend_Controller_Front->dispatch()
+#7 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Application.php(366): Zend_Application_Bootstrap_Bootstrap->run()
+#8 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/public/index.php(54): Zend_Application->run()
+#9 {main}
+	Request: array (
+  'controller' => 'index',
+  'action' => 'stats',
+  'interface' => 'total',
+  'module' => 'default',
+)
+2012-04-11T17:51:54+02:00 CRIT (2): Exception: Unable to Connect to tcp://10.255.0.67:80. Error #60: Operation timed out
+	Trace: #0 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Http/Client.php(1005): Zend_Http_Client_Adapter_Socket->connect('10.255.0.67', 80, false)
+#1 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/application/modules/default/services/Chilli.php(81): Zend_Http_Client->request()
+#2 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/application/modules/default/controllers/IndexController.php(456): Default_Service_Chilli->getInterfaceStatistics('total')
+#3 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Action.php(516): Default_IndexController->statsAction()
+#4 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Dispatcher/Standard.php(295): Zend_Controller_Action->dispatch('statsAction')
+#5 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Front.php(954): Zend_Controller_Dispatcher_Standard->dispatch(Object(Zend_Controller_Request_Http), Object(Zend_Controller_Response_Http))
+#6 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Application/Bootstrap/Bootstrap.php(97): Zend_Controller_Front->dispatch()
+#7 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Application.php(366): Zend_Application_Bootstrap_Bootstrap->run()
+#8 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/public/index.php(54): Zend_Application->run()
+#9 {main}
+	Request: array (
+  'controller' => 'index',
+  'action' => 'stats',
+  'interface' => 'total',
+  'module' => 'default',
+)
+2012-04-11T17:52:05+02:00 CRIT (2): Exception: Unable to Connect to tcp://10.255.0.67:80. Error #60: Operation timed out
+	Trace: #0 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Http/Client.php(1005): Zend_Http_Client_Adapter_Socket->connect('10.255.0.67', 80, false)
+#1 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/application/modules/default/services/Chilli.php(81): Zend_Http_Client->request()
+#2 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/application/modules/default/controllers/IndexController.php(456): Default_Service_Chilli->getInterfaceStatistics('total')
+#3 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Action.php(516): Default_IndexController->statsAction()
+#4 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Dispatcher/Standard.php(295): Zend_Controller_Action->dispatch('statsAction')
+#5 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Front.php(954): Zend_Controller_Dispatcher_Standard->dispatch(Object(Zend_Controller_Request_Http), Object(Zend_Controller_Response_Http))
+#6 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Application/Bootstrap/Bootstrap.php(97): Zend_Controller_Front->dispatch()
+#7 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Application.php(366): Zend_Application_Bootstrap_Bootstrap->run()
+#8 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/public/index.php(54): Zend_Application->run()
+#9 {main}
+	Request: array (
+  'controller' => 'index',
+  'action' => 'stats',
+  'interface' => 'total',
+  'module' => 'default',
+)
+2012-04-11T17:55:24+02:00 CRIT (2): Exception: Unable to Connect to tcp://10.255.0.67:80. Error #60: Operation timed out
+	Trace: #0 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Http/Client.php(1005): Zend_Http_Client_Adapter_Socket->connect('10.255.0.67', 80, false)
+#1 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/application/modules/default/services/Chilli.php(81): Zend_Http_Client->request()
+#2 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/application/modules/default/controllers/IndexController.php(456): Default_Service_Chilli->getInterfaceStatistics('total')
+#3 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Action.php(516): Default_IndexController->statsAction()
+#4 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Dispatcher/Standard.php(295): Zend_Controller_Action->dispatch('statsAction')
+#5 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Front.php(954): Zend_Controller_Dispatcher_Standard->dispatch(Object(Zend_Controller_Request_Http), Object(Zend_Controller_Response_Http))
+#6 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Application/Bootstrap/Bootstrap.php(97): Zend_Controller_Front->dispatch()
+#7 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Application.php(366): Zend_Application_Bootstrap_Bootstrap->run()
+#8 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/public/index.php(54): Zend_Application->run()
+#9 {main}
+	Request: array (
+  'controller' => 'index',
+  'action' => 'stats',
+  'interface' => 'total',
+  'module' => 'default',
+)
+2012-04-11T17:56:47+02:00 CRIT (2): Exception: Unable to Connect to tcp://10.255.0.67:80. Error #60: Operation timed out
+	Trace: #0 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Http/Client.php(1005): Zend_Http_Client_Adapter_Socket->connect('10.255.0.67', 80, false)
+#1 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/application/modules/default/services/Chilli.php(81): Zend_Http_Client->request()
+#2 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/application/modules/default/controllers/IndexController.php(456): Default_Service_Chilli->getInterfaceStatistics('total')
+#3 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Action.php(516): Default_IndexController->statsAction()
+#4 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Dispatcher/Standard.php(295): Zend_Controller_Action->dispatch('statsAction')
+#5 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Front.php(954): Zend_Controller_Dispatcher_Standard->dispatch(Object(Zend_Controller_Request_Http), Object(Zend_Controller_Response_Http))
+#6 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Application/Bootstrap/Bootstrap.php(97): Zend_Controller_Front->dispatch()
+#7 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Application.php(366): Zend_Application_Bootstrap_Bootstrap->run()
+#8 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/public/index.php(54): Zend_Application->run()
+#9 {main}
+	Request: array (
+  'controller' => 'index',
+  'action' => 'stats',
+  'interface' => 'total',
+  'module' => 'default',
+)
+2012-04-11T17:56:59+02:00 CRIT (2): Exception: Unable to Connect to tcp://10.255.0.67:80. Error #60: Operation timed out
+	Trace: #0 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Http/Client.php(1005): Zend_Http_Client_Adapter_Socket->connect('10.255.0.67', 80, false)
+#1 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/application/modules/default/services/Chilli.php(81): Zend_Http_Client->request()
+#2 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/application/modules/default/controllers/IndexController.php(456): Default_Service_Chilli->getInterfaceStatistics('total')
+#3 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Action.php(516): Default_IndexController->statsAction()
+#4 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Dispatcher/Standard.php(295): Zend_Controller_Action->dispatch('statsAction')
+#5 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Front.php(954): Zend_Controller_Dispatcher_Standard->dispatch(Object(Zend_Controller_Request_Http), Object(Zend_Controller_Response_Http))
+#6 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Application/Bootstrap/Bootstrap.php(97): Zend_Controller_Front->dispatch()
+#7 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Application.php(366): Zend_Application_Bootstrap_Bootstrap->run()
+#8 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/public/index.php(54): Zend_Application->run()
+#9 {main}
+	Request: array (
+  'controller' => 'index',
+  'action' => 'stats',
+  'interface' => 'total',
+  'module' => 'default',
+)
+2012-04-11T17:57:11+02:00 CRIT (2): Exception: Unable to Connect to tcp://10.255.0.67:80. Error #60: Operation timed out
+	Trace: #0 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Http/Client.php(1005): Zend_Http_Client_Adapter_Socket->connect('10.255.0.67', 80, false)
+#1 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/application/modules/default/services/Chilli.php(81): Zend_Http_Client->request()
+#2 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/application/modules/default/controllers/IndexController.php(456): Default_Service_Chilli->getInterfaceStatistics('total')
+#3 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Action.php(516): Default_IndexController->statsAction()
+#4 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Dispatcher/Standard.php(295): Zend_Controller_Action->dispatch('statsAction')
+#5 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Front.php(954): Zend_Controller_Dispatcher_Standard->dispatch(Object(Zend_Controller_Request_Http), Object(Zend_Controller_Response_Http))
+#6 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Application/Bootstrap/Bootstrap.php(97): Zend_Controller_Front->dispatch()
+#7 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Application.php(366): Zend_Application_Bootstrap_Bootstrap->run()
+#8 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/public/index.php(54): Zend_Application->run()
+#9 {main}
+	Request: array (
+  'controller' => 'index',
+  'action' => 'stats',
+  'interface' => 'total',
+  'module' => 'default',
+)
+2012-04-11T17:57:22+02:00 CRIT (2): Exception: Unable to Connect to tcp://10.255.0.67:80. Error #60: Operation timed out
+	Trace: #0 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Http/Client.php(1005): Zend_Http_Client_Adapter_Socket->connect('10.255.0.67', 80, false)
+#1 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/application/modules/default/services/Chilli.php(81): Zend_Http_Client->request()
+#2 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/application/modules/default/controllers/IndexController.php(456): Default_Service_Chilli->getInterfaceStatistics('total')
+#3 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Action.php(516): Default_IndexController->statsAction()
+#4 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Dispatcher/Standard.php(295): Zend_Controller_Action->dispatch('statsAction')
+#5 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Front.php(954): Zend_Controller_Dispatcher_Standard->dispatch(Object(Zend_Controller_Request_Http), Object(Zend_Controller_Response_Http))
+#6 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Application/Bootstrap/Bootstrap.php(97): Zend_Controller_Front->dispatch()
+#7 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Application.php(366): Zend_Application_Bootstrap_Bootstrap->run()
+#8 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/public/index.php(54): Zend_Application->run()
+#9 {main}
+	Request: array (
+  'controller' => 'index',
+  'action' => 'stats',
+  'interface' => 'total',
+  'module' => 'default',
+)
+2012-04-11T17:57:33+02:00 CRIT (2): Exception: Unable to Connect to tcp://10.255.0.67:80. Error #60: Operation timed out
+	Trace: #0 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Http/Client.php(1005): Zend_Http_Client_Adapter_Socket->connect('10.255.0.67', 80, false)
+#1 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/application/modules/default/services/Chilli.php(81): Zend_Http_Client->request()
+#2 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/application/modules/default/controllers/IndexController.php(456): Default_Service_Chilli->getInterfaceStatistics('total')
+#3 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Action.php(516): Default_IndexController->statsAction()
+#4 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Dispatcher/Standard.php(295): Zend_Controller_Action->dispatch('statsAction')
+#5 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Front.php(954): Zend_Controller_Dispatcher_Standard->dispatch(Object(Zend_Controller_Request_Http), Object(Zend_Controller_Response_Http))
+#6 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Application/Bootstrap/Bootstrap.php(97): Zend_Controller_Front->dispatch()
+#7 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Application.php(366): Zend_Application_Bootstrap_Bootstrap->run()
+#8 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/public/index.php(54): Zend_Application->run()
+#9 {main}
+	Request: array (
+  'controller' => 'index',
+  'action' => 'stats',
+  'interface' => 'total',
+  'module' => 'default',
+)
+2012-04-11T17:57:48+02:00 CRIT (2): Exception: Unable to Connect to tcp://10.255.0.67:80. Error #60: Operation timed out
+	Trace: #0 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Http/Client.php(1005): Zend_Http_Client_Adapter_Socket->connect('10.255.0.67', 80, false)
+#1 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/application/modules/default/services/Chilli.php(81): Zend_Http_Client->request()
+#2 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/application/modules/default/controllers/IndexController.php(456): Default_Service_Chilli->getInterfaceStatistics('total')
+#3 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Action.php(516): Default_IndexController->statsAction()
+#4 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Dispatcher/Standard.php(295): Zend_Controller_Action->dispatch('statsAction')
+#5 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Front.php(954): Zend_Controller_Dispatcher_Standard->dispatch(Object(Zend_Controller_Request_Http), Object(Zend_Controller_Response_Http))
+#6 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Application/Bootstrap/Bootstrap.php(97): Zend_Controller_Front->dispatch()
+#7 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Application.php(366): Zend_Application_Bootstrap_Bootstrap->run()
+#8 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/public/index.php(54): Zend_Application->run()
+#9 {main}
+	Request: array (
+  'controller' => 'index',
+  'action' => 'stats',
+  'interface' => 'total',
+  'module' => 'default',
+)
+2012-04-11T17:58:02+02:00 CRIT (2): Exception: Unable to Connect to tcp://10.255.0.67:80. Error #60: Operation timed out
+	Trace: #0 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Http/Client.php(1005): Zend_Http_Client_Adapter_Socket->connect('10.255.0.67', 80, false)
+#1 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/application/modules/default/services/Chilli.php(81): Zend_Http_Client->request()
+#2 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/application/modules/default/controllers/IndexController.php(456): Default_Service_Chilli->getInterfaceStatistics('total')
+#3 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Action.php(516): Default_IndexController->statsAction()
+#4 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Dispatcher/Standard.php(295): Zend_Controller_Action->dispatch('statsAction')
+#5 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Front.php(954): Zend_Controller_Dispatcher_Standard->dispatch(Object(Zend_Controller_Request_Http), Object(Zend_Controller_Response_Http))
+#6 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Application/Bootstrap/Bootstrap.php(97): Zend_Controller_Front->dispatch()
+#7 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Application.php(366): Zend_Application_Bootstrap_Bootstrap->run()
+#8 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/public/index.php(54): Zend_Application->run()
+#9 {main}
+	Request: array (
+  'controller' => 'index',
+  'action' => 'stats',
+  'interface' => 'total',
+  'module' => 'default',
+)
+2012-04-11T18:00:14+02:00 CRIT (2): Exception: Unable to Connect to tcp://10.255.0.67:80. Error #60: Operation timed out
+	Trace: #0 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Http/Client.php(1005): Zend_Http_Client_Adapter_Socket->connect('10.255.0.67', 80, false)
+#1 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/application/modules/default/services/Chilli.php(81): Zend_Http_Client->request()
+#2 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/application/modules/default/controllers/IndexController.php(456): Default_Service_Chilli->getInterfaceStatistics('total')
+#3 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Action.php(516): Default_IndexController->statsAction()
+#4 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Dispatcher/Standard.php(295): Zend_Controller_Action->dispatch('statsAction')
+#5 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Front.php(954): Zend_Controller_Dispatcher_Standard->dispatch(Object(Zend_Controller_Request_Http), Object(Zend_Controller_Response_Http))
+#6 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Application/Bootstrap/Bootstrap.php(97): Zend_Controller_Front->dispatch()
+#7 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Application.php(366): Zend_Application_Bootstrap_Bootstrap->run()
+#8 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/public/index.php(54): Zend_Application->run()
+#9 {main}
+	Request: array (
+  'controller' => 'index',
+  'action' => 'stats',
+  'interface' => 'total',
+  'module' => 'default',
+)
+2012-04-11T18:00:44+02:00 CRIT (2): Exception: Unable to Connect to tcp://10.255.0.67:80. Error #60: Operation timed out
+	Trace: #0 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Http/Client.php(1005): Zend_Http_Client_Adapter_Socket->connect('10.255.0.67', 80, false)
+#1 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/application/modules/default/services/Chilli.php(81): Zend_Http_Client->request()
+#2 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/application/modules/default/controllers/IndexController.php(456): Default_Service_Chilli->getInterfaceStatistics('total')
+#3 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Action.php(516): Default_IndexController->statsAction()
+#4 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Dispatcher/Standard.php(295): Zend_Controller_Action->dispatch('statsAction')
+#5 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Controller/Front.php(954): Zend_Controller_Dispatcher_Standard->dispatch(Object(Zend_Controller_Request_Http), Object(Zend_Controller_Response_Http))
+#6 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Application/Bootstrap/Bootstrap.php(97): Zend_Controller_Front->dispatch()
+#7 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/library/Zend/Application.php(366): Zend_Application_Bootstrap_Bootstrap->run()
+#8 /Users/floke/NetBeansProjects/unwired_neu/admin/unwiredaa/public/index.php(54): Zend_Application->run()
+#9 {main}
+	Request: array (
+  'controller' => 'index',
+  'action' => 'stats',
+  'interface' => 'total',
+  'module' => 'default',
+)

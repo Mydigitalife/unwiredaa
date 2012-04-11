@@ -8,233 +8,9 @@
 	    $this->headScript()->appendFile($this->httpScheme() . '://google-maps-utility-library-v3.googlecode.com/svn/trunk/markerclusterer/src/markerclusterer_compiled.js');
 	}
 
-	$nodes = array();
-	foreach ($this->nodes as $node) {
-		$nodeArray = $node->toArray();
-		$nodeArray['trafficlimit'] = $nodeArray['settings']['trafficlimit'];
-		$nodeArray['status_extended']['monthly_traffic'] = (isset($nodeArray['status_extended']['monthly_traffic'])) ? $nodeArray['status_extended']['monthly_traffic'] : 0;
-		unset($nodeArray['settings']);
-		$nodes[] = $nodeArray;
-	}
 	$this->headScript()->captureStart();
-
+	echo $this->jscript;
 ?>
-	var nodes = <?php echo Zend_Json::encode($nodes);?>;
-	var map;
-	var infowindow;
-
-	function stringToDate(datestring)
-	{
-		var match = /(\d{4})\-0?(\d{1,2})\-0?(\d{1,2})\s0?(\d{1,2}):0?(\d{1,2}):0?(\d{1,2})/i.exec(datestring);
-
-		if (!match.length) {
-			return null;
-		}
-
-		var date = new Date();
-
-		date.setFullYear(match[1]);
-		date.setMonth(parseInt(match[2])-1);
-		date.setDate(match[3]);
-		date.setHours(match[4]);
-		date.setMinutes(match[5]);
-		date.setSeconds(match[6]);
-
-		return date;
-	}
-
-	function formatDbDate(datestring)
-	{
-		if (datestring == '0000-00-00 00:00:00') {
-			return 'unknown';
-		}
-
-		var match = /(\d{4})\-(\d{1,2})\-(\d{1,2})\s(\d{1,2}:\d{1,2}:\d{1,2})/i.exec(datestring);
-
-		if (!match.length) {
-			return '';
-		}
-
-		return match[3] + '/' + match[2] + '/' + match[1] + ' ' + match[4];
-	}
-
-	var lastDevice = null;
-
-	var statsTimer = null;
-	var networkTimer = null;
-
-	var networkUpGraph = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-	var networkDownGraph = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-
-	function loadStatistics(deviceData)
-	{
-		lastDevice = deviceData;
-
-		$.ajax({
-			url: '<?php echo $this->url(array('module' => 'default',
-			                                  'controller' => 'index',
-			                                  'action' => 'stats'), 'default', true)?>/location/' + parseInt(deviceData.node_id).toString(16),
-			success: function(data) {
-				if (lastDevice !== deviceData) {
-					return;
-				}
-
-				var  defaultData = {
-									"session_count": "0",
-									"internet_users": "0",
-									"session_count": 0,
-									"total_kbps_up": "0",
-									"total_kbps_down": "0"
-									} ;
-
-				if (data) {
-
-					var garden_users = '0';
-					if (data.session_count == -1) {
-						data = defaultData;
-					} else {
-						garden_users = data.session_count - data.internet_users;
-					}
-
-    				$('#infowindowcontainer div.stats').html(
-    					'<div><strong><?php echo $this->translate('default_index_index_ap_users')?>: </strong><ul>' +
-					    '<li><strong><?php echo $this->translate('default_index_index_ap_users_total')?>: </strong>' + data.session_count + '</li>' +
-					    '<li><strong><?php echo $this->translate('default_index_index_ap_users_online')?>: </strong>' + data.internet_users + '</li>' +
-					    '<li><strong><?php echo $this->translate('default_index_index_ap_users_garden')?>: </strong>' + (data.session_count - data.internet_users) + '</li></ul></div>' +
-    					'<div><strong><?php echo $this->translate('default_index_index_ap_speed_up')?>:</strong> ' + data.total_kbps_up + '</div>' +
-    					'<div><strong><?php echo $this->translate('default_index_index_ap_speed_down')?>:</strong> ' + data.total_kbps_down + '</div>'
-    				);
-				}
-
-				if ($('#infowindowcontainer').is(':visible')) {
- 					statsTimer = setTimeout("loadStatistics(lastDevice);", 3000);
-				}
-			}
-		});
-	}
-
-	function loadNetworkStatistics()
-	{
-		$.ajax({
-			url: '<?php echo $this->url(array('module' => 'default',
-			                                  'controller' => 'index',
-			                                  'action' => 'stats',
-			                                  'interface' => 'total'), 'default', true)?>',
-			success: function(data) {
-
-				if (data) {
-				    // $('#devicesonline').text(online_ap_count);
-					// $('#usersonline').text(data.active_users);
-					$('#bandwidthup').text(data.kbps_tx);
-					$('#bandwidthdown').text(data.kbps_rx);
-
-					networkUpGraph.push(data.kbps_tx);
-					networkUpGraph.splice(0,1);
-					$('#networkgraphup').sparkline(networkUpGraph, { width: 510 })
-
-					networkDownGraph.push(data.kbps_rx);
-					networkDownGraph.splice(0,1);
-
-					$('#networkgraphdown').sparkline(networkDownGraph, { width: 510 })
-				}
-
- 				networkTimer = setTimeout("loadNetworkStatistics();", 5000);
-			}
-		});
-	}
-
-	$(document).ready(function(){
-		$('#nodemap').height(450);
-
-		var latlng = new google.maps.LatLng(<?php echo $this->systemSettings['node_map_center_lat']->getValue(); ?>,
-										    <?php echo $this->systemSettings['node_map_center_lng']->getValue(); ?>);
-    	var myOptions = {
-      		zoom: <?php echo (int) $this->systemSettings['node_map_zoom']->getValue(); ?>,
-      		center: latlng,
-      		mapTypeId: google.maps.MapTypeId.ROADMAP
-    	};
-
-    	map = new google.maps.Map(document.getElementById("nodemap"),
-        							  myOptions);
-
-		infowindow = new google.maps.InfoWindow();
-
-		var markers = [];
-
-		$.each(nodes, function(idx, data) {
-			var mimage = "<?php echo $this->baseUrl("themes/" . $this->theme . "/images/icons/32x32/marker-red.png")?>";
-			var onlinemsg = '';
-
-			var formattedDate = formatDbDate(data.online_status_changed);
-
-
-			if (data.online_status > 0) {
-				onlinemsg = ''; // 'Online users: ' + data.online_users_count;
-	    		onlinemsg = onlinemsg + '</div><div>Online since: ' + formattedDate;
-	    		mimage = "<?php echo $this->baseUrl("themes/" . $this->theme . "/images/icons/32x32/marker-green.png")?>";
-	    	} else {
-	    		onlinemsg = 'Offline since: ' + formattedDate;
-	    	}
-
-			if (data.status == 'planning') {
-				mimage = "<?php echo $this->baseUrl("themes/" . $this->theme . "/images/icons/32x32/marker-black.png")?>";
-			}
-
-			if (data.status == 'disabled') {
-				mimage = "<?php echo $this->baseUrl("themes/" . $this->theme . "/images/icons/32x32/marker-grey.png")?>";
-			}
-
-			if (data.trafficlimit > 0 && data.status_extended.monthly_traffic >= data.trafficlimit) {
-				mimage = "<?php echo $this->baseUrl("themes/" . $this->theme . "/images/icons/32x32/marker-yellow.png")?>";
-			}
-
-			<?php if (!isset($this->currentUser)) :?>
-				mimage = "<?php echo $this->baseUrl("themes/" . $this->theme . "/images/icons/32x32/marker-grey.png")?>";
-			<?php endif; ?>
-			var marker = new google.maps.Marker({
-		        position: new google.maps.LatLng(data.location.latitude, data.location.longitude),
-		        title: data.name,
-		        draggable: false,
-		        icon: mimage
-		    });
-
-
-
-			marker.setMap(map);
-
-			markers.push(marker);
-
-		    google.maps.event.addListener(marker, 'click', function(event) {
-		        if (statsTimer) {
-		        	clearTimeout(statsTimer);
-		        }
-
-				infowindow.setContent('<div id="infowindowcontainer">' +
-									  '<h5>' + marker.getTitle() +'</h5>' +
-									  '<div>AP type: ' + ((data.status_extended.aptype) ? data.status_extended.aptype : "<?php echo $this->translate('default_index_index_ap_unknown')?>") + '</div>' +
-									  '<div>MAC: ' + data.mac + '</div>' +
-									  '<div>Address: ' + data.location.address + ', ' + data.location.city +', ' + data.location.country + '</div>' +
-				<?php if (isset($this->currentUser)) :?>
-									  '<div>' + onlinemsg + '</div><br/>' +
-									  '<div class="stats">' +
-									  '<div><strong><?php echo $this->translate('default_index_index_ap_users')?>: </strong><ul>' +
-									  '<li><strong><?php echo $this->translate('default_index_index_ap_users_total')?>: </strong>0</li>' +
-									  '<li><strong><?php echo $this->translate('default_index_index_ap_users_online')?>: </strong>0</li>' +
-									  '<li><strong><?php echo $this->translate('default_index_index_ap_users_garden')?>: </strong>0</li></ul></div>' +
-									  '<div><strong><?php echo $this->translate('default_index_index_ap_speed_up')?>: </strong> 0</div>' +
-									  '<div><strong><?php echo $this->translate('default_index_index_ap_speed_down')?>: </strong> 0</div>' +
-									  '</div>' +
-									  '<div><strong><?php echo $this->translate('default_index_index_ap_monthly_usage');?> </strong>' + data.status_extended.lastupdate +': ' + data.status_extended.monthly_traffic + 'MB</div>' +
-									  '</div>');
-				if (data.online_status > 0) {
-					loadStatistics(data);
-				}
-				<?php else: ?>
-									  '</div>');
-				<?php endif; ?>
-				infowindow.open(map, marker);
-		    });
-		});
 		<?php if ($markerClusteringLevel > 0) :?>
 		var markerClusterer = new MarkerClusterer(map, markers, {maxZoom: <?php echo $markerClusteringLevel; ?>});
 		<?php
@@ -249,6 +25,29 @@
 	$this->headScript()->captureEnd();
 ?>
 
+<form method="get" action="<?php echo $this->url(array('module' => 'default',
+													   'controller' => 'index',
+													   'action' => 'nodesearch'),
+												null,
+												true); ?>">
+<table class="listing">
+	<thead>
+	<tr>
+			<th><?php echo $this->translate('nodes_index_index_name');?></th>
+			<th><?php echo $this->translate('nodes_index_index_mac');?></th><th></th>
+			</tr>
+			<tr>
+<th><input type="text" name="name" value="<?php echo $this->filter['name']; ?>" /></th>
+<th><input type="text" name="mac" value="<?php echo $this->filter['mac']; ?>" /></th>
+
+<th class="tools">
+			<a name="index_index" class="icon filter"><?php echo $this->translate('nodes_index_index_button_filter'); ?></a>
+			</th>
+
+</tr>
+</thead>
+</table>
+</form>
 <div id="nodemap"></div>
 <?php if (isset($this->currentUser)) :?>
 <div id="networkstats">
