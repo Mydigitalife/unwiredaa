@@ -4,111 +4,114 @@ $this->headScript()->appendFile($this->httpScheme() . '://maps.googleapis.com/ma
 
 $this->headScript()->captureStart();
 
+// render generated map
 if(isset($this->jscript)):
 echo $this->jscript;
 
 
-	     if (isset($this->currentUser)) :
-		?>
-		loadNetworkStatistics();
-		<?php endif; ?>
-		
-		<?php 
-		if($this->nodeCount == 1):
-			?>
-			google.maps.event.trigger(markers[0], 'click');
-			map.panBy(0,-300);
-		<?php 
-		endif;
-		
-		// more than 1 device was found
-		if(isset($this->nodes)):
-		?>
-		$("#searchResult").show("slow");
-		$(".close").click(function(){$("#searchResult").hide("slow");});
-		
-		$(".nodeElem").each(function(){
-		$(this).click(function(){
-		$("#searchResult").hide("slow");
-		
-		google.maps.event.trigger(markers[$(this).attr("id")], 'click');
-		map.setZoom(13);
-		
-		});
-		});
-		
-		<?php 
-		
-		endif;
-		?>
-		
-	});
+if (isset($this->currentUser)) :
+?>
+loadNetworkStatistics();
+<?php endif; ?>
+
+<?php 
+if($this->nodeCount == 1):
+?>
+google.maps.event.trigger(markers[0], 'click'); map.panBy(0,-300);
+<?php 
+endif;
+
+
+// in case more than 1 device was found, array with nodes is set
+if(isset($this->nodes)):
+?>
+$("#searchResult").show("slow");
+$(".close").click(function(){$("#searchResult").hide("slow");});
+
+$(".nodeElem").each(function(){ $(this).click(function(){
+$("#searchResult").hide("slow");
+
+google.maps.event.trigger(markers[$(this).attr("id")], 'click');
+map.setZoom(13); }); });
+
+<?php 
+
+endif;
+?>
+
+});
 
 <?php
 else:
 
 /* TODO
  * no device found error message output (systemSettings)
- */
+*/
 
 endif;
 
-	$this->headScript()->captureEnd();
+$this->headScript()->captureEnd();
 
-	if(isset($this->message)):
-		echo "<h1>".$this->message."</h1>";
-	endif;
-	?>
 
-	<?php if(isset($this->nodes)): ?>
+?>
+
+<?php if(isset($this->nodes)): ?>
 <div class="overlay" id="searchResult">
-  
-  <div class="head">
-  Search Results
-  </div>
-  
-  <div class="nodes">
-    
-    <p>
-    <?php 
-    $cnt = 0;
-	echo '<ul>';
-    foreach($this->nodes as $node):
-    echo '<li id="'.$cnt.'" class="nodeElem">'.$node->getName().'</li>';
-    $cnt++;
-    endforeach;
-	echo '</ul>';
-    ?>
-    </p>
-  </div>
-  <div class="close">x</div>
+
+	<div class="head">Search Results</div>
+
+	<div class="nodes">
+
+		<p>
+			<?php 
+			$cnt = 0;
+			echo '<ul>';
+			foreach($this->nodes as $node):
+			echo '<li id="'.$cnt.'" class="nodeElem">'.$node->getName().'</li>';
+			$cnt++;
+			endforeach;
+			echo '</ul>';
+			?>
+		</p>
+	</div>
+	<div class="close">x</div>
 </div>
 <?php endif; ?>
 
 
-<form method="get" action="<?php echo $this->url(array('module' => 'default',
+<form method="get"
+	action="<?php echo $this->url(array('module' => 'default',
 													   'controller' => 'index',
 													   'action' => 'nodesearch'),
 												null,
 												true); ?>">
-<table class="listing">
-	<thead>
-	<tr>
-			<th><?php echo $this->translate('nodes_index_index_name');?></th>
-			<th><?php echo $this->translate('nodes_index_index_mac');?></th><th></th>
+	<table class="listing">
+		<thead>
+			<tr>
+				<th><?php echo $this->translate('nodes_index_index_name');?></th>
+				<th><?php echo $this->translate('nodes_index_index_mac');?></th>
+				<th></th>
 			</tr>
 			<tr>
-<th><input type="text" name="name" value="<?php echo $this->filter['name']; ?>" /></th>
-<th><input type="text" name="mac" value="<?php echo $this->filter['mac']; ?>" /></th>
+				<th><input type="text" name="name"
+					value="<?php echo $this->filter['name']; ?>" /></th>
+				<th><input type="text" name="mac"
+					value="<?php echo $this->filter['mac']; ?>" /></th>
 
-<th class="tools">
-			<a name="index_index" class="icon filter"><?php echo $this->translate('nodes_index_index_button_filter'); ?></a>
-			</th>
+				<th class="tools"><a name="index_index" class="icon filter"><?php echo $this->translate('nodes_index_index_button_filter'); ?>
+				</a>
+				</th>
 
-</tr>
-</thead>
-</table>
+			</tr>
+		</thead>
+	</table>
 </form>
+<?php 
+if($this->nodeCount == 0):
+echo "<h1>".$this->translate('nodesearch_device_not_found')."</h1>";
+endif;
+?>
+
 <div id="nodemap"></div>
 
 

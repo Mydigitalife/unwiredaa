@@ -9,6 +9,8 @@
 	}
 
 	$this->headScript()->captureStart();
+	
+	// render generated map 
 	echo $this->jscript;
 ?>
 		<?php if ($markerClusteringLevel > 0) :?>
@@ -24,7 +26,7 @@
 <?php
 	$this->headScript()->captureEnd();
 ?>
-
+<?php if (isset($this->currentUser)) : ?>
 <form method="get" action="<?php echo $this->url(array('module' => 'default',
 													   'controller' => 'index',
 													   'action' => 'nodesearch'),
@@ -48,6 +50,7 @@
 </thead>
 </table>
 </form>
+<?php endif; ?>
 <div id="nodemap"></div>
 <?php if (isset($this->currentUser)) :?>
 <div id="networkstats">

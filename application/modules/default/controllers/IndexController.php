@@ -214,19 +214,21 @@ class Default_IndexController extends Unwired_Controller_Action
 									  '<h5>' + marker.getTitle() +'</h5>' +
 									  ";
 				 
-				 // add view/edit/delete buttons to tooltip	
-				 $actions = array('view', 'edit', 'delete');
-				 $ret.="'<table><tbody><tr class=\"odd\">'+";
-				 foreach ($actions as $action) :
-				 if (!$acl->isAllowed($this->view->currentUser, 'nodes_node', $action)) {
-				 	continue;
-				 }
-				 $ret.="'<td class=\"tools\"><a href=\"/nodes/index/".$action."/id/'+data.node_id+'\" class=\"icon ".$action."\">".$this->view->translate('nodes_index_index_button_' . $action)."</a></td>'+";
-									  
 				 
-				 endforeach;
 				 	
-				 
+			// add view/edit/delete buttons to tooltip
+			$actions = array('view', 'edit', 'delete');
+			$nodeActionString = "";
+			$nodeActionString.="'<table><tbody><tr class=\"odd\">'+";
+			
+			foreach ($actions as $action) :
+			if (!$acl->isAllowed($this->view->currentUser, 'nodes_node', $action)) {
+				continue;
+			}
+			$nodeActionString.="'<td class=\"tools\"><a href=\"/nodes/index/".$action."/id/'+data.node_id+'\" class=\"icon ".$action."\">".$this->view->translate('nodes_index_index_button_' . $action)."</a></td>'+";
+				
+			endforeach;
+			
 				$ret.=" '</tr></tbody></table>'+
 									  '<div>AP type: ' + ((data.status_extended.aptype) ? data.status_extended.aptype : \"". $this->view->translate('default_index_index_ap_unknown')."\") + '</div>' +
 									  '<div>MAC: ' + data.mac + '</div>' +
@@ -244,7 +246,7 @@ class Default_IndexController extends Unwired_Controller_Action
 									  '<div><strong>".$this->view->translate('default_index_index_ap_speed_down').": </strong> 0</div>' +
 									  '</div>' +
 									  '<div><strong>". $this->view->translate('default_index_index_ap_monthly_usage')." </strong>' + data.status_extended.lastupdate +': ' + data.status_extended.monthly_traffic + 'MB</div>' +
-									'</div>');";
+									".$nodeActionString."'</div>');";
 				 
 					$ret.="if (data.online_status > 0) {
 						loadStatistics(data);
@@ -254,7 +256,7 @@ class Default_IndexController extends Unwired_Controller_Action
 									  $ret.="'</div>');";
 				}
 									  
-		
+			
 				
 				$ret.="
 				
