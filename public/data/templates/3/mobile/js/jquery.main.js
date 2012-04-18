@@ -1,41 +1,17 @@
 $(function(){
-	$('a.opener:gt(0)').click(function(){
-		if ($(this).next().length) {
-			if (!$(this).next().is(':visible')) {
-				var opener = this;
-				if($('#nav li:gt(0) .slide:visible').not($(this)).length) {
-					$('#nav li:gt(0) .slide:visible').not($(this)).slideUp('fast', function() {
-						if ($(opener).offset().top < $(window).scrollTop()) {
-							$(window).scrollTop($(opener).offset().top);	
-						}
-						$(opener).next().slideToggle();
-					});
-				} else {
-					if ($(opener).offset().top + 95 > $(window).scrollTop()+$(window).height()) {
-						$(window).scrollTop($(opener).offset().top);	
-					}
-					$(opener).next().slideToggle();
-				}
-				
+	$('ul.accordion').accordion({
+		active: ".selected",
+		autoHeight: false,
+		header: ".opener",
+		collapsible: true,
+		event: "click",
+		change: function(event, ui) {
+			if ($(ui.newHeader).length && $(ui.newHeader).attr('href') != '#') {
+				window.location.href = $(ui.newHeader).attr('href');
 			}
-			return false;
-		} else if ($(this).hasClass('ajax')) {
-			if (!$(this).data('contentLoaded')) {
-				$(this).siblings().remove();
-	
-				$(this).after('<div class="slide" />');
-	
-				$(this).next().load($(this).attr('href'));
-				$(this).data('contentLoaded', true);
-			}
-			return false;
 		}
 	});
-	
-	$('#nav li:gt(0) .slide').hide();
 
-	$('#nav li:last').prev().find('.slide').css({'background': '#bdbdbd', 'text-align': 'center'});
-	
 	$('select').each(function(){
 		var fakeSelect = $('<div class="selectArea"><span class="left"></span><span class="center">' + $(this).find('option:selected:first').text() + '</span><a class="selectButton" href="javascript:;"></a></div>');
 		fakeSelect.width($(this).width());
@@ -43,34 +19,6 @@ $(function(){
 			   .css('opacity', 0.0001)
 			   .css('position', 'relative')
 			   .css('left', $(this).width());
-	});
-	
-	$('.links-widget').each(function(){
-		if ($(this).find('a').length > 1) {
-			return;
-		}
-		
-		$(this).parents('.slide:first').prev().attr('href', $(this).find('a:first').attr('href'))
-											  .attr('target', '_blank');
-		$(this).parents('.slide:first').remove();
-	});
-	
-	$('.links-widget').find('a').attr('target','_blank');
-	
-	$('a.opener').each(function(){
-		if ($(this).height() > 40) {
-			$(this).addClass('openerDouble');
-		}
-	});
-	
-	$(window).resize(function(){
-		$('a.opener').each(function(){
-			if ($(this).height() > 40) {
-				$(this).addClass('openerDouble');
-			} else {
-				$(this).removeClass('openerDouble');
-			}
-		});
 	});
 });
 

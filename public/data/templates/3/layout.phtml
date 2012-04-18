@@ -3,23 +3,14 @@
 <head>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<title><?php echo $this->splashPage->getTitle(); ?></title>
-	<meta http-equiv="cache-control" content="no-cache" />
-	<meta http-equiv="expires" content="Mon, 22 Jul 2002 11:11:01 GMT" />
-	<meta http-equiv="pragma" content="no-cache" />
 	<link rel="stylesheet" type="text/css" href="<?php echo $this->baseUrl('styles/blueprint/screen.css'); ?>" media="screen, projection" />
 	<link rel="stylesheet" type="text/css" href="<?php echo $this->baseUrl('styles/blueprint/print.css'); ?>" media="print" />
 	<link rel="stylesheet" type="text/css" href="<?php echo $this->baseUrl('data/templates/' . $this->splashPage->getTemplateId() . '/desktop/css/all.css'); ?>" media="screen" />
 	<script type="text/javascript" src="<?php echo $this->baseUrl('scripts/jquery-1.6.4.min.js'); ?>"></script>
 	<script type="text/javascript" src="<?php echo $this->baseUrl('data/templates/' . $this->splashPage->getTemplateId() . '/desktop/js/main.js'); ?>"></script>
-	<script type="text/javascript" src="<?php echo $this->baseUrl('data/templates/' . $this->splashPage->getTemplateId() . '/desktop/js/cufon-yui.js'); ?>"></script>
-	<script type="text/javascript" src="<?php echo $this->baseUrl('data/templates/' . $this->splashPage->getTemplateId() . '/desktop/js/PFHandbookPro-Thin_200.font.js'); ?>"></script>
 	<!--[if lt IE 8]>
 		<link rel="stylesheet" href="<?php echo $this->baseUrl('styles/blueprint/ie.css'); ?>" type="text/css" media="screen, projection" />
 	<![endif]-->
-	<script type="text/javascript">
-			Cufon.replace('h1,h2,h3');
-			Cufon.replace('.links-widget a', {textShadow: '#d99f0f -1px 1px, #d99f0f 1px -1px'});
-	</script>
 	<?php
 	    echo $this->headLink();
 	    echo $this->headScript();
@@ -28,14 +19,21 @@
 <body>
 	<div id="wrapper">
 		<div id="header" class="container">
-			<?php // echo $this->layout()->{"container-1"}; ?>
-			<!--
+			<div class="logo-box">
+				<div class="logo"><?php echo $this->layout()->{"container-2"} ;?></div>
+			</div>
+			<span class="promo">
+				<?php echo $this->layout()->{"container-1"}; ?>
+			</span>
+			<a href="http://www.unwired.at/" class="powered">powered by Unwired Networks</a>
 			<form action="#">
 				<fieldset>
-					<?php // echo $this->languageSelect(true, $this->splashPage);?>
+					<?php echo $this->languageSelect(true, $this->splashPage);?>
 				</fieldset>
 			</form>
-			 -->
+		</div>
+		<div class="visual container">
+			<img src="<?php echo $this->baseUrl('data/templates/' . $this->splashPage->getTemplateId() . '/desktop/images/img-visual.jpg');?>" alt="image" width="980" height="460" />
 		</div>
 		<div id="main" class="container">
 			<div class="aside span-6">
@@ -66,13 +64,15 @@
 			</div>
 		</div>
 		<div id="footer" class="container">
+			<a href="<?php echo $this->url(array('forceLayout' => 'mobile'), 'default', false); ?>" class="link-mobile"><?php echo $this->translate('splashpage_link_version_mobile'); ?></a>
+		</div>
+		<div id="imprint">
 			<a href="<?php echo $this->url(array('module' => 'default',
 					                                     'controller' => 'index',
 					                                     'action' => 'imprint'),
 					                               'default',
-					                               true); ?>"><?php echo $this->translate('splashpage_link_imprint'); ?></a> <a href="<?php echo $this->url(array('forceLayout' => 'mobile'), 'default', false); ?>" class="link-mobile"><?php echo $this->translate('splashpage_link_version_mobile'); ?></a>
+					                               true); ?>" class="opener"><?php echo $this->translate('splashpage_link_imprint'); ?></a>
 		</div>
 	</div>
-	<script type="text/javascript"> Cufon.now(); </script>
 </body>
 </html>
