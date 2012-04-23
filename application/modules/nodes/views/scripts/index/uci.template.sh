@@ -22,22 +22,6 @@ set network.wan.netmask=<?php echo $this->node->getSettings()->getNetmask() . "\
 set network.wan.gateway=<?php echo $this->node->getSettings()->getGateway() . "\n"; ?>
 set network.wan.dns="<?php echo $this->node->getSettings()->getDnsservers() . "\"\n"; ?>
 <?php endif; // dhcp ?>
-set ntpclient.@ntpserver[0]=ntpserver
-set ntpclient.@ntpserver[0].hostname=0.at.pool.ntp.org
-set ntpclient.@ntpserver[0].port=123
-set ntpclient.@ntpserver[1]=ntpserver
-set ntpclient.@ntpserver[1].hostname=1.at.pool.ntp.org
-set ntpclient.@ntpserver[1].port=123
-set ntpclient.@ntpserver[2]=ntpserver
-set ntpclient.@ntpserver[2].hostname=2.at.pool.ntp.org
-set ntpclient.@ntpserver[2].port=123
-set ntpclient.@ntpserver[3]=ntpserver
-set ntpclient.@ntpserver[3].hostname=3.at.pool.ntp.org
-set ntpclient.@ntpserver[3].port=123
-set ntpclient.@ntpdrift[0]=ntpdrift
-set ntpclient.@ntpdrift[0].freq=0
-set ntpclient.@ntpclient[0]=ntpclient
-set ntpclient.@ntpclient[0].interval=600
 delete openvpn.custom_config
 delete openvpn.sample_server
 delete openvpn.sample_client
