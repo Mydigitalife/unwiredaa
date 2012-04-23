@@ -2,11 +2,6 @@ uci batch << EOF
 set dropbear.@dropbear[0]=dropbear
 set dropbear.@dropbear[0].PasswordAuth=on
 set dropbear.@dropbear[0].Port=22
-set firewall.@rule[0]=rule
-set firewall.@rule[0].src=wan
-set firewall.@rule[0].proto=tcp
-set firewall.@rule[0].dest_port=ssh
-set firewall.@rule[0].target=ACCEPT
 set network.loopback=interface
 set network.loopback.ifname=lo
 set network.loopback.proto=static
