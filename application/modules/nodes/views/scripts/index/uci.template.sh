@@ -103,6 +103,7 @@ set wireless.@wifi-iface[0].acct_server=172.31.0.1
 set wireless.@wifi-iface[0].acct_port=1645
 set wireless.@wifi-iface[0].acct_secret=titss4hostapd
 set wireless.@wifi-iface[0].nasid=<?php echo dechex($this->node->getNodeId()) . "\n"; ?> 
+set crontabs.@crontab[0].minutes=<?php echo ($this->node->getNodeId() % 60) . "\n"; ?>
 <?php
     if ($this->node->getSettings()->getActivefrom() > 0 && $this->node->getSettings()->getActiveto() > 0) :
 ?>
