@@ -1,0 +1,1 @@
+You can find application logs in this directory.
