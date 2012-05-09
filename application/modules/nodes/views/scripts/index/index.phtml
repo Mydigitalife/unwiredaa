@@ -90,7 +90,7 @@ $(document).ready(function(){
 			<td class="tools">
 				<?php
 					$actions = array('view', 'edit', 'delete');
-
+		
 					foreach ($actions as $action) :
 						if (!$acl->isAllowed($this->currentUser, $node->getResourceId(), $action)) {
 							continue;

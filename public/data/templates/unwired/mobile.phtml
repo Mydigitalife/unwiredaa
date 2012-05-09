@@ -1,0 +1,86 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" />
+	<title><?php echo $this->splashPage->getTitle(); ?></title>
+	<link rel="stylesheet" type="text/css" href="<?php echo $this->baseUrl('data/templates/' . $this->splashPage->getTemplateId() . '/mobile/css/all.css'); ?>" />
+	<script type="text/javascript" src="<?php echo $this->baseUrl('scripts/jquery-1.6.4.min.js'); ?>"></script>
+	<script type="text/javascript" src="<?php echo $this->baseUrl('data/templates/' . $this->splashPage->getTemplateId() . '/mobile/js/jquery.accordion.js'); ?>"></script>
+	<script type="text/javascript" src="<?php echo $this->baseUrl('data/templates/' . $this->splashPage->getTemplateId() . '/mobile/js/jquery.main.js'); ?>"></script>
+	<?php
+	    echo $this->headLink();
+	    echo $this->headScript();
+	?>
+</head>
+<body>
+	<div id="wrapper">
+		<div id="header">
+			<div class="header-content">
+				<div class="header-holder">
+					<div class="header-frame">
+						<div class="logo"><?php echo $this->layout()->{'container-2'};?></div>
+						<span class="promo-logo"><?php echo $this->layout()->{'container-1'};?></span>
+					</div>
+				</div>
+				<div class="info-area">
+					<a href="http://www.unwired.at/" class="unwired-networks">Unwired Networks</a>
+					<form action="#">
+						<fieldset>
+							<?php echo $this->languageSelect(true, $this->splashPage);?>
+						</fieldset>
+					</form>
+				</div>
+			</div>
+			<div class="img">
+				<img src="<?php echo $this->baseUrl('data/templates/' . $this->splashPage->getTemplateId() . '/mobile/images/img-header.jpg'); ?>" alt="image"  />
+			</div>
+		</div>
+		<div id="main">
+			<?php echo $this->uiMessage(); ?>
+			<ul id="nav" class="accordion">				<?php
+				    $class = "selected";
+				    foreach ($this->layout()->contentContainer as $block):
+				        if (is_object($block) && $block->getColumn() < 0) {
+				            continue;
+				        }
+				?>
+				<li>
+					<?php if (is_string($block)): ?>
+					     <?php echo $block; ?>
+					<?php else : 
+							$blockContent = (string) $block;
+						
+							$blockContent = trim($blockContent);
+						
+							if (!empty($blockContent)) :
+					?>
+					<a href="#" class="opener <?php echo $class; ?>"><?php echo $block->getTitle(); ?></a>
+					<div class="slide">
+						<div class="content">
+					        <?php echo $blockContent; ?>
+						</div>
+					</div>
+					<?php 
+							endif; // blockContent
+						endif;
+					?>
+				</li>
+				<?php
+				    $class = '';
+				    endforeach;
+				?>
+				<li>
+					<a href="<?php echo $this->url(array('module' => 'default',
+					                                     'controller' => 'index',
+					                                     'action' => 'imprint'),
+					                               'default',
+					                               true); ?>" class="opener"><?php echo $this->translate('splashpage_link_imprint'); ?></a>
+				</li>			</ul>
+		</div>
+		<div id="footer">
+			<a href="<?php echo $this->url(array('forceLayout' => 'desktop'), 'default', false); ?>" class="link-desktop"><?php echo $this->translate('splashpage_link_version_desktop'); ?></a>
+		</div>
+	</div>
+</body>
+</html>

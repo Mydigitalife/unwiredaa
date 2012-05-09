@@ -328,7 +328,7 @@ class Nodes_Model_Node extends Unwired_Model_Generic implements Zend_Acl_Resourc
 		$data['settings'] = $data['settings']->toArray();
 		$data['location'] = $data['location']->toArray();
 		$data['status_extended'] = $data['status_extended']->toArray();
-
+		
 		return $data;
 	}
 
