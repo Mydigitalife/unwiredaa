@@ -70,39 +70,6 @@ GROUP BY n.node_id)
 ) AS i
 GROUP BY i.node_id, i.node_name, i.node_mac
 ORDER BY bytes_total DESC;";
-//LIMIT $limit;";
-
-/*		$total = "SELECT SUM(i.bytes_down) as bytes_down, SUM(i.bytes_up) as bytes_up, SUM(i.bytes_up+i.bytes_down) as bytes_total, i.node_id, i.node_name, i.node_mac
-FROM (
-(SELECT 0 as type, SUM(r.total_bytes_down) as bytes_down, SUM(r.total_bytes_up) as bytes_up
-, n.node_id, n.name as node_name, n.mac as node_mac
-FROM acct_internet_roaming r INNER JOIN node n ON r.node_id = n.node_id
-INNER JOIN `group` g ON g.group_id = n.group_id
-WHERE g.group_id IN (".implode(",",$groupRel).")
-AND r.start_time >= '$dateFrom' AND r.start_time < '$dateTo'
-AND r.stop_time >= '$dateFrom' AND r.stop_time < '$dateTo'
-AND NOT ISNULL(r.stop_time))
-UNION
-(SELECT 1 as type, MAX(m.bytes_down)-MIN(m.bytes_down) as bytes_down, MAX(m.bytes_up)-MIN(m.bytes_up) as bytes_up
-, n.node_id, n.name as node_name, n.mac as node_mac
-FROM acct_internet_roaming r INNER JOIN acct_internet_interim m ON (m.roaming_count=r.roaming_count AND m.session_id=r.session_id)
-INNER JOIN node n ON r.node_id = n.node_id
-INNER JOIN `group` g ON g.group_id = n.group_id
-WHERE g.group_id IN (".implode(",",$groupRel).")
-AND
-(
-(r.start_time >= '$dateFrom' AND r.start_time < '$dateTo' AND ISNULL(r.stop_time))
-OR (r.start_time < '$dateFrom' AND  r.stop_time > '$dateFrom')
-OR (r.stop_time > '$dateFrom' AND  r.start_time < '$dateFrom')
-)
-AND m.time >= '$dateFrom' AND m.time < '$dateTo')
-) AS i;";*/
-/*the total query needs as long if not loneger as the main select*/
-/*while the main select without limit is nearly not slower*/
-
-/*use the combination of roaming and interim, to query only traffic wihtin date_from-date_to!!?? 
-i.e. use interim for all roamings that start before date_from, but end after date_from, or end after date_to, but start before date_to
-i.e use roaming only for ones that start after date_from, and end before date_to*/
 
 //print(serialize(microtime()));
 		$records = $db->fetchAll ( $select );
@@ -132,7 +99,7 @@ i.e use roaming only for ones that start after date_from, and end before date_to
 	  if ($l <= $limit)
             $results[$record['node_id']] = array('data' => array(
                                             'device' => $record['node_name'],
-                                            'group' => $record['group_name']."(".$l."/".$limit.")",
+                                            'group' => $record['group_name'],
                                             'down' => $this->_convertTraffic($record['bytes_down']),
                                             'up' => $this->_convertTraffic($record['bytes_up']),
                                             'total' => $this->_convertTraffic($record['bytes_total'])
@@ -168,7 +135,8 @@ i.e use roaming only for ones that start after date_from, and end before date_to
 todo: use same result for chart (removed chart as first step)
 use an bar chart instead of pie
 (use full tree names of APs?) -> not trivial
-provide avg AP, real total number, and maybe percentage of each topAP against real total
++provide avg AP, real total number
+ and maybe percentage of each topAP against real total (might need second pass as we have total total only after reading in results once) -> but this second pass woudl be quite fast, as number of APs (and especially if limited) is small
 +configureable TopLimit, via options
 */
         return array(/*'graphics' => array(
