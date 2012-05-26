@@ -68,12 +68,20 @@ class Reports_Service_CodeTemplate_Uplink extends Reports_Service_CodeTemplate_A
 		//get inner interval
 		$iintv=$this->innerInterval=$this->getReportGroup()->getInnerInterval()*60;
 
+if ($this->getReportGroup()->getCodeTemplate()->getOption('mode')=='max'){
+/*max test*/
+		$tstmt=$db->query("SELECT CONCAT(LEFT(MIN(time),16),' - ',LEFT(MAX(time),16))
+, (max(vpn_eth1_RX+nat_eth2_TX))*8/(60*1024) as server_down
+, (max(vpn_eth1_TX+nat_eth2_RX))*8/(60*1024) as server_up
+, (UNIX_TIMESTAMP(time)-UNIX_TIMESTAMP('$dateFrom')) DIV $iintv as intv
+FROM bw_log WHERE NOT ISNULL(nat_eth1_RX) AND time BETWEEN '$dateFrom' AND '$dateTo' GROUP BY intv;");
+}else {
 		$tstmt=$db->query("SELECT CONCAT(LEFT(MIN(time),16),' - ',LEFT(MAX(time),16))
 , (sum(vpn_eth1_RX)+sum(nat_eth2_TX))*8/($iintv*1024) as server_down
 , (sum(vpn_eth1_TX)+sum(nat_eth2_RX))*8/($iintv*1024) as server_up
 , (UNIX_TIMESTAMP(time)-UNIX_TIMESTAMP('$dateFrom')) DIV $iintv as intv
 FROM bw_log WHERE NOT ISNULL(nat_eth1_RX) AND time BETWEEN '$dateFrom' AND '$dateTo' GROUP BY intv;");
-
+}
 		while ($row=$tstmt->fetch()){
 			$rows[]=$this->handleLine($row,false,false);
 		}
