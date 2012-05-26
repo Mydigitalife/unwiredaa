@@ -38,20 +38,116 @@ class Reports_Service_CodeTemplate_MostActiveAPs extends Reports_Service_CodeTem
 
 		$groupRel = $this->_getGroupRelations ( $groupIds );
 
-		$select = $db->select ()
-			->from( array ('a' => 'acct_internet_roaming' ), array (/*'*', */'SUM(a.total_bytes_up) as bytes_up', 'SUM(a.total_bytes_down) as bytes_down', 'SUM(a.total_bytes_down+a.total_bytes_up) as bytes_total' ) )
-			->join( array ('b' => 'acct_internet_session' ), 'a.session_id = b.session_id', array () )
-			->join( array ('c' => 'network_user' ), 'b.user_id = c.user_id', array ())
-			->join( array ('d' => 'node' ), 'a.node_id = d.node_id', array ('node_id', 'node_name' => 'name', 'node_mac' => 'mac' ) )
-			->join( array ('e' => 'group' ), 'd.group_id = e.group_id', array ('group_id', 'group_name' => 'name' ) )
-			->where( 'e.group_id IN (?)', $groupRel )
-			->where("DATE(a.start_time) BETWEEN '$dateFrom' AND '$dateTo'")
-			->where( 'NOT ISNULL(a.stop_time)' )
-			->order( array('bytes_total DESC') )
-			->group( 'a.node_id')
-			->limit(50);
+		//use specifyable limit, and default to 1000 if out of range (3..1000)
+		$limit=$this->getReportGroup()->getCodeTemplate()->getOption('limit');
+		if (!(($limit>2) && ($limit<=1000))) $limit=50;
+//print(serialize(microtime()));
+/*DEPRECATE modes, just use 'correct'*/
+		if ($this->getReportGroup()->getCodeTemplate()->getOption('mode')=='normal' || $this->getReportGroup()->getCodeTemplate()->getOption('mode')==NULL) //act as default behaviour too
+		{
+/*DEPRECATE THIS!*/
+//18.25 sek (march 2012 amade)
+/*network_user, acct_internet_session has a purpose?*/
+/*hmm limit will not work if 2 queries are used to fetch active and closed sessions
+remove the DATE()*/
+			$select = $db->select ()
+				->from( array ('a' => 'acct_internet_roaming' ), array (/*'*', */'SUM(a.total_bytes_up) as bytes_up', 'SUM(a.total_bytes_down) as bytes_down', 'SUM(a.total_bytes_down+a.total_bytes_up) as bytes_total' ) )
+				->join( array ('b' => 'acct_internet_session' ), 'a.session_id = b.session_id', array () )
+				->join( array ('c' => 'network_user' ), 'b.user_id = c.user_id', array ())
+				->join( array ('d' => 'node' ), 'a.node_id = d.node_id', array ('node_id', 'node_name' => 'name', 'node_mac' => 'mac' ) )
+				->join( array ('e' => 'group' ), 'd.group_id = e.group_id', array ('group_id', 'group_name' => 'name' ) )
+				->where( 'e.group_id IN (?)', $groupRel )
+				->where("DATE(a.start_time) BETWEEN '$dateFrom' AND '$dateTo'")
+				->where( 'NOT ISNULL(a.stop_time)' )
+				->order( array('bytes_total DESC') )
+				->group( 'a.node_id')
+				->limit($limit);
+		} else if ($this->getReportGroup()->getCodeTemplate()->getOption('mode')=='faster') {//faster query, (but same result)
+//9.18 sek (march 2012 amade)
+/*DEPRECATE THIS mode*/
+			$select = "SELECT SUM(r.total_bytes_down) as bytes_down, SUM(r.total_bytes_up) as bytes_up
+, SUM(r.total_bytes_up+r.total_bytes_down) as bytes_total
+, n.node_id, n.name as node_name, n.mac as node_mac
+FROM acct_internet_roaming r INNER JOIN node n ON r.node_id = n.node_id
+INNER JOIN `group` g ON g.group_id = n.group_id
+WHERE g.group_id IN (".implode(",",$groupRel).")
+AND DATE(r.start_time) BETWEEN '$dateFrom' AND '$dateTo'
+AND NOT ISNULL(r.stop_time)
+GROUP BY n.node_id
+ORDER BY bytes_total DESC
+LIMIT $limit;";
+//die($select);
+		} else if ($this->getReportGroup()->getCodeTemplate()->getOption('mode')=='correct') {
+//8.5 sek (mysql only, march 2012 amade)
+			$select = "SELECT SUM(i.bytes_down) as bytes_down, SUM(i.bytes_up) as bytes_up, SUM(i.bytes_up+i.bytes_down) as bytes_total, i.node_id, i.node_name, i.node_mac
+FROM (
+(SELECT 0 as type, SUM(r.total_bytes_down) as bytes_down, SUM(r.total_bytes_up) as bytes_up
+, n.node_id, n.name as node_name, n.mac as node_mac
+FROM acct_internet_roaming r INNER JOIN node n ON r.node_id = n.node_id
+INNER JOIN `group` g ON g.group_id = n.group_id
+WHERE g.group_id IN (".implode(",",$groupRel).")
+AND r.start_time >= '$dateFrom' AND r.start_time < '$dateTo'
+AND r.stop_time >= '$dateFrom' AND r.stop_time < '$dateTo'
+AND NOT ISNULL(r.stop_time)
+GROUP BY n.node_id)
+UNION
+(SELECT 1 as type, MAX(m.bytes_down)-MIN(m.bytes_down) as bytes_down, MAX(m.bytes_up)-MIN(m.bytes_up) as bytes_up
+, n.node_id, n.name as node_name, n.mac as node_mac
+FROM acct_internet_roaming r INNER JOIN acct_internet_interim m ON (m.roaming_count=r.roaming_count AND m.session_id=r.session_id)
+INNER JOIN node n ON r.node_id = n.node_id
+INNER JOIN `group` g ON g.group_id = n.group_id
+WHERE g.group_id IN (".implode(",",$groupRel).")
+AND
+(
+(r.start_time >= '$dateFrom' AND r.start_time < '$dateTo' AND ISNULL(r.stop_time))
+OR (r.start_time < '$dateFrom' AND  r.stop_time > '$dateFrom')
+OR (r.stop_time > '$dateFrom' AND  r.start_time < '$dateFrom')
+)
+AND m.time >= '$dateFrom' AND m.time < '$dateTo'
+GROUP BY n.node_id)
+) AS i
+GROUP BY i.node_id, i.node_name, i.node_mac
+ORDER BY bytes_total DESC
+LIMIT $limit;";
+//die($select);
+		} else if ($this->getReportGroup()->getCodeTemplate()->getOption('mode')=='live'){
+//6sek !? (why faster as above!?)
+/*wrong date range check and only start_time used -> DEPRECATE this!*/
+			$select = "SELECT SUM(i.bytes_down) as bytes_down, SUM(i.bytes_up) as bytes_up, SUM(i.bytes_up+i.bytes_down) as bytes_total, i.node_id, i.node_name, i.node_mac
+FROM (
+(SELECT 0 as type, SUM(r.total_bytes_down) as bytes_down, SUM(r.total_bytes_up) as bytes_up
+, n.node_id, n.name as node_name, n.mac as node_mac
+FROM acct_internet_roaming r INNER JOIN node n ON r.node_id = n.node_id
+INNER JOIN `group` g ON g.group_id = n.group_id
+WHERE g.group_id IN (".implode(",",$groupRel).")
+AND DATE(r.start_time) BETWEEN '$dateFrom' AND '$dateTo'
+AND NOT ISNULL(r.stop_time)
+GROUP BY n.node_id)
+UNION
+(SELECT 1 as type, MAX(m.bytes_down)-MIN(m.bytes_down) as bytes_down, MAX(m.bytes_up)-MIN(m.bytes_up) as bytes_up
+, n.node_id, n.name as node_name, n.mac as node_mac
+FROM acct_internet_roaming r INNER JOIN acct_internet_interim m ON (m.roaming_count=r.roaming_count AND m.session_id=r.session_id)
+INNER JOIN node n ON r.node_id = n.node_id
+INNER JOIN `group` g ON g.group_id = n.group_id
+WHERE g.group_id IN (".implode(",",$groupRel).")
+AND DATE(r.start_time) BETWEEN '$dateFrom' AND '$dateTo'
+AND ISNULL(r.stop_time)
+GROUP BY n.node_id)
+) AS i
+GROUP BY i.node_id, i.node_name, i.node_mac
+ORDER BY bytes_total DESC
+LIMIT $limit;";
+//die($select);
+} else die("unsupported report mode!");
+/*use the combination of roaming and interim, to query only traffic wihtin date_from-date_to!!?? 
+i.e. use interim for all roamings that start before date_from, but end after date_from, or end after date_to, but start before date_to
+i.e use roaming only for ones that start after date_from, and end before date_to*/
 
 		$records = $db->fetchAll ( $select );
+//die(serialize(microtime()));
+
+/*additional select max(bytes_up|down)-min(bytes_up|down) from interim records (within timeframe) having roaming (seession_id + roaming_count) with null as stop_time */
+
 
 		//Zend_Debug::dump($records); die();
 
@@ -101,6 +197,13 @@ class Reports_Service_CodeTemplate_MostActiveAPs extends Reports_Service_CodeTem
         array_unshift($results, $totals);
         array_push($results, $totals);
 
+/*!!??
+todo: use same result for chart
+use an bar chart
+(use full tree names of APs?)
+provide avg AP, real total number, and maybe percentage of each topAP against real total
+configureable TopLimit, via options
+*/
         return array('graphics' => array(
                         array('name' => 'report_most_active_device',
                               'type' => 'PieChart',
