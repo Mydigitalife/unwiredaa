@@ -78,14 +78,7 @@ i.e use roaming only for ones that start after date_from, and end before date_to
 		$records = $db->fetchAll ( $select );
 //die(serialize(microtime()));
 
-/*additional select max(bytes_up|down)-min(bytes_up|down) from interim records (within timeframe) having roaming (seession_id + roaming_count) with null as stop_time */
-
-
-		//Zend_Debug::dump($records); die();
-
-		$tables = array();
-        $graphics = array();
-
+	$tables = array();
 
         $totals = array('data' => array(
                             'name' => array('data' => 'report_result_total',
@@ -101,7 +94,7 @@ i.e use roaming only for ones that start after date_from, and end before date_to
           ));
 
         $results = array();
-        $graphics = array();
+        //$graphics = array();
 
         foreach ($records as $record) {
             $results[$record['node_id']] = array('data' => array(
@@ -115,7 +108,7 @@ i.e use roaming only for ones that start after date_from, and end before date_to
                                             'device' => '', 'group'=>'', 'down' => "right", 'up' => "right", 'total' => "right"
                                           ));
 
-            $graphics[/*$record['node_id']*/] = array($record['node_name'], round($record['bytes_total']/(1024*1024)));
+            //$graphics[/*$record['node_id']*/] = array($record['node_name'], round($record['bytes_total']/(1024*1024)));
 
             $totals['data']['down'] += $record['bytes_down'];
             $totals['data']['up'] += $record['bytes_up'];
@@ -130,80 +123,23 @@ i.e use roaming only for ones that start after date_from, and end before date_to
         array_push($results, $totals);
 
 /*!!??
-todo: use same result for chart
-use an bar chart
-(use full tree names of APs?)
+todo: use same result for chart (removed chart as first step)
+use an bar chart instead of pie
+(use full tree names of APs?) -> not trivial
 provide avg AP, real total number, and maybe percentage of each topAP against real total
-configureable TopLimit, via options
++configureable TopLimit, via options
 */
-        return array('graphics' => array(
+        return array(/*'graphics' => array(
                         array('name' => 'report_most_active_device',
                               'type' => 'PieChart',
                               'headers' => array('report_device_name', 'report_result_total'),
                               'rows' => $graphics)
-                     ),
+                     ),*/
                      'tables' => array(
                         array(
                             'colDefs' => array(array('report_device_name', 'report_device_group', 'report_result_download', 'report_result_upload', 'report_result_total')),
                             'rows' => $results
                         )
                       ));
-
-/* what is this never reached code doing?
-
-        $user = array();
-        foreach ($groupTotals as $k => $v) {
-        	foreach ($result[$k] as $key => $value) {
-        		$user[$value['username']] = $value['down_total'];
-        	}
-        }
-
-        foreach ($user as $key => $value):
-        	$graphics[] = array($key, $value);
-        endforeach;
-
-        foreach ($groupTotals as $k => $v) {
-        	$table = array(
-        		'colDefs' => array(
-        			array(
-        				'report_device_name', 'report_result_download', 'report_result_upload', 'report_result_total'
-        			)
-        		)
-        	);
-
-        	$total_row = array(
-        		'data' => array(array('data' => 'report_result_total', 'translatable' => true), $this->_convertTraffic($v['down_total']), $this->_convertTraffic($v['up_total']), $this->_convertTraffic($v['down_total']+$v['up_total'])),
-        		'class' => array('bold', 'bold right', 'bold right', 'bold right')
-        	);
-
-        	$table['rows'][] = $total_row;
-
-        	foreach ($result[$k] as $key => $value) {
-        		$table['rows'][] = array(
-        				'data' => array($value['username'], $this->_convertTraffic($value['down_total']), $this->_convertTraffic($value['up_total']), $this->_convertTraffic($value['down_total']+$value['up_total'])),
-        				'class' => array('', 'right', 'right', 'right')
-        		);
-        	}
-
-        	$table['rows'][] = $total_row;
-
-        	$tables[] = $table;
-
-        }
-
-
-        $report = array(
-        	'graphics' => array(
-        			array(
-        					'name' => 'report_status_ap_count',
-        					'type' => 'PieChart',
-        					'headers' => array('report_result_user', 'report_result_traffic'),
-        					'rows' => $graphics
-        			),
-        	),
-        	'tables' => $tables
-        );
-
-        return $report;*/
 	}
 }
