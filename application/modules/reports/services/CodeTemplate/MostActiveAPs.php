@@ -40,7 +40,7 @@ class Reports_Service_CodeTemplate_MostActiveAPs extends Reports_Service_CodeTem
 
 		//use specifyable limit, and default to 1000 if out of range (3..1000)
 		$limit=$this->getReportGroup()->getCodeTemplate()->getOption('limit');
-		if (!(($limit>2) && ($limit<=1000))) $limit=50;
+		if (!(($limit>2) && ($limit<=1000))) $limit=5;//0;
 		$select = "SELECT SUM(i.bytes_down) as bytes_down, SUM(i.bytes_up) as bytes_up, SUM(i.bytes_up+i.bytes_down) as bytes_total, i.node_id, i.node_name, i.node_mac
 FROM (
 (SELECT 0 as type, SUM(r.total_bytes_down) as bytes_down, SUM(r.total_bytes_up) as bytes_up
@@ -69,12 +69,42 @@ AND m.time >= '$dateFrom' AND m.time < '$dateTo'
 GROUP BY n.node_id)
 ) AS i
 GROUP BY i.node_id, i.node_name, i.node_mac
-ORDER BY bytes_total DESC
-LIMIT $limit;";
+ORDER BY bytes_total DESC;";
+//LIMIT $limit;";
+
+/*		$total = "SELECT SUM(i.bytes_down) as bytes_down, SUM(i.bytes_up) as bytes_up, SUM(i.bytes_up+i.bytes_down) as bytes_total, i.node_id, i.node_name, i.node_mac
+FROM (
+(SELECT 0 as type, SUM(r.total_bytes_down) as bytes_down, SUM(r.total_bytes_up) as bytes_up
+, n.node_id, n.name as node_name, n.mac as node_mac
+FROM acct_internet_roaming r INNER JOIN node n ON r.node_id = n.node_id
+INNER JOIN `group` g ON g.group_id = n.group_id
+WHERE g.group_id IN (".implode(",",$groupRel).")
+AND r.start_time >= '$dateFrom' AND r.start_time < '$dateTo'
+AND r.stop_time >= '$dateFrom' AND r.stop_time < '$dateTo'
+AND NOT ISNULL(r.stop_time))
+UNION
+(SELECT 1 as type, MAX(m.bytes_down)-MIN(m.bytes_down) as bytes_down, MAX(m.bytes_up)-MIN(m.bytes_up) as bytes_up
+, n.node_id, n.name as node_name, n.mac as node_mac
+FROM acct_internet_roaming r INNER JOIN acct_internet_interim m ON (m.roaming_count=r.roaming_count AND m.session_id=r.session_id)
+INNER JOIN node n ON r.node_id = n.node_id
+INNER JOIN `group` g ON g.group_id = n.group_id
+WHERE g.group_id IN (".implode(",",$groupRel).")
+AND
+(
+(r.start_time >= '$dateFrom' AND r.start_time < '$dateTo' AND ISNULL(r.stop_time))
+OR (r.start_time < '$dateFrom' AND  r.stop_time > '$dateFrom')
+OR (r.stop_time > '$dateFrom' AND  r.start_time < '$dateFrom')
+)
+AND m.time >= '$dateFrom' AND m.time < '$dateTo')
+) AS i;";*/
+/*the total query needs as long if not loneger as the main select*/
+/*while the main select without limit is nearly not slower*/
+
 /*use the combination of roaming and interim, to query only traffic wihtin date_from-date_to!!?? 
 i.e. use interim for all roamings that start before date_from, but end after date_from, or end after date_to, but start before date_to
 i.e use roaming only for ones that start after date_from, and end before date_to*/
 
+//print(serialize(microtime()));
 		$records = $db->fetchAll ( $select );
 //die(serialize(microtime()));
 
@@ -96,10 +126,13 @@ i.e use roaming only for ones that start after date_from, and end before date_to
         $results = array();
         //$graphics = array();
 
+	$totals_down=$totals_up=$totals_total=$l=0;
         foreach ($records as $record) {
+	  $l++;
+	  if ($l <= $limit)
             $results[$record['node_id']] = array('data' => array(
                                             'device' => $record['node_name'],
-                                            'group' => $record['group_name'],
+                                            'group' => $record['group_name']."(".$l."/".$limit.")",
                                             'down' => $this->_convertTraffic($record['bytes_down']),
                                             'up' => $this->_convertTraffic($record['bytes_up']),
                                             'total' => $this->_convertTraffic($record['bytes_total'])
@@ -110,14 +143,23 @@ i.e use roaming only for ones that start after date_from, and end before date_to
 
             //$graphics[/*$record['node_id']*/] = array($record['node_name'], round($record['bytes_total']/(1024*1024)));
 
-            $totals['data']['down'] += $record['bytes_down'];
-            $totals['data']['up'] += $record['bytes_up'];
-            $totals['data']['total'] += $record['bytes_total'];
+            $totals_down += $record['bytes_down'];
+            $totals_up += $record['bytes_up'];
+            $totals_total += $record['bytes_total'];
         }
 
-        $totals['data']['down'] = $this->_convertTraffic($totals['data']['down']);
-        $totals['data']['up'] = $this->_convertTraffic($totals['data']['up']);
-        $totals['data']['total'] = $this->_convertTraffic($totals['data']['total']);
+        $totals['data']['down'] = $this->_convertTraffic($totals_down);
+        $totals['data']['up'] = $this->_convertTraffic($totals_up);
+        $totals['data']['total'] = $this->_convertTraffic($totals_total);
+
+        array_unshift($results, $totals);
+        array_push($results, $totals);
+
+//average AP
+        $totals['data']['name']['data'] = 'report_average';
+        $totals['data']['down'] = $this->_convertTraffic($totals_down/$l);
+        $totals['data']['up'] = $this->_convertTraffic($totals_up/$l);
+        $totals['data']['total'] = $this->_convertTraffic($totals_total/$l);
 
         array_unshift($results, $totals);
         array_push($results, $totals);
