@@ -146,10 +146,18 @@ use an bar chart instead of pie
                               'rows' => $graphics)
                      ),*/
                      'tables' => array(
-                        array(
-                            'colDefs' => array(array('report_device_name', 'report_device_group', 'report_result_download', 'report_result_upload', 'report_result_total')),
-                            'rows' => $results
-                        )
+                          array(
+                                'type' => 'both' //!? should be userselectable
+                                ,'chartOptions'=>array(
+                                        'type'=>'ColumnChart' //LineChart
+                                        ,'width'=>770 //max 370 for 2 charts sidebyside
+                                        ,'height'=>900
+                                        //,'switchAxes'=>($this->innerCount>1)
+                                        ,'depths'=>array(0,1)//either single value, or an array -> multiple charts
+                                        ,'nativeOptions'=>"legend:{position :'right'}") //passed 1:1 to googleCharts options
+                                ,'colDefs' => array(array('report_device_name', 'report_device_group', 'report_result_download', 'report_result_upload', 'report_result_total'))
+				,'rows' => $results
+                          )
                       ));
 	}
 }
