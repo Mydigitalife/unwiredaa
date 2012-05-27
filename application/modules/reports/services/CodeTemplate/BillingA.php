@@ -18,38 +18,36 @@ class Reports_Service_CodeTemplate_BillingA extends Reports_Service_CodeTemplate
 		/*create temporary table*/
 		/*fill with node_id report_part_id relations (depending on report type (summarizeable), and planned depth)*/
 	}
-   
+
     public function getData($groupIds, $dateFrom, $dateTo) {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
 
 	$tblname=prepareGroupTable($db);
 
 	$groupTotals = array();
-		
+
         foreach ($groupIds as $k => $v) {
-        	
-        	
+
         	$groupTotals[$v] = array('cnt' => 0, 'offline_cnt' => 0, 'online_cnt' => 0);
 	        $groupRel = $this->_getGroupRelations(array($v));
-	        
 
 	        $result[$v] = $db->fetchAll("SELECT count(*) as cnt, `b`.`group_id`, `b`.`name` AS `group_name` 
 FROM `node` AS `a` INNER JOIN `group` AS `b` ON b.group_id = a.group_id 
 WHERE (b.group_id IN (".implode(",",$groupRel).")) AND (billable = 1) AND (a.status = 'enabled') 
 GROUP BY `b`.`group_id` ORDER BY group_name ASC");
-			
+
             foreach ($result[$v] as $key => $value) {
-                
+
 				$groupTotals[$v]['cnt'] += 1;
 				if ($value['online_status'] == 1){
 					$groupTotals[$v]['online_cnt'] += 1;
 				}else{
 					$groupTotals[$v]['offline_cnt'] += 1;
 				}
-                    
+
             }
         }
-        
+
         $counts = array('online' => 0, 'offline' => 0, 'planning' => 0);
         foreach ($groupTotals as $k => $v) {
         	foreach ($result[$k] as $key => $value) {
@@ -64,24 +62,23 @@ GROUP BY `b`.`group_id` ORDER BY group_name ASC");
         		}
         	}
         }
-        
-        
+
         $tables = array();
-        $graphics = array();
-        
-        foreach ($counts as $key => $value): 
+        /*$graphics = array();
+
+        foreach ($counts as $key => $value):
         	$graphics[] = array('report_result_'.$key, $value);
-       	endforeach;
-       	
+       	endforeach;*/
+
        	foreach ($groupTotals as $k => $v) {
        		$table = array(
        			'colDefs' => array(
        				array(
        					'report_device_group', 'billable_aps'
-       				) 
+       				)
        			)
        		);
-       		
+
        		foreach ($result[$k] as $key => $value) {
        			$table['rows'][] = array(
        					'data' => array($value['group_name'], 
@@ -89,10 +86,10 @@ GROUP BY `b`.`group_id` ORDER BY group_name ASC");
        				)
        			);
        		}
-       		
+
        		$tables[] = $table;
        	}
-        
+
         $data = array(/*
 			'graphics' => array(
 				array(
@@ -104,10 +101,9 @@ GROUP BY `b`.`group_id` ORDER BY group_name ASC");
 			),*/
 			'tables' => $tables
 		);
-		
-		
+
 		return $data;
-       
+
     }
 
 }
