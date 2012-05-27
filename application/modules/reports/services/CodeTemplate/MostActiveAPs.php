@@ -41,10 +41,10 @@ class Reports_Service_CodeTemplate_MostActiveAPs extends Reports_Service_CodeTem
 		//use specifyable limit, and default to 1000 if out of range (3..1000)
 		$limit=$this->getReportGroup()->getCodeTemplate()->getOption('limit');
 		if (!(($limit>2) && ($limit<=1000))) $limit=5;//0;
-		$select = "SELECT SUM(i.bytes_down) as bytes_down, SUM(i.bytes_up) as bytes_up, SUM(i.bytes_up+i.bytes_down) as bytes_total, i.node_id, i.node_name, i.node_mac
+		$select = "SELECT SUM(i.bytes_down) as bytes_down, SUM(i.bytes_up) as bytes_up, SUM(i.bytes_up+i.bytes_down) as bytes_total, i.node_id, i.node_name, i.node_mac, i.group_name
 FROM (
 (SELECT 0 as type, SUM(r.total_bytes_down) as bytes_down, SUM(r.total_bytes_up) as bytes_up
-, n.node_id, n.name as node_name, n.mac as node_mac
+, n.node_id, n.name as node_name, n.mac as node_mac, g.name as group_name
 FROM acct_internet_roaming r INNER JOIN node n ON r.node_id = n.node_id
 INNER JOIN `group` g ON g.group_id = n.group_id
 WHERE g.group_id IN (".implode(",",$groupRel).")
@@ -54,7 +54,7 @@ AND NOT ISNULL(r.stop_time)
 GROUP BY n.node_id)
 UNION
 (SELECT 1 as type, MAX(m.bytes_down)-MIN(m.bytes_down) as bytes_down, MAX(m.bytes_up)-MIN(m.bytes_up) as bytes_up
-, n.node_id, n.name as node_name, n.mac as node_mac
+, n.node_id, n.name as node_name, n.mac as node_mac, g.name as group_name
 FROM acct_internet_roaming r INNER JOIN acct_internet_interim m ON (m.roaming_count=r.roaming_count AND m.session_id=r.session_id)
 INNER JOIN node n ON r.node_id = n.node_id
 INNER JOIN `group` g ON g.group_id = n.group_id
@@ -123,7 +123,7 @@ ORDER BY bytes_total DESC;";
         array_push($results, $totals);
 
 //average AP
-        $totals['data']['name']['data'] = 'report_average';
+        $totals['data']['name']['data'] = 'report_total_average';
         $totals['data']['down'] = $this->_convertTraffic($totals_down/$l);
         $totals['data']['up'] = $this->_convertTraffic($totals_up/$l);
         $totals['data']['total'] = $this->_convertTraffic($totals_total/$l);
@@ -147,7 +147,7 @@ use an bar chart instead of pie
                      ),*/
                      'tables' => array(
                           array(
-                                'type' => 'both' //!? should be userselectable
+                                'type' => 'table' //!? should be userselectable
                                 ,'chartOptions'=>array(
                                         'type'=>'ColumnChart' //LineChart
                                         ,'width'=>770 //max 370 for 2 charts sidebyside
