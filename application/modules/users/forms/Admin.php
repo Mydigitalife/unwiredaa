@@ -33,7 +33,7 @@ class Users_Form_Admin extends Unwired_Form
 		$this->addElement('text', 'email', array('label' => 'users_admin_edit_form_email',
 													'required' => true,
 													'class' => 'span-5',
-													'validators' => array('len' => array('validator' => 'EmailAddress'))));
+													'validators' => array('email' => array('validator' => 'EmailAddress'))));
 		$this->addElement('select', 'notification_scheme', array('label' => 'users_admin_edit_form_notification_scheme',
 													'required' => true,
 													'class' => 'span-5',
