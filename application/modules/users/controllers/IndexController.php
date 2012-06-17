@@ -5,10 +5,10 @@
 * Author & Copyright (c) 2011 Unwired Networks GmbH
 * alexander.szlezak@unwired.at
 *
-* Licensed under the terms of the Affero Gnu Public License version 3 
-* (AGPLv3 - http://www.gnu.org/licenses/agpl.html) or our proprietory 
+* Licensed under the terms of the Affero Gnu Public License version 3
+* (AGPLv3 - http://www.gnu.org/licenses/agpl.html) or our proprietory
 * license available at http://www.unwired.at/license.html
-*/  
+*/
 
 /**
  * Users/Index controller
@@ -41,10 +41,21 @@ class Users_IndexController extends Unwired_Controller_Action {
 
 		if (!$service->login($data['username'], $data['password'])) {
 			$this->view->uiMessage('user_login_failed', 'error');
+            $this->_helper->redirector->gotoRouteAndExit(array(), 'default', true);
 			return;
 		}
 
 		$this->view->uiMessage('user_login_success', 'success');
+
+		if ($this->getInvokeArg('bootstrap')->hasResource('session')) {
+			$session = $this->getInvokeArg('bootstrap')->getResource('session');
+
+			if (isset($session->loginRedirect)) {
+			    $loginRedirect = $session->loginRedirect;
+			    $session->loginRedirect = null;
+			    $this->_helper->redirector->gotoUrlAndExit($loginRedirect, array('prependBase' => false));
+			}
+		}
 
 		$this->_helper->redirector->gotoRouteAndExit(array(), 'default', true);
 	}
