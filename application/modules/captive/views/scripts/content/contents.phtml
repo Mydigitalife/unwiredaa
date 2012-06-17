@@ -26,12 +26,13 @@
 <?php
 	$this->headScript()->appendFile($this->baseUrl('scripts/fancybox/jquery.fancybox-1.3.4.pack.js'));
 	$this->headLink()->appendStylesheet($this->baseUrl('scripts/fancybox/jquery.fancybox-1.3.4.css'));
-    $this->headScript()->appendFile($this->baseUrl('scripts/nicedit/nicEdit.js'));
+	$this->headLink()->appendStylesheet($this->baseUrl('scripts/cleditor/jquery.cleditor.css'));
+    $this->headScript()->appendFile($this->baseUrl('scripts/cleditor/jquery.cleditor.min.js'));
     $this->headScript()->captureStart();
 ?>
 	var htmlEditors = false;
 
-	function copyCurrentTabToOthers()
+	function copyCurrentTabToOthers(currentLanguageOnly)
 	{
 		var visibleTab = $('.subtabs .ui-tabs-panel:visible:first');
 
@@ -40,24 +41,25 @@
 			return false;
 		}
 
-		/*
-		 * Sync all nicEditors content
-		 */
-		if (nicEditors) {
-			visibleTab.find('textarea').each(function(){
-				nicEditors.findEditor($(this).attr('id')).saveContent();
-			});
-		}
-
 		var visibleContentInfo = $(visibleTab).attr('id').split('-');
 
 		var otherTabs = $('.subtabs .ui-tabs-panel').not(visibleTab);
+
+        otherTabs.find('textarea').each(function(){
+        	if ($.hasData(this)) {
+        		$.removeData($(this).get(0), 'cleditor');
+        	}
+        });
 
 		otherTabs.each(function(){
 
 			var currentTab = this;
 
 			var contentInfo = $(this).attr('id').split('-');
+
+			if (currentLanguageOnly && visibleContentInfo[1] !== contentInfo[1]) {
+				return;
+			}
 
 			/*
 			 * Match desktop-1 or mobile-2
@@ -87,25 +89,39 @@
 
 				if ($(this).get(0).tagName == 'TEXTAREA' || $(this).get(0).tagName == 'textarea') {
 					$(this).val(visibleTab.find('#' + oldId).val());
+
+                	if ($(this).parent().hasClass('cleditorMain')) {
+                		$(this).insertAfter($(this).parent());
+                		$(this).prev().remove();
+                		$(this).removeAttr('style');
+                	}
+
+                	if ($.hasData(this)) {
+                		$.removeData($(this).get(0), 'cleditor');
+                	}
 				}
 			});
 
 
 			$(this).html('')
 				   .append(newTabContent);
+	  	    $(this).find('textarea').each(function(){
+			   $(this).cleditor()[0].disable(false).refresh();
+		    });
 		});
 
-		if (nicEditors) {
-			$('.subtabs textarea').siblings().remove();
-
-			nicEditors.editors = new Array();
-			nicEditors.allTextAreas({iconsPath : '<?php echo $this->baseUrl('scripts/nicedit/nicEditorIcons.gif'); ?>'});
-		}
+		otherTabs.find('.cleditorToolbar').height(53);
 
 		return true;
 	}
 
 	$(document).ready(function() {
+		$.cleditor.defaultOptions.width = 600;
+		$.cleditor.defaultOptions.controls = "bold italic underline strikethrough subscript superscript | size " +
+                                    		 "style | color removeformat | bullets numbering | outdent " +
+                                    		 "indent | alignleft center alignright justify | undo redo | " +
+                                    		 "rule image link unlink | cut copy paste pastetext | source";
+
 		$('div.tabs').tabs();
 
 		$('.portlet-header a.edit').button({icons: { primary: 'ui-icon-pencil'}, text: false});
@@ -241,10 +257,16 @@
 		$(".column").disableSelection();
 
 		$('#fancybox-content a.copycontent').live('click', function(){
-			if (!confirm('<?php echo $this->translate('captive_content_edit_use_defaults'); ?>')) {
+			var msg = '<?php echo $this->translate('captive_content_edit_copy_content_confirm'); ?>';
+			if ($(this).hasClass('language')) {
+				msg = '<?php echo $this->translate('captive_content_edit_copy_content_confirm_language'); ?>';
+			}
+
+			if (!confirm(msg)) {
 				return false;
 			}
-			copyCurrentTabToOthers();
+
+			copyCurrentTabToOthers($(this).hasClass('language'));
 		});
 
 		$('#fancybox-content a.cancel').live('click', function(){
@@ -254,11 +276,6 @@
 		});
 
 		$('#fancybox-content a.save').live('click', function(){
-			if (nicEditors) {
-				$('#fancybox-content textarea').each(function(){
-					nicEditors.findEditor($(this).attr('id')).saveContent();
-				});
-			}
 
 			var filledTitle = false;
 
@@ -350,6 +367,8 @@
 							$('#fancybox-content').find('.tabs:not(.subtabs)').tabs({selected: tabSelected});
 							$.fancybox.resize();
 							$.fancybox.center();
+							$('#fancybox-content textarea').cleditor();
+							$('#fancybox-content .cleditorToolbar').height(53);
 						}
 					});
 				},
@@ -437,6 +456,8 @@
 
 										$.fancybox.resize();
 										$.fancybox.center();
+										$('#fancybox-content textarea').cleditor();
+										$('#fancybox-content .cleditorToolbar').height(53);
 									}
 								});
 
