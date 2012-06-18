@@ -215,7 +215,7 @@ class Reports_GroupController extends Unwired_Controller_Crud {
         $fromDate = $report->getDateFrom();
         $toDate = $report->getDateTo();
 
-	    if ($report->getReportType == 'interval') {
+	  /*  if ($report->getReportType == 'interval') {
             $interval = $report->getReportInterval();
 
             $dateAdded = $report->getDateAdded();
@@ -261,9 +261,6 @@ class Reports_GroupController extends Unwired_Controller_Crud {
                 break;
             }
 
-            /* if (!$dateAdded->isToday()) {
-                continue;
-            } */
 
             $dateAdded->setHour($fromDate->getHour())
                       ->setMinute($fromDate->getMinute())
@@ -274,7 +271,7 @@ class Reports_GroupController extends Unwired_Controller_Crud {
             $toDate = clone $fromDate;
             $toDate->add($period);
 
-        } else {
+        } else { */
             switch ($report->getTimeframe()) {
                 case 'today':
                     $fromDate = $referenceDate;
@@ -386,9 +383,16 @@ class Reports_GroupController extends Unwired_Controller_Crud {
                     $toDate = clone $fromDate;
                     $toDate->add($period);
 
+                    $fromDate->setHour($report->getDateFrom()->getHour())
+                             ->setMinute($report->getDateFrom()->getMinute())
+                             ->setSecond($report->getDateFrom()->getSecond());
+
+                    $toDate->setHour($report->getDateTo()->getHour())
+                           ->setMinute($report->getDateTo()->getMinute())
+                           ->setSecond($report->getDateTo()->getSecond());
                 break;
             }
-        }
+       /* } */
 
         return array('from' => $fromDate, 'to' => $toDate);
 	}
