@@ -25,14 +25,17 @@
     if (!isset($this->pdf)) :
     $request = Zend_Controller_Front::getInstance()->getRequest();
 ?>
-<div class="buttons span-18">
+<div class="formelement span-18 last">
 	<a class="button small blue" href="<?php echo $this->url(array_merge($request->getParams(), array('format' => 'csv')), 'default', false);?>"><span><?php
 	    echo $this->translate('report_group_button_csv');
 	?></span></a>
-<!--
+
 	<a class="button small blue" href="<?php echo $this->url(array_merge($request->getParams(), array('format' => 'pdf')), 'default', false);?>"><span><?php
 	    echo $this->translate('report_group_button_pdf');
-	?></span></a>  -->
+	?></span></a>
+	<a href="javascript:window.print();" class="button small blue right">
+		<span><?php echo $this->translate('default_print_document'); ?></span>
+	</a>
 </div>
 <?php endif; // pdf?>
 <table width="100%" class="listing">
