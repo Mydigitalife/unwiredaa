@@ -46,12 +46,94 @@
 	<td><?php echo $this->translate('report_result_parameters_description'); ?></td><td colspan="3"><?php echo $this->parent->getDescription(); ?></td>
 </tr>
 <tr>
+	<td><?php echo $this->translate('report_result_parameters_type'); ?></td>
+<?php if ($this->parent->getReportType() == 'interval') :?>
+	<td><?php echo $this->parent->getReportType(); ?></td>
+	<td><?php echo $this->translate('report_result_parameters_interval'); ?></td>
+	<td><?php echo $this->translate('report_group_edit_timeframe_' . $this->parent->getTimeframe()); ?></td>
+<?php else: ?>
+	<td colspan="3"><?php echo $this->parent->getReportType(); ?></td>
+<?php endif; ?>
+</tr>
+<?php if ($this->parent->getCodeTemplate()->isInnerIntervalSupported()) :?>
+<tr>
+	<td><?php echo $this->translate('report_result_parameters_innerinterval'); ?></td>
+	<td><?php
+	    $message = 'report_group_edit_inner_none';
+	    switch ($this->parent->getReportInterval()) {
+	        case 0: $message = 'report_group_edit_inner_none';
+	                break;
+	        case 5: $message = 'report_group_edit_inner_5min';
+	                break;
+	        case 10: $message = 'report_group_edit_inner_10min';
+	                break;
+	        case 30: $message = 'report_group_edit_inner_30min';
+	                break;
+	        case 60: $message = 'report_group_edit_inner_1hour';
+	                break;
+	        case 180: $message = 'report_group_edit_inner_3hours';
+	                break;
+	        case 360: $message = 'report_group_edit_inner_6hours';
+	                break;
+	        case 720: $message = 'report_group_edit_inner_12hours';
+	                break;
+	        case 1440: $message = 'report_group_edit_inner_1day';
+	                break;
+	        case 10080: $message = 'report_group_edit_inner_1week';
+	                break;
+	        case 20160: $message = 'report_group_edit_inner_2weeks';
+	                break;
+	        case 43200: $message = 'report_group_edit_inner_1month';
+	                break;
+	        case 129600: $message = 'report_group_edit_inner_3months';
+	                break;
+	        case 525600: $message = 'report_group_edit_inner_1year';
+	                break;
+	    }
+
+        echo $this->translate($message);
+	?></td>
+</tr>
+<?php endif;?>
+<tr>
 	<td><?php echo $this->translate('report_result_parameters_datefrom'); ?></td><td><?php echo $this->parent->getDateFrom();?></td><td><?php echo $this->translate('report_result_parameters_dateto'); ?></td><td><?php echo $this->parent->getDateTo();?></td>
 </tr>
 <?php if ($this->parent->getCodeTemplate()->isGroupSelectionSupported()) :?>
 <tr>
 	<td><?php echo $this->translate('report_result_parameters_devicegroups'); ?></td><td colspan="3"><?php echo str_replace("\n", ", ", $this->parent->getGroupsAssignedFormatted());?></td>
 </tr>
+    <?php if ($this->parent->getCodeTemplate()->isGroupDepthSupported()) :?>
+        <?php if ($this->parent->hasOutputGraph()) :?>
+        <tr>
+        	<td><?php echo $this->translate('report_result_parameters_depthgraph'); ?></td><td colspan="3"><?php
+        	    $depth = $this->parent->getGroupDepthChartMax();
+
+        	    if ($depth < 0) {
+        	        $message = ($depth == -2) ? 'report_group_edit_depth_nolimit' : 'report_group_edit_depth_groups';
+        	    } else {
+        	        $message = 'report_group_edit_depth_groups_' . $depth;
+        	    }
+
+        	    echo $this->translate($message);
+        	?></td>
+        </tr>
+        <?php endif;?>
+        <?php if ($this->parent->hasOutputTable()) :?>
+        <tr>
+        	<td><?php echo $this->translate('report_result_parameters_depthtable'); ?></td><td colspan="3"><?php
+        	    $depth = $this->parent->getGroupDepthMax();
+
+        	    if ($depth < 0) {
+        	        $message = ($depth == -2) ? 'report_group_edit_depth_nolimit' : 'report_group_edit_depth_groups';
+        	    } else {
+        	        $message = 'report_group_edit_depth_groups_' . $depth;
+        	    }
+
+        	    echo $this->translate($message);
+        	?></td>
+        </tr>
+        <?php endif;?>
+    <?php endif;?>
 <?php endif; ?>
 </table>
 
