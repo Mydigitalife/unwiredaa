@@ -177,6 +177,8 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 		$reportGenerator = new $className;
 
         $reportGenerator->setReportGroup($report);
+        $fromDate = $report->getDateFrom();
+        $toDate = $report->getDateTo();
 
         if ($report->getReportType == 'interval') {
             $interval = $report->getReportInterval();
@@ -224,9 +226,9 @@ class Reports_GroupController extends Unwired_Controller_Crud {
                 break;
             }
 
-            if (!$dateAdded->isToday()) {
+            /* if (!$dateAdded->isToday()) {
                 continue;
-            }
+            } */
 
             $dateAdded->setHour($fromDate->getHour())
                       ->setMinute($fromDate->getMinute())
@@ -249,11 +251,125 @@ class Reports_GroupController extends Unwired_Controller_Crud {
             $report->setDateFrom($fromDate)
                    ->setDateTo($toDate);
 
+        } else {
+            switch ($report->getTimeframe()) {
+                case 'today':
+                    $fromDate = new Zend_Date();
+                    $toDate = clone $fromDate;
+
+                    $fromDate->setHour(0)
+                             ->setMinute(0)
+                             ->setSecond(0);
+                    $toDate->addDay(1);
+                break;
+                case 'yesterday':
+                    $toDate = new Zend_Date();
+
+                    $toDate->setHour(0)
+                           ->setMinute(0)
+                           ->setSecond(0);
+                    $fromDate = clone $toDate;
+                    $fromDate->subDay(1);
+                break;
+                case 'currweek':
+                    $fromDate = new Zend_Date();
+
+                    $weekday = $fromDate->toValue(Zend_Date::WEEKDAY_DIGIT);
+
+                    $fromDate->subDay($weekday-1);
+                    $fromDate->setHour(0)
+                             ->setMinute(0)
+                             ->setSecond(0);
+
+                    $toDate = clone $fromDate;
+                    $toDate->addDay(7);
+                break;
+                case 'lastweek':
+                    $toDate = new Zend_Date();
+
+                    $weekday = $toDate->toValue(Zend_Date::WEEKDAY_DIGIT);
+
+                    $toDate->subDay($weekday-1);
+                    $toDate->setHour(0)
+                           ->setMinute(0)
+                           ->setSecond(0);
+
+                    $toDate = clone $fromDate;
+                    $toDate->subDay(7);
+                break;
+                case 'currmonth':
+                    $fromDate = new Zend_Date();
+                    $fromDate->setDay(1)
+                             ->setHour(0)
+                             ->setMinute(0)
+                             ->setSecond(0);
+
+                    $toDate = clone $fromDate;
+                    $toDate->addMonth(1);
+                break;
+                case 'lastmonth':
+                    $toDate = new Zend_Date();
+                    $toDate->setDay(1)
+                           ->setHour(0)
+                           ->setMinute(0)
+                           ->setSecond(0);
+
+                    $fromDate = clone $toDate;
+                    $fromDate->subMonth(1);
+                break;
+                case 'curryear':
+                    $fromDate = new Zend_Date();
+                    $fromDate->setMonth(1)
+                             ->setDay(1)
+                             ->setHour(0)
+                             ->setMinute(0)
+                             ->setSecond(0);
+
+                    $toDate = clone $fromDate;
+                    $toDate->addYear(1);
+                break;
+                case 'lastyear':
+                    $toDate = new Zend_Date();
+                    $toDate->setMonth(1)
+                           ->setDay(1)
+                           ->setHour(0)
+                           ->setMinute(0)
+                           ->setSecond(0);
+
+                    $fromDate = clone $toDate;
+                    $fromDate->subYear(1);
+                break;
+
+                default:
+                $dateAdded = $report->getDateAdded();
+
+                if (is_string($dateAdded)) {
+                    $dateAdded = new Zend_Date($dateAdded, 'yyyy-MM-dd HH:mm');
+                }
+
+
+                $now = new Zend_Date();
+
+                $toDate = new Zend_Date($report->getDateTo());
+                $fromDate = new Zend_Date($report->getDateFrom());
+
+                $period = $toDate->sub($fromDate);
+
+                $offsetFromDateAdded = $dateAdded->sub($fromDate);
+
+                $fromDate = $now;
+                $fromDate->sub($offsetFromDateAdded);
+
+                $toDate = clone $fromDate;
+                $toDate->add($period);
+
+                break;
+            }
         }
 
 		$result = $reportGenerator->getData(array_keys($report->getGroupsAssigned()),
-		                                    $report->getDateFrom()->toString('yyyy-MM-dd HH:mm:ss'),
-		                                    $report->getDateTo()->toString('yyyy-MM-dd HH:mm:ss'));
+		                                    $fromDate->toString('yyyy-MM-dd HH:mm:ss'),
+		                                    $toDate->getDateTo()->toString('yyyy-MM-dd HH:mm:ss'));
 
 		$entity = new Reports_Model_Items();
 		$entity->setDateAdded(date('Y-m-d H:i:s'));
@@ -401,6 +517,8 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 
 		$this->view->parent_parent = $parent_parent;
 		$this->view->parent = $parent;
+
+
 		$this->view->report = $report;
 
 		$this->view->data = $report->getData(true);
