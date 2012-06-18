@@ -523,7 +523,7 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 
 		$shiftedDates = $this->_calcDateOffset($parent, new Zend_Date($report->getDateAdded(), 'yyyy-MM-dd HH:mm'));
 
-		$report->setDateFrom($shiftedDates['from'])
+		$parent->setDateFrom($shiftedDates['from'])
 		       ->setDateTo($shiftedDates['to']);
 
 		$this->view->report = $report;
