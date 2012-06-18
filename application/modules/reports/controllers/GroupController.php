@@ -177,10 +177,45 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 		$reportGenerator = new $className;
 
         $reportGenerator->setReportGroup($report);
+
+        $shiftedDates = $this->_calcDateOffset($report, null);
+
+        $report->setDateFrom($shiftedDates['from'])
+               ->setDateTo($shiftedDates['to']);
+
+		$result = $reportGenerator->getData(array_keys($report->getGroupsAssigned()),
+		                                    $report->getDateFrom()->toString('yyyy-MM-dd HH:mm:ss'),
+		                                    $report->getDateTo()->toString('yyyy-MM-dd HH:mm:ss'));
+
+		$entity = new Reports_Model_Items();
+		$entity->setDateAdded(date('Y-m-d H:i:s'));
+		$entity->setData($result);
+		$entity->setReportGroupId($this->getRequest()->getParam('id'));
+		$iMapper->save($entity);
+
+		if ($report->getRecepients()) {
+		    $this->_emailReport($report, $entity);
+		}
+
+		//$this->_helper->redirector->gotoUrlAndExit('/reports/group/view/id/'.$entity->getItemId());
+		$this->_helper->redirector->gotoRouteAndExit(array('module' => 'reports',
+		                                                   'controller' => 'group',
+		                                                   'action' => 'view',
+		                                                   'id' => $entity->getItemId()),
+		                                             'default',
+		                                             true);
+	}
+
+	protected function _calcDateOffset($report, $referenceDate = null)
+	{
+        if (!$referenceDate) {
+            $referenceDate = new Zend_Date();
+        }
+
         $fromDate = $report->getDateFrom();
         $toDate = $report->getDateTo();
 
-        if ($report->getReportType == 'interval') {
+	    if ($report->getReportType == 'interval') {
             $interval = $report->getReportInterval();
 
             $dateAdded = $report->getDateAdded();
@@ -190,7 +225,7 @@ class Reports_GroupController extends Unwired_Controller_Crud {
             }
 
 
-            $now = new Zend_Date();
+            $now = $referenceDate;
 
             $toDate = new Zend_Date($report->getDateTo());
             $fromDate = new Zend_Date($report->getDateFrom());
@@ -222,7 +257,7 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 
                 case 'day':
                 default:
-                    $dateAdded = $now;
+                    $dateAdded = $referenceDate;
                 break;
             }
 
@@ -239,22 +274,10 @@ class Reports_GroupController extends Unwired_Controller_Crud {
             $toDate = clone $fromDate;
             $toDate->add($period);
 
-            /**
-             * $fromDate and $toDate hold the shifted time frame for report
-             * It will be used in future. For now reports are generated with
-             * the original time frame
-             */
-
-            /**
-             * Generate with shifted timeframe
-             */
-            $report->setDateFrom($fromDate)
-                   ->setDateTo($toDate);
-
         } else {
             switch ($report->getTimeframe()) {
                 case 'today':
-                    $fromDate = new Zend_Date();
+                    $fromDate = $referenceDate;
                     $toDate = clone $fromDate;
 
                     $fromDate->setHour(0)
@@ -263,7 +286,7 @@ class Reports_GroupController extends Unwired_Controller_Crud {
                     $toDate->addDay(1);
                 break;
                 case 'yesterday':
-                    $toDate = new Zend_Date();
+                    $toDate = $referenceDate;
 
                     $toDate->setHour(0)
                            ->setMinute(0)
@@ -272,7 +295,7 @@ class Reports_GroupController extends Unwired_Controller_Crud {
                     $fromDate->subDay(1);
                 break;
                 case 'currweek':
-                    $fromDate = new Zend_Date();
+                    $fromDate = $referenceDate;
 
                     $weekday = $fromDate->toValue(Zend_Date::WEEKDAY_DIGIT);
 
@@ -285,7 +308,7 @@ class Reports_GroupController extends Unwired_Controller_Crud {
                     $toDate->addDay(7);
                 break;
                 case 'lastweek':
-                    $toDate = new Zend_Date();
+                    $toDate = $referenceDate;
 
                     $weekday = $toDate->toValue(Zend_Date::WEEKDAY_DIGIT);
 
@@ -298,7 +321,7 @@ class Reports_GroupController extends Unwired_Controller_Crud {
                     $toDate->subDay(7);
                 break;
                 case 'currmonth':
-                    $fromDate = new Zend_Date();
+                    $fromDate = $referenceDate;
                     $fromDate->setDay(1)
                              ->setHour(0)
                              ->setMinute(0)
@@ -308,7 +331,7 @@ class Reports_GroupController extends Unwired_Controller_Crud {
                     $toDate->addMonth(1);
                 break;
                 case 'lastmonth':
-                    $toDate = new Zend_Date();
+                    $toDate = $referenceDate;
                     $toDate->setDay(1)
                            ->setHour(0)
                            ->setMinute(0)
@@ -318,7 +341,7 @@ class Reports_GroupController extends Unwired_Controller_Crud {
                     $fromDate->subMonth(1);
                 break;
                 case 'curryear':
-                    $fromDate = new Zend_Date();
+                    $fromDate = $referenceDate;
                     $fromDate->setMonth(1)
                              ->setDay(1)
                              ->setHour(0)
@@ -329,7 +352,7 @@ class Reports_GroupController extends Unwired_Controller_Crud {
                     $toDate->addYear(1);
                 break;
                 case 'lastyear':
-                    $toDate = new Zend_Date();
+                    $toDate = $referenceDate;
                     $toDate->setMonth(1)
                            ->setDay(1)
                            ->setHour(0)
@@ -341,53 +364,33 @@ class Reports_GroupController extends Unwired_Controller_Crud {
                 break;
 
                 default:
-                $dateAdded = $report->getDateAdded();
+                    $dateAdded = $report->getDateAdded();
 
-                if (is_string($dateAdded)) {
-                    $dateAdded = new Zend_Date($dateAdded, 'yyyy-MM-dd HH:mm');
-                }
+                    if (is_string($dateAdded)) {
+                        $dateAdded = new Zend_Date($dateAdded, 'yyyy-MM-dd HH:mm');
+                    }
 
 
-                $now = new Zend_Date();
+                    $now = $referenceDate;
 
-                $toDate = new Zend_Date($report->getDateTo());
-                $fromDate = new Zend_Date($report->getDateFrom());
+                    $toDate = new Zend_Date($report->getDateTo());
+                    $fromDate = new Zend_Date($report->getDateFrom());
 
-                $period = $toDate->sub($fromDate);
+                    $period = $toDate->sub($fromDate);
 
-                $offsetFromDateAdded = $dateAdded->sub($fromDate);
+                    $offsetFromDateAdded = $dateAdded->sub($fromDate);
 
-                $fromDate = $now;
-                $fromDate->sub($offsetFromDateAdded);
+                    $fromDate = $now;
+                    $fromDate->sub($offsetFromDateAdded);
 
-                $toDate = clone $fromDate;
-                $toDate->add($period);
+                    $toDate = clone $fromDate;
+                    $toDate->add($period);
 
                 break;
             }
         }
 
-		$result = $reportGenerator->getData(array_keys($report->getGroupsAssigned()),
-		                                    $fromDate->toString('yyyy-MM-dd HH:mm:ss'),
-		                                    $toDate->getDateTo()->toString('yyyy-MM-dd HH:mm:ss'));
-
-		$entity = new Reports_Model_Items();
-		$entity->setDateAdded(date('Y-m-d H:i:s'));
-		$entity->setData($result);
-		$entity->setReportGroupId($this->getRequest()->getParam('id'));
-		$iMapper->save($entity);
-
-		if ($report->getRecepients()) {
-		    $this->_emailReport($report, $entity);
-		}
-
-		//$this->_helper->redirector->gotoUrlAndExit('/reports/group/view/id/'.$entity->getItemId());
-		$this->_helper->redirector->gotoRouteAndExit(array('module' => 'reports',
-		                                                   'controller' => 'group',
-		                                                   'action' => 'view',
-		                                                   'id' => $entity->getItemId()),
-		                                             'default',
-		                                             true);
+        return array('from' => $fromDate, 'to' => $toDate);
 	}
 
 	public function instantAction() {
@@ -518,6 +521,10 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 		$this->view->parent_parent = $parent_parent;
 		$this->view->parent = $parent;
 
+		$shiftedDates = $this->_calcDateOffset($parent, new Zend_Date($report->getDateAdded(), 'yyyy-MM-dd HH:mm'));
+
+		$report->setDateFrom($shiftedDates['from'])
+		       ->setDateTo($shiftedDates['to']);
 
 		$this->view->report = $report;
 
