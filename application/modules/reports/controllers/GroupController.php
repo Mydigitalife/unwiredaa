@@ -178,6 +178,79 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 
         $reportGenerator->setReportGroup($report);
 
+        if ($report->getReportType == 'interval') {
+            $interval = $report->getReportInterval();
+
+            $dateAdded = $report->getDateAdded();
+
+            if (is_string($dateAdded)) {
+                $dateAdded = new Zend_Date($dateAdded, 'yyyy-MM-dd HH:mm');
+            }
+
+
+            $now = new Zend_Date();
+
+            $toDate = new Zend_Date($report->getDateTo());
+            $fromDate = new Zend_Date($report->getDateFrom());
+
+            $period = $toDate->sub($fromDate);
+
+            $offsetFromDateAdded = $dateAdded->sub($fromDate);
+
+            switch ($interval) {
+                case 'year':
+                    $dateAdded->setYear($now->getYear());
+                break;
+
+                case 'month':
+                    $dateAdded->setYear($now->getYear());
+                    $dateAdded->setMonth($now->getMonth());
+                break;
+
+                case 'week':
+                    $diffStamp = $now->getDate()
+                                          ->subDate($fromDate->getDate())
+                                               ->getTimestamp();
+
+                    if (fmod($diffStamp, (7 * 24 * 3600)) == 0) {
+                        $dateAdded->setDate($now);
+                    }
+                ;
+                break;
+
+                case 'day':
+                default:
+                    $dateAdded = $now;
+                break;
+            }
+
+            if (!$dateAdded->isToday()) {
+                continue;
+            }
+
+            $dateAdded->setHour($fromDate->getHour())
+                      ->setMinute($fromDate->getMinute())
+                      ->setSecond($fromDate->getSecond());
+
+            $fromDate = clone $dateAdded;
+            $fromDate = $fromDate->sub($offsetFromDateAdded);
+            $toDate = clone $fromDate;
+            $toDate->add($period);
+
+            /**
+             * $fromDate and $toDate hold the shifted time frame for report
+             * It will be used in future. For now reports are generated with
+             * the original time frame
+             */
+
+            /**
+             * Generate with shifted timeframe
+             */
+            $report->setDateFrom($fromDate)
+                   ->setDateTo($toDate);
+
+        }
+
 		$result = $reportGenerator->getData(array_keys($report->getGroupsAssigned()),
 		                                    $report->getDateFrom()->toString('yyyy-MM-dd HH:mm:ss'),
 		                                    $report->getDateTo()->toString('yyyy-MM-dd HH:mm:ss'));
