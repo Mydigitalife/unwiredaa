@@ -8,6 +8,12 @@
 	    $this->headScript()->appendFile($this->httpScheme() . '://google-maps-utility-library-v3.googlecode.com/svn/trunk/markerclusterer/src/markerclusterer_compiled.js');
 	}
 
+	$mapHeight = 450;
+
+	if (isset($this->systemSettings['node_map_height']) && ($this->systemSettings['node_map_height']->getValue() > 0)) {
+	    $mapHeight = (int) $this->systemSettings['node_map_height']->getValue();
+	}
+
 	$nodes = array();
 	foreach ($this->nodes as $node) {
 		$nodeArray = $node->toArray();
@@ -144,7 +150,7 @@
 	}
 
 	$(document).ready(function(){
-		$('#nodemap').height(450);
+		$('#nodemap').height(<?php echo $mapHeight; ?>);
 
 		var latlng = new google.maps.LatLng(<?php echo $this->systemSettings['node_map_center_lat']->getValue(); ?>,
 										    <?php echo $this->systemSettings['node_map_center_lng']->getValue(); ?>);
@@ -349,8 +355,35 @@
 	$this->headScript()->captureEnd();
 ?>
 <?php if (isset($this->currentUser)) :?>
+<div id="networkstats">
+	<div><strong><?php echo $this->translate('default_index_index_statistics')?>:</strong>
+	<ul>
+		<li>
+			<label><?php echo $this->translate('default_index_index_devices')?>:</label>
+		    <?php echo $this->translate('default_index_index_devices_total')?> (<strong><span id="devicestotal"><?php echo $this->networkStats->getDevicesTotal(); ?></span></strong>)
+		    <?php echo $this->translate('default_index_index_devices_online')?> (<strong><span id="devicesonline"><?php echo $this->networkStats->getDevicesOnline(); ?></span></strong>)
+    	    <?php echo $this->translate('default_index_index_devices_offline')?> (<strong><span id="devicesoffline"><?php echo $this->networkStats->getDevicesOffline(); ?></span></strong>)
+		</li>
+    	<li>
+    		<label><?php echo $this->translate('default_index_index_users')?>:</label>
+    		<?php echo $this->translate('default_index_index_users_total')?> (<strong><span id="userstotal"><?php echo $this->networkStats->getUsersTotal(); ?></span></strong>)
+        	<?php echo $this->translate('default_index_index_users_online')?> (<strong><span id="usersonline"><?php echo $this->networkStats->getUsersOnline(); ?></span></strong>)
+        	<?php echo $this->translate('default_index_index_users_garden')?> (<strong><span id="usersgarden"><?php echo $this->networkStats->getUsersGarden(); ?></span></strong>)
+    	</li>
+	</ul>
+	</div>
+	<div>
+		<strong><?php echo $this->translate('default_index_index_bandwidth')?>:</strong>
+		<ul>
+			<li><strong><?php echo $this->translate('default_index_index_bandwidth_down')?>:</strong> <span id="bandwidthdown">0</span> <span id="networkgraphdown" class="span-13 last" style="float:right; text-align: right;"></span></li>
+			<li><strong><?php echo $this->translate('default_index_index_bandwidth_up')?>:</strong> <span id="bandwidthup">0</span> <span id="networkgraphup" class="span-13 last" style="float:right; text-align: right;"></span></li>
+		</ul>
+	</div>
+	<!-- <div><strong><?php echo $this->translate('default_index_index_bandwidth_up')?>:</strong> <span id="bandwidthup">0</span> <span id="networkgraphup" class="span-13 last" style="float:right; text-align: right;"></span></div>
+	<div><strong><?php echo $this->translate('default_index_index_bandwidth_down')?>:</strong> <span id="bandwidthdown">0</span> <span id="networkgraphdown" class="span-13 last" style="float:right; text-align: right;"></span></div> -->
+</div>
 <form method="get"
-	action="<?php echo $this->url(array(), 'default', true); ?>">
+	  action="<?php echo $this->url(array(), 'default', true); ?>">
 	<table class="listing">
 		<thead>
 			<tr>
@@ -372,41 +405,11 @@
 		</thead>
 	</table>
 </form>
-<?php endif; ?>
+<?php endif;?>
 <div id="nodemap"></div>
 <?php if (isset($this->currentUser)) :?>
-<div id="networkstats">
-	<div><strong><?php echo $this->translate('default_index_index_statistics')?>:</strong>
-	<ul>
-		<li><strong><?php echo $this->translate('default_index_index_devices')?>:</strong>
-    		<ul>
-    			<li><strong><?php echo $this->translate('default_index_index_devices_total')?></strong>: <span id="devicestotal"><?php echo $this->networkStats->getDevicesTotal(); ?></span></li>
-    			<li><strong><?php echo $this->translate('default_index_index_devices_online')?></strong>: <span id="devicesonline"><?php echo $this->networkStats->getDevicesOnline(); ?></span></li>
-    			<li><strong><?php echo $this->translate('default_index_index_devices_offline')?></strong>: <span id="devicesoffline"><?php echo $this->networkStats->getDevicesOffline(); ?></span></li>
-    		</ul>
-		</li>
-    	<li>
-    		<strong><?php echo $this->translate('default_index_index_users')?>:</strong>
-    		<ul>
-    			<li><strong><?php echo $this->translate('default_index_index_users_total')?></strong>: <span id="userstotal"><?php echo $this->networkStats->getUsersTotal(); ?></span></li>
-    			<li><strong><?php echo $this->translate('default_index_index_users_online')?></strong>: <span id="usersonline"><?php echo $this->networkStats->getUsersOnline(); ?></span></li>
-    			<li><strong><?php echo $this->translate('default_index_index_users_garden')?></strong>: <span id="usersgarden"><?php echo $this->networkStats->getUsersGarden(); ?></span></li>
-    		</ul>
-    	</li>
-	</ul>
-	</div>
-	<div>
-		<strong><?php echo $this->translate('default_index_index_bandwidth')?>:</strong>
-		<ul>
-			<li><strong><?php echo $this->translate('default_index_index_bandwidth_down')?>:</strong> <span id="bandwidthdown">0</span> <span id="networkgraphdown" class="span-13 last" style="float:right; text-align: right;"></span></li>
-			<li><strong><?php echo $this->translate('default_index_index_bandwidth_up')?>:</strong> <span id="bandwidthup">0</span> <span id="networkgraphup" class="span-13 last" style="float:right; text-align: right;"></span></li>
-		</ul>
-	</div>
-	<!-- <div><strong><?php echo $this->translate('default_index_index_bandwidth_up')?>:</strong> <span id="bandwidthup">0</span> <span id="networkgraphup" class="span-13 last" style="float:right; text-align: right;"></span></div>
-	<div><strong><?php echo $this->translate('default_index_index_bandwidth_down')?>:</strong> <span id="bandwidthdown">0</span> <span id="networkgraphdown" class="span-13 last" style="float:right; text-align: right;"></span></div> -->
-</div>
 <div id="top_nodes">
-	<h3 class="buttons"><?php echo $this->translate('default_index_index_topdevices'); ?></h3>
+	<h2><?php echo $this->translate('default_index_index_topdevices'); ?></h2>
 	<table class="listing">
 		<tr>
 			<th><?php echo $this->translate('default_index_index_name'); ?></th>
