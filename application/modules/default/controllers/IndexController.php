@@ -54,6 +54,12 @@ class Default_IndexController extends Unwired_Controller_Action
         if (Zend_Auth::getInstance()->hasIdentity()) {
             $netstatsService = new Default_Service_NetworkStats();
             $this->view->networkStats = $netstatsService->getStatistics();
+
+            $nodeService = new Nodes_Service_Node();
+
+            $topNodes = $nodeService->getTopNodesByTraffic(10);
+
+            $this->view->topNodes = $topNodes;
         }
     }
 

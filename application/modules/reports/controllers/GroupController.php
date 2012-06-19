@@ -539,12 +539,23 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 
 	protected function _exportReportData(Reports_Model_Group $reportGroup, Reports_Model_Items $reportData)
 	{
+	    $filename = str_replace(' ', '_', $reportGroup->getTitle()) . '_' . str_replace(array(' ', '-'), '_', $reportData->getDateAdded())
+			        . '.' . $this->_helper->contextSwitch->getCurrentContext();
+
 		if ($this->_helper->contextSwitch->getCurrentContext() == 'csv'
 		    || $this->_helper->contextSwitch->getCurrentContext() == 'pdf') {
 			$this->getResponse()->setHeader('Content-disposition',
 					"attachment; filename=" . str_replace(' ', '_', $reportGroup->getTitle()) . '_' . str_replace(array(' ', '-'), '_', $reportData->getDateAdded())
 			        . '_' . rand(1,10000) . '.' . $this->_helper->contextSwitch->getCurrentContext(),
 					true);
+		}
+
+		if (file_exists(PUBLIC_PATH . '/data/reports/' . $filename)) {
+		    $this->_helper->viewRenderer->setNoRender();
+		    $this->_helper->layout->disableLayout();
+
+		    echo file_get_contents(PUBLIC_PATH . '/data/reports/' . $filename);
+		    return;
 		}
 
 		if ($this->_helper->contextSwitch->getCurrentContext() == 'pdf') {
@@ -564,7 +575,7 @@ class Reports_GroupController extends Unwired_Controller_Crud {
             $dompdf->load_html($html);
             $dompdf->set_base_path(PUBLIC_PATH);
             $dompdf->render();
-            //$dompdf->stream("sample_report.pdf");
+            $dompdf->stream(PUBLIC_PATH . '/data/reports/' . $filename);
             echo $dompdf->output();
 		}
 	}

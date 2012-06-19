@@ -210,7 +210,21 @@
 		        }
 
 				infowindow.setContent('<div id="infowindowcontainer">' +
+				<?php if (isset($this->currentUser)) :?>
+					<?php
+					    $acl = Zend_Registry::get('acl');
+					    $action = 'view';
+					    if ($acl->isAllowed($this->currentUser, 'nodes_node', 'edit')) :
+					        $action = 'edit';
+					    endif;
+					   ?>
+					'<h5><a href="<?php echo $this->url(array('module' => 'nodes',
+					                                          'controller' => 'index',
+					                                          'action' => $action),
+					                                    'default', true);?>/id/' + data.node_id + '">' + marker.getTitle() +'</a></h5>' +
+				<?php else:?>
 									  '<h5>' + marker.getTitle() +'</h5>' +
+				<?php endif;?>
 									  '<div>AP type: ' + ((data.status_extended.aptype) ? data.status_extended.aptype : "<?php echo $this->translate('default_index_index_ap_unknown')?>") + '</div>' +
 									  '<div>MAC: ' + data.mac + '</div>' +
 									  '<div>Address: ' + data.location.address + ', ' + data.location.city +', ' + data.location.country + '</div>' +
@@ -244,8 +258,11 @@
 		loadNetworkStatistics();
 		<?php endif; ?>
 
-		$('div.nodes p ul li').live('click', function(){
+		$('div.nodes p ul li, td.devicename a').live('click', function(){
 			var node = $(this).data('node');
+			if (!node) {
+				node = { name : $(this).text() };
+			}
 
 			$.each(markers, function(idx, marker){
 				if (marker.title == node.name) {
@@ -256,6 +273,7 @@
 						map.setZoom(map.getZoom()+1);
 					<?php endif; ?>
 					google.maps.event.trigger(marker, 'click');
+					$('html,body').animate({scrollTop: $('#nodemap').offset().top},'slow');
 					return false;
 				}
 			});
@@ -336,8 +354,8 @@
 	<table class="listing">
 		<thead>
 			<tr>
-				<th><?php echo $this->translate('nodes_index_index_name');?></th>
-				<th><?php echo $this->translate('nodes_index_index_mac');?></th>
+				<th><?php echo $this->translate('default_index_index_name');?></th>
+				<th><?php echo $this->translate('default_index_index_mac');?></th>
 				<th></th>
 			</tr>
 			<tr>
@@ -386,5 +404,26 @@
 	</div>
 	<!-- <div><strong><?php echo $this->translate('default_index_index_bandwidth_up')?>:</strong> <span id="bandwidthup">0</span> <span id="networkgraphup" class="span-13 last" style="float:right; text-align: right;"></span></div>
 	<div><strong><?php echo $this->translate('default_index_index_bandwidth_down')?>:</strong> <span id="bandwidthdown">0</span> <span id="networkgraphdown" class="span-13 last" style="float:right; text-align: right;"></span></div> -->
+</div>
+<div id="top_nodes">
+	<h3 class="buttons"><?php echo $this->translate('default_index_index_topdevices'); ?></h3>
+	<table class="listing">
+		<tr>
+			<th><?php echo $this->translate('default_index_index_name'); ?></th>
+			<th><?php echo $this->translate('default_index_index_device_up'); ?></th>
+			<th><?php echo $this->translate('default_index_index_device_down'); ?></th>
+			<th><?php echo $this->translate('default_index_index_device_total'); ?></th>
+		</tr>
+		<?php foreach ($this->topNodes as $nodeData) :?>
+		<tr>
+			<td class="devicename"><a href="javascript:;"><?php
+			    echo !$nodeData['node'] ? '#' . $nodeData['node_id'] : $nodeData['node']->getName();
+			?></a></td>
+			<td class="right"><?php echo round($nodeData['up']/1048576, 2); ?> MB</td>
+			<td class="right"><?php echo round($nodeData['down']/1048576, 2); ?> MB</td>
+			<td class="right"><?php echo round($nodeData['total']/1048576, 2); ?> MB</td>
+		</tr>
+		<?php endforeach; ?>
+	</table>
 </div>
 <?php endif; ?>

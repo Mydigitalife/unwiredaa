@@ -21,7 +21,7 @@ class Groups_Model_DbTable_Group extends Zend_Db_Table_Abstract {
 	 */
 	protected $_name = 'group';
 
-	protected $_dependentTables = array('Users_Model_DbTable_AdminGroup', 'Report_Model_DbTable_Node');
+	protected $_dependentTables = array('Users_Model_DbTable_AdminGroup', 'Reports_Model_DbTable_Node');
 
 	protected $_referenceMap = array(
             'Role'  => array(

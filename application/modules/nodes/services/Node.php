@@ -20,7 +20,19 @@ class Nodes_Service_Node
 	{
 		$mac = $node->getMac();
 
-		if (empty($mac) || $node->getStatus() == 'planning') {
+		if (!empty($mac)) {
+		    $path = $this->getDestPath() . '/' . str_replace(':','',$node->getMac()) . '.uci.sh';
+		}
+
+		if (empty($mac) || $node->getStatus() !== 'enabled') {
+
+		    if (!empty($path)) {
+		        @unlink($path);
+
+		        /**
+		         * @todo Remove the .tgz file also
+		         */
+		    }
 			return true;
 		}
 
@@ -29,8 +41,6 @@ class Nodes_Service_Node
 
 		$view->node = $node;
 		$uci = $view->render('index/uci.template.sh');
-
-		$path = $this->getDestPath() . '/' . str_replace(':','',$node->getMac()) . '.uci.sh';
 
 		/**
 		 * @todo Path check
@@ -88,5 +98,40 @@ class Nodes_Service_Node
 		}
 
 		return true;
+	}
+
+	public function getTopNodesByTraffic($limit = 10)
+	{
+        /*SELECT node_id, SUM(up), SUM(down), SUM(up)+SUM(down) as total FROM
+         (SELECT MAX(bytes_up)-MIN(bytes_up) as up, MAX(bytes_down)-MIN(bytes_down) as down, node_id
+         FROM acct_garden_interim
+         WHERE time >= DATE_SUB(NOW(), INTERVAl 2 MINUTE) AND NOT ISNULL(node_id)
+         GROUP BY session_id) as i
+         GROUP BY node_id
+         ORDER BY total DESC
+         LIMIT 10*/
+
+	    $sql = <<<EOS
+		 SELECT node_id, SUM(up) as "up", SUM(down) as "down", SUM(up)+SUM(down) as total FROM
+         (SELECT MAX(bytes_up)-MIN(bytes_up) as up, MAX(bytes_down)-MIN(bytes_down) as down, node_id
+         FROM acct_garden_interim
+         WHERE time >= DATE_SUB(NOW(), INTERVAl 5 DAY) AND NOT ISNULL(node_id)
+         GROUP BY session_id) as i
+         GROUP BY node_id
+         ORDER BY total DESC
+         LIMIT $limit
+EOS;
+
+        $dbAdapter = Zend_Db_Table::getDefaultAdapter();
+
+        $result = $dbAdapter->fetchAll($sql);
+
+        $nodeMapper = new Nodes_Model_Mapper_Node();
+
+        foreach ($result as $idx => $nodeData) {
+            $result[$idx]['node'] = $nodeMapper->find($nodeData['node_id']);
+        }
+
+        return $result;
 	}
 }
