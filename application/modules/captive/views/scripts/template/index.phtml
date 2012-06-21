@@ -37,11 +37,15 @@
 			<td><?php echo $template->getName(); ?></td>
 			<td class="tools">
 				<?php
-					$actions = array(/*'view',*/ 'edit', 'delete');
+					$actions = array(/*'view',*/ 'add', 'edit', 'delete');
 
 					foreach ($actions as $action) :
 						if (!$acl->isAllowed($this->currentUser, $template->getResourceId(), $action)) {
 							continue;
+						}
+
+						if ($action == 'add') {
+						    $action = 'copy';
 						}
 
 						?>

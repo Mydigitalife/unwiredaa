@@ -10,8 +10,39 @@
 * license available at http://www.unwired.at/license.html
 */
 
-class Captive_Service_Files
+class Captive_Service_Files implements Unwired_Event_Handler_Interface
 {
+    /* (non-PHPdoc)
+	 * @see Unwired_Event_Handler_Interface::handle()
+	 */
+	public function handle(Unwired_Event_Message $message)
+	{
+
+		$data = $message->getData();
+
+		if (!$data->entity instanceof Captive_Model_Template && !$data->entity instanceof Captive_Model_SplashPage) {
+		    return;
+		}
+
+		if ($message->getMessageId() !== 'delete') {
+		    return;
+		}
+
+		if ($data->entity instanceof Captive_Model_Template) {
+		    $localPath = $this->getTemplatePath($data->entity->getTemplateId());
+		} else {
+		    $localPath = $this->getSplashPagePath($data->entity->getSplashId());
+		}
+
+		$localPath = str_ireplace('/upload', '', $localPath);
+
+		$this->deleteRecursive($localPath);
+
+		/**
+		 * @todo Do remote delete
+		 */
+	}
+
     public function getSplashPageFiles($splash)
     {
         return $this->_getFiles($splash, 'splash');
@@ -138,6 +169,85 @@ class Captive_Service_Files
                     return false;
                 }
             }
+        }
+
+        return true;
+    }
+
+    public function copyContentDirectory(Unwired_Model_Generic $source, Unwired_Model_Generic $target)
+    {
+        if ($source instanceof Captive_Model_Template) {
+            $localSourcePath = $this->_getPath(false) . 'templates/' . $source->getTemplateId();
+            $localTargetPath = $this->_getPath(false) . 'templates/' . $target->getTemplateId();
+            $localTargetId = $target->getTemplateId();
+        } else if ($source instanceof Captive_Model_SplashPage) {
+            $localSourcePath = $this->_getPath(false) . 'splashpages/' . $source->getSplashId();
+            $localTargetPath = $this->_getPath(false) . 'splashpages/' . $target->getSplashId();
+            $localTargetId = $target->getSplashId();
+        } else {
+            throw new Unwired_Exception('Invalid source object provided for copy operation', 500);
+        }
+
+
+        if (!$this->_copyRecursive($localSourcePath, $localTargetPath)) {
+            $this->deleteRecursive($localTargetPath);
+            return false;
+        }
+
+        if (strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN' &&
+            !$this->copyToSplashpages(array('destination' => str_ireplace('/' . $localTargetId, '', $localTargetPath),
+                                            'name' => $localTargetId)))
+        {
+            $this->deleteRecursive($localTargetPath);
+            return false;
+        }
+
+        return true;
+    }
+
+    public function deleteRecursive($path)
+    {
+        foreach(glob($path . '/*') as $file) {
+            if(is_dir($file))
+                $this->deleteRecursive($file);
+            else
+                @unlink($file);
+        }
+
+        @rmdir($path);
+
+        return true;
+    }
+
+    protected function _copyRecursive($source, $target)
+    {
+        $sourceDir = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($source),
+                                                   RecursiveIteratorIterator::SELF_FIRST);
+
+        try {
+            if (!file_exists($source)) {
+                return false;
+            }
+
+            if (!file_exists($target) && !mkdir($target, null, true)) {
+                return false;
+            }
+
+            foreach ($sourceDir as $node) {
+
+                $filename = $node->__toString();
+                $targetFilename = str_ireplace($source, $target, $filename);
+                if ($node->isDir()) {
+                    if (!file_exists($targetFilename)) {
+                        @mkdir($targetFilename, null, true);
+                    }
+                    continue;
+                }
+
+                copy($filename, $targetFilename);
+            }
+        } catch (Exception $e) {
+            return false;
         }
 
         return true;
