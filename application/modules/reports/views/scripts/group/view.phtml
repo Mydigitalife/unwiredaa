@@ -1,5 +1,7 @@
 <script type="text/javascript" src="https://www.google.com/jsapi"></script>
 <?php if (!isset($this->pdf)) :?>
+<?php echo $this->render('group/report-email-form.phtml'); ?>
+
 <a href="<?php echo $this->url(array('module' => 'reports'), null, true); ?>"><?php echo $this->translate('report_index_heading'); ?></a> &raquo;
 <a href="<?php echo $this->url(array('module' => 'reports',
                                      'controller' => 'group',
@@ -33,6 +35,11 @@
 	<a class="button small blue" href="<?php echo $this->url(array_merge($request->getParams(), array('format' => 'pdf')), 'default', false);?>"><span><?php
 	    echo $this->translate('report_group_button_pdf');
 	?></span></a>
+
+	<a class="button small blue sendemail" href="<?php echo $this->url(array_merge($request->getParams(), array('email' => '1')), 'default', false);?>"><span><?php
+	    echo $this->translate('report_group_button_email_send');
+	?></span></a>
+
 	<a href="javascript:window.print();" class="button small blue right">
 		<span><?php echo $this->translate('default_print_document'); ?></span>
 	</a>

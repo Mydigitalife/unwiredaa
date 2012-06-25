@@ -535,19 +535,86 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 		$this->view->data = $report->getData(true);
 //Zend_Debug::dump($this->view->data); die();
 		$this->_exportReportData($parent, $report);
+
+		if (!$this->getRequest()->getParam('email', false)) {
+            return;
+		}
+
+		$recipients = $this->getRequest()->getParam('recipients', array());
+		if (empty($recipients)) {
+		    return;
+		}
+
+		$parent->setRecepients($recipients);
+
+        if ($this->_emailReport($parent, $report)) {
+            $this->view->uiMessage('reports_group_view_email_send_success', 'success');
+        } else {
+            $this->view->uiMessage('reports_group_view_email_send_failed', 'error');
+        }
+
+	}
+
+	protected function _generateReportFilename(Reports_Model_Group $reportGroup, Reports_Model_Items $reportData, $extension = 'csv')
+	{
+	    return str_replace(' ', '_', $reportGroup->getTitle()) . '_' . str_replace(array(' ', '-', ':'), '_', $reportData->getDateAdded())
+			        . '.' . $extension;
+	}
+
+	protected function _generatePdf(Reports_Model_CodeTemplate $template,
+	                                Reports_Model_Group $reportGroup,
+	                                Reports_Model_Items $report,
+	                                $filename = null,
+	                                $output = false)
+	{
+        $this->view->parent_parent = $template;
+        $this->view->parent = $reportGroup;
+        $this->view->report = $report;
+        $this->view->data = $report->getData(true);
+
+        $html = $this->view->render('group/view.pdf.phtml');
+
+	    if (!class_exists('DOMPDF')) {
+            require_once('dompdf/dompdf_config.inc.php');
+            $autoloader = Zend_Loader_Autoloader::getInstance();
+            $autoloader->pushAutoloader('DOMPDF_autoload', '');
+	    }
+
+        $dompdf = new DOMPDF();
+        $dompdf->set_paper("a4","portrait");
+        $dompdf->load_html($html);
+        $dompdf->set_base_path(PUBLIC_PATH);
+        $dompdf->render();
+
+        $pdfContents = $dompdf->output();
+        if ($filename) {
+            //$dompdf->stream(PUBLIC_PATH . '/data/reports/' . $filename);
+            file_put_contents(PUBLIC_PATH . '/data/reports/' . $filename, $pdfContents);
+        }
+
+        if ($output) {
+            echo $pdfContents;
+        }
+
+        return $dompdf;
 	}
 
 	protected function _exportReportData(Reports_Model_Group $reportGroup, Reports_Model_Items $reportData)
 	{
-	    $filename = str_replace(' ', '_', $reportGroup->getTitle()) . '_' . str_replace(array(' ', '-'), '_', $reportData->getDateAdded())
-			        . '.' . $this->_helper->contextSwitch->getCurrentContext();
+	    $filename = null;
 
 		if ($this->_helper->contextSwitch->getCurrentContext() == 'csv'
 		    || $this->_helper->contextSwitch->getCurrentContext() == 'pdf') {
+
+		    $filename = $this->_generateReportFilename($reportGroup, $reportData, $this->_helper->contextSwitch->getCurrentContext());
+
 			$this->getResponse()->setHeader('Content-disposition',
-					"attachment; filename=" . str_replace(' ', '_', $reportGroup->getTitle()) . '_' . str_replace(array(' ', '-'), '_', $reportData->getDateAdded())
-			        . '_' . rand(1,10000) . '.' . $this->_helper->contextSwitch->getCurrentContext(),
+					"attachment; filename=" . $filename,
 					true);
+		}
+
+		if (!$filename) {
+		    return;
 		}
 
 		if (file_exists(PUBLIC_PATH . '/data/reports/' . $filename)) {
@@ -562,6 +629,7 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 		    $this->_helper->viewRenderer->setNoRender();
 		    $this->_helper->layout->disableLayout();
 
+			/*
 		    $html = $this->view->render('group/view.pdf.phtml');
 
 		    if (!class_exists('DOMPDF')) {
@@ -577,6 +645,9 @@ class Reports_GroupController extends Unwired_Controller_Crud {
             $dompdf->render();
             $dompdf->stream(PUBLIC_PATH . '/data/reports/' . $filename);
             echo $dompdf->output();
+            */
+
+		    $this->_generatePdf($this->view->parent_parent, $reportGroup, $reportData, $filename, true);
 		}
 	}
 
@@ -621,21 +692,46 @@ class Reports_GroupController extends Unwired_Controller_Crud {
             $view->report = $result;
             $view->reportGroup = $report;
 
-            $csv = $view->render('group/view.csv.phtml');
-
-            if (!$csv) {
-                return false;
-            }
-
             $mailer = new Zend_Mail();
 
-            $at = new Zend_Mime_Part($csv);
-            $at->type        = 'text/csv';
-            $at->disposition = Zend_Mime::DISPOSITION_INLINE;
-            $at->encoding    = Zend_Mime::ENCODING_BASE64;
-            $at->filename    = str_replace(' ', '_', 'Reports_' . $report->getTitle() . '_' . $result->getDateAdded() . '.csv');
+            $filenameCsv = $this->_generateReportFilename($report, $result, 'csv');
 
-            $mailer->addAttachment($at);
+            $csv = null;
+
+            if (!file_exists(PUBLIC_PATH . '/data/reports/' . $filenameCsv)) {
+                $csv = $view->render('group/view.csv.phtml');
+            } else {
+                $csv = @file_get_contents(PUBLIC_PATH . '/data/reports/' . $filenameCsv);
+            }
+
+            if (!empty($csv)) {
+                $at = new Zend_Mime_Part($csv);
+                $at->type        = 'text/csv';
+                $at->disposition = Zend_Mime::DISPOSITION_INLINE;
+                $at->encoding    = Zend_Mime::ENCODING_BASE64;
+                $at->filename    = $filenameCsv;
+
+                $mailer->addAttachment($at);
+            }
+
+            $filenamePdf = $this->_generateReportFilename($report, $result, 'pdf');
+
+            if (!file_exists(PUBLIC_PATH . '/data/reports/' . $filenamePdf)) {
+                $dompdf = $this->_generatePdf($this->view->parent_parent, $report, $result, $filenamePdf, false);
+            }
+
+            $pdf = @file_get_contents(PUBLIC_PATH . '/data/reports/' . $filenamePdf);
+
+            if (!empty($pdf)) {
+                $pdfAttachment = new Zend_Mime_Part($pdf);
+                $pdfAttachment->type        = 'application/pdf';
+                $pdfAttachment->disposition = Zend_Mime::DISPOSITION_INLINE;
+                $pdfAttachment->encoding    = Zend_Mime::ENCODING_BASE64;
+                $pdfAttachment->filename    = $filenamePdf;
+
+                $mailer->addAttachment($pdfAttachment);
+            }
+
 
             $mailer->setSubject($view->systemName . ' Report: ' . $report->getTitle() . ' ' . $result->getDateAdded());
 

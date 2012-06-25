@@ -58,6 +58,7 @@ class Reports_Form_Group extends Unwired_Form
 						'day' => 'day',
 						'week' => 'week',
 						'month' => 'month',
+		                'quarter' => 'quarter',
 						'year' => 'year',
 				)
 		));

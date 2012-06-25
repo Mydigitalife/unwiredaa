@@ -18,6 +18,8 @@
 
 	$this->headScript()->captureStart();
 
+	$globalSettings = Zend_Registry::get('reports.global');
+	$globalTimeframeMax = isset($globalSettings['timeframe_max']) ? (int) $globalSettings['timeframe_max'] : null;
 ?>
 var adminGroups = <?php echo Zend_Json::encode($this->currentUser->getGroupsAssigned());?>;
 var groupsAssigned = <?php echo Zend_Json::encode($groupsAssigned);?>;
@@ -28,6 +30,11 @@ var timeframeLiveMax = <?php
     $timeFrameLiveMax = $this->entity->getCodeTemplate()->getTimeframeLiveMax() ?
                                     $this->entity->getCodeTemplate()->getTimeframeLiveMax() :
                                     527040;
+
+    if ($globalTimeframeMax && $timeFrameLiveMax < $globalTimeframeMax) {
+        $timeFrameLiveMax = $globalTimeframeMax;
+    }
+
     echo $timeFrameLiveMax;
     ?>;
 
@@ -262,7 +269,23 @@ $(function () {
 	  $('#timeframe').change();
 
 	  $('#email').before('<input type="text" id="email_search" class="span-5" />');
-	  $('#email_search').autocomplete({
+	  $('#email_search').keydown(function(e){
+	  			if (e.which != 13) {
+	  				return;
+	  			}
+
+
+				if (!$(this).val().length || !email_check($(this).val())) {
+					alert("<?php echo $this->translate('reports_group_edit_email_invalid'); ?>");
+					return false;
+				}
+
+				$('#email').val(($('#email').val() + ',' + $(this).val()).trim().replace(/^,+/, '').replace(/,+$/,''));
+				$(this).val('');
+				e.preventDefault();
+				return false;
+
+	  		}).autocomplete({
 			source: "<?php echo $this->url(array('module' => 'users',
 			                                     'controller' => 'admin',
 			                                     'action' => 'autocomplete',

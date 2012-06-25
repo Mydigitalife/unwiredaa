@@ -44,7 +44,7 @@ class Default_IndexController extends Unwired_Controller_Action
 
             $nodes = $mapper->fetchAll();
 
-            $this->_getCache()->save($nodes, 'device_map_data', array('node'), 3600);
+            $this->_getCache()->save($nodes, 'device_map_data', array('node'), 60);
         }
 
         $this->view->currentUser = Zend_Auth::getInstance()->getIdentity();
