@@ -31,11 +31,23 @@ var timeframeLiveMax = <?php
                                     $this->entity->getCodeTemplate()->getTimeframeLiveMax() :
                                     527040;
 
-    if ($globalTimeframeMax && $timeFrameLiveMax < $globalTimeframeMax) {
+    if ($globalTimeframeMax && $timeFrameLiveMax > $globalTimeframeMax) {
         $timeFrameLiveMax = $globalTimeframeMax;
     }
 
     echo $timeFrameLiveMax;
+    ?>;
+
+var timeframeIntervalMax = <?php
+    $timeFrameIntervalMax = $this->entity->getCodeTemplate()->getTimeframeIntervalMax() ?
+                                    $this->entity->getCodeTemplate()->getTimeframeIntervalMax() :
+                                    527040;
+
+    if ($globalTimeframeMax && $timeFrameIntervalMax > $globalTimeframeMax) {
+        $timeFrameIntervalMax = $globalTimeframeMax;
+    }
+
+    echo $timeFrameIntervalMax;
     ?>;
 
 $(function () {
@@ -188,8 +200,10 @@ $(function () {
 	  if ($('#report_type').length) {
     	  $('#report_type').change(function(){
     	  	$('#timeframe option').removeAttr('disabled');
+    	  	$('#report_interval option').removeAttr('disabled');
     	  	if ($(this).val() == 'manual') {
     	  		$(this).parent().next().hide();
+				$('#timeframe').parent().show();
       			  if (timeframeLiveMax < 10080) {
             	  	$('#timeframe option:gt(2)').attr('disabled','disabled');
             	  } else if (timeframeLiveMax < 44640) {
@@ -197,8 +211,30 @@ $(function () {
             	  } else if (timeframeLiveMax < 527040) {
             	  	$('#timeframe option:gt(6)').attr('disabled','disabled');
             	  }
+  				$('#timeframe').change();
     	  	} else {
+    	  		  $('#timeframe').parent().hide();
+    	  		  $('#date_from').parent().hide();
+    	  		  $('#date_to').parent().hide();
+      			  if (timeframeIntervalMax < 10080) {
+            	  	$('#timeframe option:gt(2)').attr('disabled','disabled');
+            	  	$('#report_interval option:gt(0)').attr('disabled','disabled');
+            	  } else if (timeframeIntervalMax < 44640) {
+            	  	$('#timeframe option:gt(4)').attr('disabled','disabled');
+            	  	$('#report_interval option:gt(1)').attr('disabled','disabled');
+            	  } else if (timeframeIntervalMax < 133920) {
+            	  	$('#timeframe option:gt(6)').attr('disabled','disabled');
+            	  	$('#report_interval option:gt(2)').attr('disabled','disabled');
+            	  } else if (timeframeIntervalMax < 527040) {
+            	  	$('#report_interval option:gt(3)').attr('disabled','disabled');
+            	  	$('#timeframe option:gt(6)').attr('disabled','disabled');
+            	  }
+            	$('#report_interval').change();
     	  		$(this).parent().next().show();
+    	  	}
+
+    	  	if ($('#timeframe option:selected').is(':disabled')) {
+			  	$('#timeframe').val($('#timeframe option:not(:disabled):last').val());
     	  	}
     	  });
 
@@ -212,6 +248,55 @@ $(function () {
     	  	$('#timeframe option:gt(6)').attr('disabled','disabled');
     	  }
 	  }
+
+	  $('#report_interval').change(function(){
+		switch ($(this).val()) {
+			case 'day':
+				$('#timeframe').val('yesterday');
+				break;
+			case 'week':
+				$('#timeframe').val('lastweek');
+				break;
+			case 'month':
+				$('#timeframe').val('lastmonth');
+				break;
+			case 'quarter':
+				$('#timeframe').val('manual');
+				var now = new Date();
+				var to = new Date();
+
+				now.setHours(0);
+    			now.setMinutes(0);
+    			now.setSeconds(0);
+				now.setDate(1);
+
+				to.setHours(0);
+    			to.setMinutes(0);
+    			to.setSeconds(0);
+				to.setDate(1);
+
+				if (now.getMonth() <= 2) {
+					now.setMonth(0);
+					to.setMonth(3);
+				} else if (now.getMonth() <= 5) {
+					now.setMonth(3);
+					to.setMonth(6);
+				} else if (now.getMonth() <= 8) {
+					now.setMonth(6);
+					to.setMonth(9);
+				} else {
+					now.setMonth(9);
+					to.setMonth(1);
+					to.setFullYear(to.getFullYear()+1);
+				}
+        	  	$('#date_from').datetimepicker('setDate', now);
+        	  	$('#date_to').datetimepicker('setDate', to);
+				break;
+			case 'year':
+				$('#timeframe').val('lastyear');
+				break;
+		}
+	  });
 
 	  $('#group_depth_max').change(function(){
 
@@ -312,6 +397,12 @@ function filterInnerInterval()
 	if ($('#report_type').val() == 'manual' && timeDiff > timeframeLiveMax) {
 		alert('<?php echo $this->translate('reports_group_edit_timeframe_overlimit',
 		                                   round($timeFrameLiveMax / 24 / 60)); ?>');
+		return true;
+	}
+
+	if ($('#report_type').val() == 'interval' && timeDiff > timeframeIntervalMax) {
+		alert('<?php echo $this->translate('reports_group_edit_timeframe_overlimit_interval',
+		                                   round($timeFrameIntervalMax / 24 / 60)); ?>');
 		return true;
 	}
 

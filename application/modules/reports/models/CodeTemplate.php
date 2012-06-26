@@ -43,6 +43,8 @@ class Reports_Model_CodeTemplate extends Unwired_Model_Generic implements Zend_A
 
 	protected $_timeframeLiveMax = null;
 
+	protected $_timeframeIntervalMax = null;
+
 	protected $_formatDefault = 'NotUserDefineable';
 
 	protected $_options = array();
@@ -331,6 +333,28 @@ class Reports_Model_CodeTemplate extends Unwired_Model_Generic implements Zend_A
         }
 
         $this->_timeframeLiveMax = $timeframeLiveMax;
+
+        return $this;
+    }
+
+	/**
+     * @return the $timeframeIntervalMax
+     */
+    public function getTimeframeIntervalMax()
+    {
+        return $this->_timeframeIntervalMax;
+    }
+
+	/**
+     * @param field_type $timeframeIntervalMax
+     */
+    public function setTimeframeIntervalMax($timeframeIntervalMax = null)
+    {
+        if (null !== $timeframeIntervalMax) {
+            $timeframeIntervalMax = (int) $timeframeIntervalMax;
+        }
+
+        $this->_timeframeIntervalMax = $timeframeIntervalMax;
 
         return $this;
     }
