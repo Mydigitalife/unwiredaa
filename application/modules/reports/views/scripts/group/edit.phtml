@@ -303,7 +303,7 @@ $(function () {
 	  	var currentDepth = parseInt($(this).val());
 		$('#group_depth_chart_max option').removeAttr('disabled');
 
-		if (currentDepth <= 0) {
+		if (currentDepth < 0) {
     	  	var filterIndex = $(this).find('option:selected').prevAll().length;
     	  	$('#group_depth_chart_max option').filter(':lt(' + filterIndex + ')').attr('disabled','disabled');
 		} else {
