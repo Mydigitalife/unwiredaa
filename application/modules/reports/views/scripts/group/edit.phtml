@@ -309,7 +309,7 @@ $(function () {
 		} else {
 			$('#group_depth_chart_max option').each(function(){
 				var optValue = parseInt($(this).val());
-				if (optValue <= 0 || optValue > currentDepth) {
+				if (optValue < 0 || optValue > currentDepth) {
 					$(this).attr('disabled','disabled');
 				}
 			});
