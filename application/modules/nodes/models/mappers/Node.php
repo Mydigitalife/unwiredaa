@@ -51,12 +51,12 @@ class Nodes_Model_Mapper_Node extends Unwired_Model_Mapper
 		return $this->_statusTable;
 	}
 
-	public function find($id)
+	public function find($id, $includeDeleted = false)
 	{
 		$result = parent::find($id);
 
-		if ($result && $result->isDeleted()) {
-			return null;
+	    if (!$includeDeleted && $result && $result->isDeleted()) {
+		    return null;
 		}
 
 		return $result;
@@ -68,13 +68,15 @@ class Nodes_Model_Mapper_Node extends Unwired_Model_Mapper
      * @param Zend_Db_Select|array $conditions
      * @param int|null $limit
      */
-    public function findBy($conditions, $limit = null)
+    public function findBy($conditions, $limit = null, $includeDeleted = false)
     {
-    	if ($conditions instanceof Zend_Db_Select) {
-    		$conditions->where('deleted = ?', 0);
-    	} elseif (is_array($conditions)) {
-    		$conditions['deleted'] = 0;
-    	}
+        if (!$includeDeleted) {
+        	if ($conditions instanceof Zend_Db_Select) {
+        		$conditions->where('deleted = ?', 0);
+        	} elseif (is_array($conditions)) {
+        		$conditions['deleted'] = 0;
+        	}
+        }
 
     	return parent::findBy($conditions, $limit);
     }
@@ -84,11 +86,15 @@ class Nodes_Model_Mapper_Node extends Unwired_Model_Mapper
      * @param string $order
      * @return array
      */
-    public function fetchAll($order = null)
+    public function fetchAll($order = null, $includeDeleted = false)
     {
-        $resultSet = $this->getDbTable()->fetchAll('deleted = 0', $order);
+        if (!$includeDeleted) {
+            $resultSet = $this->getDbTable()->fetchAll('deleted = 0', $order);
 
-        return $this->rowsetToModels($resultSet);
+            return $this->rowsetToModels($resultSet);
+        }
+
+        return parent::fetchAll($order);
     }
 
 

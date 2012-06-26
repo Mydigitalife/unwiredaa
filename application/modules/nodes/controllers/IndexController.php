@@ -204,4 +204,72 @@ class Nodes_IndexController extends Unwired_Rest_Controller
 		$this->_delete();
 		// @todo node deletion
 	}
+
+	public function undeleteAction()
+	{
+		$mapper = $this->_getDefaultMapper();
+
+		$id = (int) $this->getRequest()->getParam('id');
+
+		if (!$id) {
+			$this->view->uiMessage('entity_not_found', 'error');
+			$this->_gotoIndex();
+			return false;
+		}
+
+		$entity = $mapper->find($id, true);
+
+		if (!$entity) {
+			$this->view->uiMessage('entity_not_found', 'error');
+			$this->_gotoIndex();
+			return false;
+		}
+
+		if (!$this->_acl->isAllowed($this->_currentUser, $entity, 'edit')) {
+			$this->view->uiMessage('access_not_allowed_edit', 'error');
+			$this->_gotoIndex();
+			return false;
+		}
+
+		if (!$entity->isDeleted()) {
+			$this->view->uiMessage('entity_not_found', 'error');
+			$this->_gotoIndex();
+			return false;
+		}
+
+		$entity->setDeleted(0);
+
+		$this->_add($mapper, $entity, null);
+
+		$this->_helper->viewRenderer->setScriptAction('edit');
+	}
+
+	public function checkMacAction()
+	{
+	    $this->_helper->viewRenderer->setNoRender(true);
+	    $this->_helper->layout->disableLayout();
+
+
+	    $mac = $this->getRequest()->getParam('mac', null);
+	    if (!$mac) {
+	        echo $this->view->json(array('node' => null));
+	        return;
+	    }
+
+	    $mac = str_replace(':', '', $mac);
+
+	    $mapperNodes = new Nodes_Model_Mapper_Node();
+	    $result = $mapperNodes->findBy(array('mac' => $mac), 1, true);
+
+	    $response = array('node' => null);
+	    if (!empty($result)) {
+	        $response['node'] = $result[0]->toArray();
+	    }
+
+	    if ($response['node'] && !$this->_acl->isAllowed($this->_currentUser, $result[0], 'edit')) {
+	        $response['node']->setDeleted(0);
+	    }
+
+	    echo $this->view->json($response);
+	}
 }
