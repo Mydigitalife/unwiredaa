@@ -457,7 +457,10 @@ span.button.blue.small:hover button, span.button.blue.small:hover a, span.button
 
 table.listing td.bold {font-weight: bold;}
 table.listing td.italic {font-style: italic;}
-table.listing td.right {float: none !important; text-align: right; }
+table.listing th.right, table.listing td.right {float: none !important; text-align: right; }
+table.listing td.percentage {text-align: right; }
+table.listing td.percentage:after {content:"%";}
+.display_none {display:none; background:red; }
 
 /* css for timepicker */
 .ui-timepicker-div .ui-widget-header { margin-bottom: 8px; }
