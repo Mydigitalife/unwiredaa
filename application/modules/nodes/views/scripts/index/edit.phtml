@@ -133,6 +133,66 @@ $(function () {
 		return false;
     }
 	<?php if (!isset($this->isViewOnly)) :?>
+        <?php if (!$this->entity->getNodeId()) :?>
+	$('#mac').blur(function() {
+
+		if (!$(this).val().length) {
+			return;
+		}
+
+		$.ajax({
+			url: '<?php echo $this->url(array('module' => 'nodes',
+			                                  'controller' => 'index',
+			                                  'action' => 'check-mac'),
+			                            'default',
+			                            true)?>/mac/' + $(this).val(),
+			dataType: 'json',
+			success: function (data) {
+				$('#mac').parent().find('ul.errors').remove();
+
+				if (!data.node) {
+					return;
+				}
+
+				$('#mac').after('<ul class="errors"><li><?php echo $this->translate('nodes_index_edit_mac_exists');?></li></ul>');
+
+				if (!data.node.deleted) {
+					return;
+				}
+
+				$('body').append('<div id="restore_dialog"></div>');
+
+				$('#restore_dialog').append('<p><?php echo $this->translate('nodes_index_edit_mac_exists_deleted');?></p>');
+				$('#restore_dialog').append('<p><label><?php echo $this->translate('nodes_index_edit_form_name');?> :</label> <strong>' + data.node.name + '</strong></p>');
+				$('#restore_dialog').append('<p><label><?php echo $this->translate('nodes_index_edit_form_mac');?> :</label> <strong>' + data.node.mac + '</strong></p>');
+
+				$('#restore_dialog').dialog({
+					modal: true,
+					title: '<?php echo $this->translate('nodes_index_edit_form_restore_device'); ?>',
+					width: 350,
+					buttons: {
+						'<?php echo $this->translate('nodes_index_edit_form_button_restore'); ?>': function(){
+							var url = '<?php echo $this->url(array('module' => 'nodes',
+							                                       'controller' => 'index',
+							                                       'action' => 'undelete'),
+							                                 'default',
+							                                 true); ?>/id/' + data.node.node_id;
+							window.location.href = url;
+							$(this).dialog('close');
+							$(this).dialog('destroy');
+							$('#restore_dialog').remove();
+						},
+						'<?php echo $this->translate('nodes_index_edit_form_button_cancel'); ?>': function(){
+							$(this).dialog('close');
+							$(this).dialog('destroy');
+							$('#restore_dialog').remove();
+						}
+					}
+				});
+			}
+		});
+	});
+		<?php endif; // node_id ?>
 	$('#mapwrap .buttons a.apply').click(function(){
 		var apply = $("select[name=apply_map_data]").val();
 		var geodata = $("select[name=apply_map_data]").data('geodata');
