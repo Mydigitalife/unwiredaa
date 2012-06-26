@@ -24,13 +24,13 @@ class Reports_Service_CodeTemplate_APCountStructured extends Reports_Service_Cod
 					'type'=>$type
 					,'name'=>($this->billingreport?'Billable Access Points':'AP Count')
 					,'chartOptions'=>array(
-						'type'=>($this->billingreport?'PieChart':'BarChart')
-						,'width'=>780 /*max 370 for 2 charts sidebyside*/
+						'type'=>'BarChart'/*($this->billingreport?'PieChart':'BarChart')*/
+						,'width'=>($this->billingreport?880:780) /*max 370 for 2 charts sidebyside*/
 						,'height'=>500
 						,'depths'=>array(1)/*either single value, or an array -> multiple charts*/
 						/*nativeOptions are passed 1:1 to googleCharts options*/
 						,'nativeOptions'=>($this->billingreport?
-							"legend:{position :'rigth'}"
+							"legend:{position :'none'}"
 							:"legend:{position :'right'}
 								, isStacked:true
 								, colors:['#44ff44','#ff4444','#4444ff','#aaaaaa']"
@@ -40,15 +40,15 @@ class Reports_Service_CodeTemplate_APCountStructured extends Reports_Service_Cod
 						($this->billingreport?
 							array(
                                                                 array('name'=>'Group','translatable'=>false,'class'=>'bold')
-                                                                ,array('name'=>'billable','translatable'=>false,'class'=>'bold')
+                                                                ,array('name'=>'Billable','translatable'=>false,'class'=>'bold')
 							)
 							:array(
 								array('name'=>'Group','translatable'=>false,'class'=>'bold')
-								,array('name'=>'online','translatable'=>false,'class'=>'bold')
-								,array('name'=>'offline','translatable'=>false,'class'=>'bold')
-								,array('name'=>'planning','translatable'=>false,'class'=>'bold')
-								,array('name'=>'disabled','translatable'=>false,'class'=>'bold')
-								//,array('name'=>'billable','translatable'=>false,'class'=>'bold')
+								,array('name'=>'Online','translatable'=>false,'class'=>'bold')
+								,array('name'=>'Offline','translatable'=>false,'class'=>'bold')
+								,array('name'=>'Planning','translatable'=>false,'class'=>'bold')
+								,array('name'=>'Disabled','translatable'=>false,'class'=>'bold')
+								//,array('name'=>'Billable','translatable'=>false,'class'=>'bold')
 							)
 						)
                                         ) /*end of coldefs*/

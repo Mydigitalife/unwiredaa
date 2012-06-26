@@ -30,13 +30,13 @@ class Reports_Service_CodeTemplate_DNS extends Reports_Service_CodeTemplate_Abst
                         	                        array( /*advanced column def as array*/
                                 	                        'name'=>$name
                                         	                ,'translatable'=>false
-                                                	        ,'width'=>'80%'
+                                                	        ,'width'=>'88%'
                                                         	,'class'=>''
 	                                                )
         	                                        ,array( /*advanced column def as array*/
                 	                                        'name'=>'Count'
                         	                                ,'translatable'=>false
-                                	                        ,'class'=>''
+                                	                        ,'class'=>'display_none'
                                         	        )
         	                                        ,array( /*advanced column def as array*/
                 	                                        'name'=>'Percentage'
@@ -62,7 +62,7 @@ class Reports_Service_CodeTemplate_DNS extends Reports_Service_CodeTemplate_Abst
 			'data'=>array($a_start.$name.$a_end,$value,$perc)
 			,'translatable'=>false
 			,'device'=>$hide
-			,'class'=>array(($bold?'bold':''),($bold?'bold right':'right'),($bold?'bold right':'right'))
+			,'class'=>array(($bold?'bold':''),'display_none'/*($bold?'bold right':'right')*/,($bold?'bold right':'right'))
 		); /*end of data row*/
 		if ($link) return array_merge($a,array('url'=>$_SERVER['REQUEST_URI'].'?domain='.$name.'&total='.$total));
 		else return $a;

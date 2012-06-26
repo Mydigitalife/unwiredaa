@@ -116,7 +116,7 @@ WHERE i.time >= '$dateFrom' AND i.time < '$dateTo' AND i.node_id IN (".implode("
 //!!??unix_timestamp might need an offset if starttime is not correctly aligned to interval!?
 //innerinterval grouping: UNIX_TIMESTAMP(time) DIV @intv
 
-echo microtime()." 2<hr>";
+//echo microtime()." 2<hr>";
 //die();//test large: 47 seconds
 //echo serialize($this->db->fetchall("SELECT count(*) FROM unique_session"));
 
@@ -127,7 +127,7 @@ echo microtime()." 2<hr>";
 			$resi=$this->db->query("INSERT INTO unique_mac SELECT DISTINCT s.user_mac, us.node_id, us.intv
 FROM acct_internet_session s
 INNER JOIN unique_session us ON s.session_id=us.session_id");
-echo microtime()." 3<hr>";
+//echo microtime()." 3<hr>";
 
 //prepare same table-"size" result for inner interval counts, as for total counts
 			if ($this->innerCount>1)
@@ -137,9 +137,9 @@ FROM unique_mac um
 INNER JOIN node_reportgroup rg ON um.node_id = rg.node_id
 GROUP BY reportgroup, um.intv) i
 GROUP BY i.reportgroup");
-echo microtime()." 4<hr>";
+//echo microtime()." 4<hr>";
 
-//for summable reports, we could calc this query in php, but it shoudl be quite fast anyways
+//for summable reports, we could calc this query in php, but it should be quite fast anyways
 			$res=$this->db->fetchall("SELECT rg.reportgroup, -1 as intv, COUNT(DISTINCT um.user_mac)
 FROM unique_mac um
 INNER JOIN node_reportgroup rg ON um.node_id = rg.node_id
@@ -254,14 +254,15 @@ if ($this->innerCount>0) {
                                 'main'=>array( /*table 1*/
 /*use title specifed by user?*/
 					'type'=>$type
-					,'name'=>($mode!='unique'?'Traffic in MByte':'Unique Users')/*!!?? move to chartOptions?*/
+					,'name'=>($mode!='unique'?'Traffic in MByte'.((isset($rows[0]) && is_array($rows[0]['data']))?' ('.$rows[0]['data'][0].': '.$rows[0]['data'][1].')':''):'Unique Users')/*!!?? move to chartOptions?*/
 					,'chartOptions'=>array(
-						'type'=>(($this->innerCount>1)?'LineChart':'ColumnChart')
-						,'width'=>770 /*max 370 for 2 charts sidebyside*/
-						,'height'=>900
+						'type'=>(($this->innerCount>1)?'LineChart':'BarChart')/*ColumnChart*/
+						,'width'=>880 /*max 370 for 2 charts sidebyside*/
+						,'height'=>700
 						,'switchAxes'=>($this->innerCount>1)
-						,'depths'=>array(0,1)/*either single value, or an array -> multiple charts*/
-						,'nativeOptions'=>"legend:{position :'right'}")/*passed 1:1 to googleCharts options*/
+						,'depths'=>1/*either single value, or an array -> multiple charts*/
+						,'nativeOptions'=>"legend:{position :'none'}"/*passed 1:1 to googleCharts options*/
+						)
                                         ,'colDefs'=>array(/*array of coldefs*/
 /*                                                array(//first coldef
                                                         array( //advanced column def as array
@@ -279,8 +280,8 @@ if ($this->innerCount>0) {
 						,*/
 						array_merge(
 							array(
-								array('name'=>($mode!='unique'?'Traffic':'Unique Users').' of','translatable'=>false,'class'=>'bold')
-								,array('name'=>'Total','translatable'=>false,'class'=>'bold')
+								array('name'=>'Group','translatable'=>false,'class'=>'bold')
+								,array('name'=>($mode!='unique'?'MByte':'Unique Users'),'translatable'=>false,'class'=>'bold right')
 							)
 							,$innerColumns
 						)

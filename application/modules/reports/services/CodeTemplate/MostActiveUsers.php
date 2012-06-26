@@ -35,7 +35,9 @@ class Reports_Service_CodeTemplate_MostActiveUsers extends Reports_Service_CodeT
 			->where ( 'NOT ISNULL(r.stop_time)' )
                         ->group('u.user_id')
                         ->order('traffic_total DESC') /*order by total (up+down) is better -> move the + from php to sql*/
-                        ->limit(50);
+                        ->limit(20);
+/*is network_user needed?, or just its mac (but sometimes we have usernames)*/
+/*rewrite to an real sql query, unioin with a similar query listing just isnull stop_times, and fetching max(bytes_up|down) from interim*/
 	        
 	        $result[$v] = $db->fetchAll($select);
 			
@@ -56,12 +58,13 @@ class Reports_Service_CodeTemplate_MostActiveUsers extends Reports_Service_CodeT
         $user = array();
         foreach ($groupTotals as $k => $v) {
         	foreach ($result[$k] as $key => $value) {
-        		$user[$value['username']] = $value['down_total'];
+        		$user[$value['username']] = $value['down_total']+$value['up_total'];
         	}
         }
+	//$user=arsort($user);
         
         foreach ($user as $key => $value):
-        	$graphics[] = array($key, round($value/(1024*1024)));
+        	$graphics[] = array((substr($key,2,1)=='-'?substr($key,0,11).'-XX-XX':$key), round($value/(1000*1000)));//!!?? do it as wrong as in the table instead of 1024x1024
         endforeach;
         
         foreach ($groupTotals as $k => $v) {
@@ -72,7 +75,7 @@ class Reports_Service_CodeTemplate_MostActiveUsers extends Reports_Service_CodeT
         			)
         		)
         	);
-        	
+
         	$total_row = array(
         		'data' => array(array('data' => 'report_result_total', 'translatable' => true), $this->_convertTraffic($v['down_total']), $this->_convertTraffic($v['up_total']), $this->_convertTraffic($v['down_total']+$v['up_total'])),
         		'class' => array('bold', 'bold right', 'bold right', 'bold right')
@@ -97,10 +100,11 @@ class Reports_Service_CodeTemplate_MostActiveUsers extends Reports_Service_CodeT
         $report = array(
         	'graphics' => array(
         			array(
-        					'name' => 'Top Users by traffic',
-        					'type' => 'PieChart',
-        					'headers' => array('report_result_user', 'report_result_traffic'),
-        					'rows' => $graphics
+        					'name' => 'Top Users by traffic (in MByte)'
+        					,'type' => 'BarChart'
+        					,'headers' => array('', '')//'report_result_user', 'report_result_traffic'
+        					,'rows' => $graphics
+						,'nativeOptions' => "legend:{position :'none'}"
         			),
         	),
         	'tables' => $tables

@@ -78,13 +78,12 @@ ORDER BY bytes_total DESC;";
 	$tables = array();
 
         $totals = array('data' => array(
-                            'name' => array('data' => 'report_result_total',
-                                  'translatable' => true
-                            ),
-            '',
-            'down' => 0,
-            'up' => 0,
-            'total' => 0
+				'name' => array('data' => 'report_result_title_bytes_total'
+						,'translatable' => true
+					)
+				,'down' => 0
+				,'up' => 0
+				,'total' => 0
           ),
           'class' => array(
              'name' => "bold", '', 'down' => "bold right", 'up' => "bold right", 'total' => "bold right"
@@ -98,14 +97,13 @@ ORDER BY bytes_total DESC;";
 	  $l++;
 	  if ($l <= $limit)
             $results[$record['node_id']] = array('data' => array(
-                                            'device' => $record['node_name'],
-                                            'group' => $record['group_name'],
-                                            'down' => $this->_convertTraffic($record['bytes_down']),
-                                            'up' => $this->_convertTraffic($record['bytes_up']),
-                                            'total' => $this->_convertTraffic($record['bytes_total'])
+                                            'device' => $record['group_name']." / ".$record['node_name'],
+                                            'down' => round($record['bytes_down']/(1024*1024)),/*$this->_convertTraffic() not useable here as chart uses this data*/
+                                            'up' => round($record['bytes_up']/(1024*1024)),
+                                            'total' => round($record['bytes_total']/(1024*1024))
                                           ),
                                           'class' => array(
-                                            'device' => '', 'group'=>'', 'down' => "right", 'up' => "right", 'total' => "right"
+                                            'device' => '', 'down' => "right", 'up' => "right", 'total' => "right"
                                           ));
 
             //$graphics[/*$record['node_id']*/] = array($record['node_name'], round($record['bytes_total']/(1024*1024)));
@@ -115,21 +113,23 @@ ORDER BY bytes_total DESC;";
             $totals_total += $record['bytes_total'];
         }
 
-        $totals['data']['down'] = $this->_convertTraffic($totals_down);
-        $totals['data']['up'] = $this->_convertTraffic($totals_up);
-        $totals['data']['total'] = $this->_convertTraffic($totals_total);
+        $totals['data']['down'] = round($totals_down/(1024*1024));//use something smarter as calling $this->_convertTraffic
+        $totals['data']['up'] = round($totals_up/(1024*1024));
+        $totals['data']['total'] = round($totals_total/(1024*1024));
+	$totals['device']=1;//do not show in chart
 
-        array_unshift($results, $totals);
+//        array_unshift($results, $totals);
         array_push($results, $totals);
 
 //average AP
-        $totals['data']['name']['data'] = 'report_total_average';
-        $totals['data']['down'] = $this->_convertTraffic($totals_down/$l);
-        $totals['data']['up'] = $this->_convertTraffic($totals_up/$l);
-        $totals['data']['total'] = $this->_convertTraffic($totals_total/$l);
+        $totals['data']['name'] = '[Average AP]'; //!? use translatable: 'report_result_average_ap';
+        $totals['data']['down'] = round($totals_down/$l/(1024*1024));
+        $totals['data']['up'] = round($totals_up/$l/(1024*1024));
+        $totals['data']['total'] = round($totals_total/$l/(1024*1024));
+	$totals['device']=0;//show in chart
 
         array_unshift($results, $totals);
-        array_push($results, $totals);
+//        array_push($results, $totals);
 
 /*!!??
 todo: use same result for chart (removed chart as first step)
@@ -138,24 +138,58 @@ use an bar chart instead of pie
 +provide avg AP, real total number
  and maybe percentage of each topAP against real total (might need second pass as we have total total only after reading in results once) -> but this second pass woudl be quite fast, as number of APs (and especially if limited) is small
 +configureable TopLimit, via options
+ an issue is that we need GB/MB formating but chart wants numerical values, so we need a falg for view.phtml to do the formatting when printing the table
+*/
+
+/*hmm we give back numeric values put view.phtml can not detect them anymore -> chart will not work!
+print(serialize($results[0]['data']['total'])."<hr>");
+print(serialize(is_numeric(($results[0]['data']['total'])))."<hr>");
+die(serialize(is_float(($results[0]['data']['total']))));
 */
         return array(/*'graphics' => array(
                         array('name' => 'report_most_active_device',
                               'type' => 'PieChart',
-                              'headers' => array('report_device_name', 'report_result_total'),
+                              'headers' => array('report_device_name', 'report_result_title_bytes_total'),
                               'rows' => $graphics)
                      ),*/
                      'tables' => array(
                           array(
-                                'type' => 'table' //!? should be userselectable
+                                'type' => 'both' //strtolower($this->getReportGroup()->getFormatSelected())
+				,'name' => 'TopAP by Traffic (in MByte)' //use name of report? or a translated field
                                 ,'chartOptions'=>array(
-                                        'type'=>'ColumnChart' //LineChart
-                                        ,'width'=>770 //max 370 for 2 charts sidebyside
+                                        'type'=>'BarChart' //ColumnChart, LineChart
+                                        ,'width'=>800 //max 370 for 2 charts sidebyside
                                         ,'height'=>900
                                         //,'switchAxes'=>($this->innerCount>1)
-                                        ,'depths'=>array(0,1)//either single value, or an array -> multiple charts
+                                        //,'depths'=>array(0,1)//either single value, or an array -> multiple charts
                                         ,'nativeOptions'=>"legend:{position :'right'}") //passed 1:1 to googleCharts options
-                                ,'colDefs' => array(array('report_device_name', 'report_device_group', 'report_result_download', 'report_result_upload', 'report_result_total'))
+                                ,'colDefs' => array(//array of coldef-arrays
+					array(//array of coldefs
+						array(
+							'name'=>'report_result_title_device_group_and_name'
+							,'translatable'=>true
+							,'chartFormat'=>'string'
+							,'class'=>'bold'
+							)
+						,array(
+							'name'=>'report_result_title_mbytes_down'
+							,'translatable'=>true
+							,'chartFormat'=>'number'
+                                                        ,'class'=>'bold'
+                                                        )
+						,array(
+							'name'=>'report_result_title_mbytes_up'
+							,'translatable'=>true
+                                                        ,'chartFormat'=>'number'
+                                                        ,'class'=>'bold'
+                                                        )
+						,array(
+							'name'=>'report_result_title_mbytes_total'
+							,'translatable'=>true
+                                                        ,'chartFormat'=>'number'
+                                                        ,'class'=>'bold'
+                                                        )
+					))
 				,'rows' => $results
                           )
                       ));

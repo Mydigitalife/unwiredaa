@@ -27,7 +27,7 @@ class Reports_Service_CodeTemplate_Uplink extends Reports_Service_CodeTemplate_A
         		        	,'colDefs'=>array(/*array of coldefs*/
                 	                        array(/*coldef*/
                         	                        array( /*advanced column def as array*/
-                                	                        'name'=>'Uplink Usage'
+                                	                        'name'=>'Time'
                                         	                ,'translatable'=>false
                                                 	        ,'width'=>'60%'
                                                         	,'class'=>''

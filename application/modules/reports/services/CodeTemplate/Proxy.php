@@ -70,10 +70,12 @@ class Reports_Service_CodeTemplate_Proxy extends Reports_Service_CodeTemplate_Ab
 
 		/*query total total*/
 		if ($mode=='virus') $stmt=$db->query("SELECT 'virus', count(*) AS cnt
-FROM proxy_log WHERE stamp BETWEEN '$dateFrom' AND '$dateTo' AND category like '%virus%'");
+FROM proxy_log WHERE stamp >= '$dateFrom' AND  stamp < '$dateTo' AND category like '%virus%'");
 		else $stmt=$db->query("SELECT category, count(*) AS cnt
-FROM proxy_log WHERE stamp BETWEEN '$dateFrom' AND '$dateTo' GROUP BY category ORDER BY cnt DESC;");
+FROM proxy_log WHERE stamp >= '$dateFrom' AND stamp < '$dateTo' 
+AND category not like '%=%' AND domain not like '%=%' AND domain RLIKE '\.[a-z]\.' GROUP BY category ORDER BY cnt DESC;");/*ignore potentially wrong-parsed lines in log !!?? remove (to regain some performance) when gregors parsing script actually works*/
 
+		$totaltotal=0;
 		while ($row=$stmt->fetch()) {
 			$empty=false;
 			$rows=array();
@@ -89,7 +91,9 @@ FROM proxy_log WHERE stamp BETWEEN '$dateFrom' AND '$dateTo' GROUP BY category O
 FROM proxy_log WHERE category like '%virus%' and stamp BETWEEN '$dateFrom' AND '$dateTo'
 GROUP BY virusname ORDER BY cnt DESC limit 50;");
 			else $tstmt=$db->query("SELECT substring_index(domain,'.','-2') AS tld, count(*) AS cnt
-FROM proxy_log WHERE category='$row[0]' and stamp BETWEEN '$dateFrom' AND '$dateTo' GROUP BY tld ORDER BY cnt DESC limit 20;");
+FROM proxy_log WHERE category='$row[0]'
+AND stamp >= '$dateFrom' AND stamp < '$dateTo'
+AND domain not like '%=%' AND domain RLIKE '\.[a-z]\.' GROUP BY tld ORDER BY cnt DESC limit 20;"); /*ignore potentially wrong-parsed lines in log !!?? remove (to regain some performance) when gregors parsing script actually works*/
 
 			while ($trow=$tstmt->fetch()){
 				$rows[]=$this->handleLine($trow[0],$trow[1],round($trow[1]*1000/$row[1])/10,false,false);
