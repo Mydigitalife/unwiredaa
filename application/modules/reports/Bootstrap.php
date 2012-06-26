@@ -27,4 +27,17 @@ class Reports_Bootstrap extends Unwired_Application_Module_Bootstrap
 
 		return $acl;
 	}
+
+	protected function _initGlobalSettings()
+	{
+        $globalSettings = $this->getOption('global');
+
+        if (!$globalSettings) {
+            $globalSettings = array();
+        }
+
+        Zend_Registry::set('reports.global', $globalSettings);
+
+        return $globalSettings;
+	}
 }

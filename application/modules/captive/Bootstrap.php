@@ -57,4 +57,17 @@ class Captive_Bootstrap extends Unwired_Application_Module_Bootstrap
 
         return $shellpaths;
     }
+
+	protected function _initFilesCleanup()
+	{
+		$this->getApplication()->bootstrap('eventBroker');
+
+		$broker = $this->getApplication()->getResource('eventBroker');
+
+		$service = new Captive_Service_Files();
+
+		$broker->addHandler($service);
+
+		return $service;
+	}
 }

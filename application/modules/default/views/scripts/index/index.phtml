@@ -8,11 +8,253 @@
 	    $this->headScript()->appendFile($this->httpScheme() . '://google-maps-utility-library-v3.googlecode.com/svn/trunk/markerclusterer/src/markerclusterer_compiled.js');
 	}
 
+	$mapHeight = 450;
+
+	if (isset($this->systemSettings['node_map_height']) && ($this->systemSettings['node_map_height']->getValue() > 0)) {
+	    $mapHeight = (int) $this->systemSettings['node_map_height']->getValue();
+	}
+
+	$nodes = array();
+	foreach ($this->nodes as $node) {
+		$nodeArray = $node->toArray();
+		$nodeArray['trafficlimit'] = $nodeArray['settings']['trafficlimit'];
+		$nodeArray['status_extended']['monthly_traffic'] = (isset($nodeArray['status_extended']['monthly_traffic'])) ? $nodeArray['status_extended']['monthly_traffic'] : 0;
+		unset($nodeArray['settings']);
+		$nodes[] = $nodeArray;
+	}
 	$this->headScript()->captureStart();
-	
-	// render generated map 
-	echo $this->jscript;
+
 ?>
+	var nodes = <?php echo Zend_Json::encode($nodes);?>;
+	var map;
+	var infowindow;
+
+	function stringToDate(datestring)
+	{
+		var match = /(\d{4})\-0?(\d{1,2})\-0?(\d{1,2})\s0?(\d{1,2}):0?(\d{1,2}):0?(\d{1,2})/i.exec(datestring);
+
+		if (!match.length) {
+			return null;
+		}
+
+		var date = new Date();
+
+		date.setFullYear(match[1]);
+		date.setMonth(parseInt(match[2])-1);
+		date.setDate(match[3]);
+		date.setHours(match[4]);
+		date.setMinutes(match[5]);
+		date.setSeconds(match[6]);
+
+		return date;
+	}
+
+	function formatDbDate(datestring)
+	{
+		if (datestring == '0000-00-00 00:00:00') {
+			return 'unknown';
+		}
+
+		var match = /(\d{4})\-(\d{1,2})\-(\d{1,2})\s(\d{1,2}:\d{1,2}:\d{1,2})/i.exec(datestring);
+
+		if (!match.length) {
+			return '';
+		}
+
+		return match[3] + '/' + match[2] + '/' + match[1] + ' ' + match[4];
+	}
+
+	var lastDevice = null;
+
+	var statsTimer = null;
+	var networkTimer = null;
+
+	var networkUpGraph = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+	var networkDownGraph = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+
+	function loadStatistics(deviceData)
+	{
+		lastDevice = deviceData;
+
+		$.ajax({
+			url: '<?php echo $this->url(array('module' => 'default',
+			                                  'controller' => 'index',
+			                                  'action' => 'stats'), 'default', true)?>/location/' + parseInt(deviceData.node_id).toString(16),
+			success: function(data) {
+				if (lastDevice !== deviceData) {
+					return;
+				}
+
+				var  defaultData = {
+									"session_count": "0",
+									"internet_users": "0",
+									"session_count": 0,
+									"total_kbps_up": "0",
+									"total_kbps_down": "0"
+									} ;
+
+				if (data) {
+
+					var garden_users = '0';
+					if (data.session_count == -1) {
+						data = defaultData;
+					} else {
+						garden_users = data.session_count - data.internet_users;
+					}
+
+    				$('#infowindowcontainer div.stats').html(
+    					'<div><strong><?php echo $this->translate('default_index_index_ap_users')?>: </strong><ul>' +
+					    '<li><strong><?php echo $this->translate('default_index_index_ap_users_total')?>: </strong>' + data.session_count + '</li>' +
+					    '<li><strong><?php echo $this->translate('default_index_index_ap_users_online')?>: </strong>' + data.internet_users + '</li>' +
+					    '<li><strong><?php echo $this->translate('default_index_index_ap_users_garden')?>: </strong>' + (data.session_count - data.internet_users) + '</li></ul></div>' +
+    					'<div><strong><?php echo $this->translate('default_index_index_ap_speed_up')?>:</strong> ' + data.total_kbps_up + '</div>' +
+    					'<div><strong><?php echo $this->translate('default_index_index_ap_speed_down')?>:</strong> ' + data.total_kbps_down + '</div>'
+    				);
+				}
+
+				if ($('#infowindowcontainer').is(':visible')) {
+ 					statsTimer = setTimeout("loadStatistics(lastDevice);", 3000);
+				}
+			}
+		});
+	}
+
+	function loadNetworkStatistics()
+	{
+		$.ajax({
+			url: '<?php echo $this->url(array('module' => 'default',
+			                                  'controller' => 'index',
+			                                  'action' => 'stats',
+			                                  'interface' => 'total'), 'default', true)?>',
+			success: function(data) {
+
+				if (data) {
+				    // $('#devicesonline').text(online_ap_count);
+					// $('#usersonline').text(data.active_users);
+					$('#bandwidthup').text(data.kbps_tx);
+					$('#bandwidthdown').text(data.kbps_rx);
+
+					networkUpGraph.push(data.kbps_tx);
+					networkUpGraph.splice(0,1);
+					$('#networkgraphup').sparkline(networkUpGraph, { width: 510 })
+
+					networkDownGraph.push(data.kbps_rx);
+					networkDownGraph.splice(0,1);
+
+					$('#networkgraphdown').sparkline(networkDownGraph, { width: 510 })
+				}
+
+ 				networkTimer = setTimeout("loadNetworkStatistics();", 5000);
+			}
+		});
+	}
+
+	$(document).ready(function(){
+		$('#nodemap').height(<?php echo $mapHeight; ?>);
+
+		var latlng = new google.maps.LatLng(<?php echo $this->systemSettings['node_map_center_lat']->getValue(); ?>,
+										    <?php echo $this->systemSettings['node_map_center_lng']->getValue(); ?>);
+    	var myOptions = {
+      		zoom: <?php echo (int) $this->systemSettings['node_map_zoom']->getValue(); ?>,
+      		center: latlng,
+      		mapTypeId: google.maps.MapTypeId.ROADMAP
+    	};
+
+    	map = new google.maps.Map(document.getElementById("nodemap"),
+        							  myOptions);
+
+		infowindow = new google.maps.InfoWindow();
+
+		var markers = [];
+
+		$.each(nodes, function(idx, data) {
+			var mimage = "<?php echo $this->baseUrl("themes/" . $this->theme . "/images/icons/32x32/marker-red.png")?>";
+			var onlinemsg = '';
+
+			var formattedDate = formatDbDate(data.online_status_changed);
+
+
+			if (data.online_status > 0) {
+				onlinemsg = ''; // 'Online users: ' + data.online_users_count;
+	    		onlinemsg = onlinemsg + '</div><div>Online since: ' + formattedDate;
+	    		mimage = "<?php echo $this->baseUrl("themes/" . $this->theme . "/images/icons/32x32/marker-green.png")?>";
+	    	} else {
+	    		onlinemsg = 'Offline since: ' + formattedDate;
+	    	}
+
+			if (data.status == 'planning') {
+				mimage = "<?php echo $this->baseUrl("themes/" . $this->theme . "/images/icons/32x32/marker-black.png")?>";
+			}
+
+			if (data.status == 'disabled') {
+				mimage = "<?php echo $this->baseUrl("themes/" . $this->theme . "/images/icons/32x32/marker-grey.png")?>";
+			}
+
+			if (data.trafficlimit > 0 && data.status_extended.monthly_traffic >= data.trafficlimit) {
+				mimage = "<?php echo $this->baseUrl("themes/" . $this->theme . "/images/icons/32x32/marker-yellow.png")?>";
+			}
+
+			<?php if (!isset($this->currentUser)) :?>
+				mimage = "<?php echo $this->baseUrl("themes/" . $this->theme . "/images/icons/32x32/marker-grey.png")?>";
+			<?php endif; ?>
+			var marker = new google.maps.Marker({
+		        position: new google.maps.LatLng(data.location.latitude, data.location.longitude),
+		        title: data.name,
+		        draggable: false,
+		        icon: mimage
+		    });
+
+
+
+			marker.setMap(map);
+
+			markers.push(marker);
+
+		    google.maps.event.addListener(marker, 'click', function(event) {
+		        if (statsTimer) {
+		        	clearTimeout(statsTimer);
+		        }
+
+				infowindow.setContent('<div id="infowindowcontainer">' +
+				<?php if (isset($this->currentUser)) :?>
+					<?php
+					    $acl = Zend_Registry::get('acl');
+					    $action = 'view';
+					    if ($acl->isAllowed($this->currentUser, 'nodes_node', 'edit')) :
+					        $action = 'edit';
+					    endif;
+					   ?>
+					'<h5><a href="<?php echo $this->url(array('module' => 'nodes',
+					                                          'controller' => 'index',
+					                                          'action' => $action),
+					                                    'default', true);?>/id/' + data.node_id + '">' + marker.getTitle() +'</a></h5>' +
+				<?php else:?>
+									  '<h5>' + marker.getTitle() +'</h5>' +
+				<?php endif;?>
+									  '<div>AP type: ' + ((data.status_extended.aptype) ? data.status_extended.aptype : "<?php echo $this->translate('default_index_index_ap_unknown')?>") + '</div>' +
+									  '<div>MAC: ' + data.mac + '</div>' +
+									  '<div>Address: ' + data.location.address + ', ' + data.location.city +', ' + data.location.country + '</div>' +
+				<?php if (isset($this->currentUser)) :?>
+									  '<div>' + onlinemsg + '</div><br/>' +
+									  '<div class="stats">' +
+									  '<div><strong><?php echo $this->translate('default_index_index_ap_users')?>: </strong><ul>' +
+									  '<li><strong><?php echo $this->translate('default_index_index_ap_users_total')?>: </strong>0</li>' +
+									  '<li><strong><?php echo $this->translate('default_index_index_ap_users_online')?>: </strong>0</li>' +
+									  '<li><strong><?php echo $this->translate('default_index_index_ap_users_garden')?>: </strong>0</li></ul></div>' +
+									  '<div><strong><?php echo $this->translate('default_index_index_ap_speed_up')?>: </strong> 0</div>' +
+									  '<div><strong><?php echo $this->translate('default_index_index_ap_speed_down')?>: </strong> 0</div>' +
+									  '</div>' +
+									  '<div><strong><?php echo $this->translate('default_index_index_ap_monthly_usage');?> </strong>' + data.status_extended.lastupdate +': ' + data.status_extended.monthly_traffic + 'MB</div>' +
+									  '</div>');
+				if (data.online_status > 0) {
+					loadStatistics(data);
+				}
+				<?php else: ?>
+									  '</div>');
+				<?php endif; ?>
+				infowindow.open(map, marker);
+		    });
+		});
 		<?php if ($markerClusteringLevel > 0) :?>
 		var markerClusterer = new MarkerClusterer(map, markers, {maxZoom: <?php echo $markerClusteringLevel; ?>});
 		<?php
@@ -21,55 +263,112 @@
 		?>
 		loadNetworkStatistics();
 		<?php endif; ?>
+
+		$('div.nodes p ul li, td.devicename a').live('click', function(){
+			var node = $(this).data('node');
+			if (!node) {
+				node = { name : $(this).text() };
+			}
+
+			$.each(markers, function(idx, marker){
+				if (marker.title == node.name) {
+					$('#searchResult').remove();
+					<?php if ($markerClusteringLevel > 0) :?>
+						map.setZoom(<?php echo (int) $markerClusteringLevel+1; ?>);
+					<?php else: ?>
+						map.setZoom(map.getZoom()+1);
+					<?php endif; ?>
+					google.maps.event.trigger(marker, 'click');
+					$('html,body').animate({scrollTop: $('#nodemap').offset().top},'slow');
+					return false;
+				}
+			});
+		});
+
+		$('a.filter, a.reset').unbind('click');
+		$('a.reset').click(function(){
+			$('input[name=name]').val('');
+			$('input[name=mac]').val('');
+			$('#searchResult').remove();
+			var latlng = new google.maps.LatLng(<?php echo $this->systemSettings['node_map_center_lat']->getValue(); ?>,
+										    <?php echo $this->systemSettings['node_map_center_lng']->getValue(); ?>);
+			map.setCenter(latlng);
+			map.setZoom(<?php echo (int) $this->systemSettings['node_map_zoom']->getValue(); ?>);
+
+		});
+		$('a.filter').click(function(event){
+			var name = $('input[name=name]').val();
+			var mac = $('input[name=mac]').val();
+
+			if (!name.length && !mac.length) {
+				alert('<?php echo $this->translate('default_index_index_search_empty');?>');
+				return false;
+			}
+
+			var results = new Array();
+
+			$.each(nodes, function(idx, node) {
+				var match1 = false, match2 = false;
+
+				if (!name.length || node.name.toLowerCase().indexOf(name.toLowerCase()) > -1) {
+					match1 = true;
+				}
+
+				if (!mac.length || node.mac.toLowerCase().indexOf(mac.toLowerCase()) > -1) {
+					match2 = true;
+				}
+
+				if (match1 && match2) {
+					results.push(node);
+				}
+			});
+
+			if (!results.length) {
+				alert('<?php echo $this->translate('default_index_index_search_noresults');?>');
+				return false;
+			}
+			$('#nodemap').before('<div class="overlay" id="searchResult">' +
+								 '<div class="head">Search Results</div>' +
+								 '<div class="nodes"><p></p>' +
+								 '</div>' +
+								 '<div class="close">x</div>' +
+								 '</div>');
+
+			$('div.nodes p').append('<ul></ul>');
+			$.each(results, function(idx, node){
+				$('div.nodes p ul').append('<li id="' + node.node_id + '" class="nodeElem">' + node.name + '</li>');
+				$('div.nodes p ul li:last').data('node',node);
+			});
+
+			$('#searchResult div.close').click(function() { $(this).parent().remove() });
+
+			if (results.length == 1) {
+				$('div.nodes p ul li:last').click();
+				return false;
+			}
+			$('#searchResult').show();
+			return false;
+		});
 	});
 
 <?php
 	$this->headScript()->captureEnd();
 ?>
-<?php if (isset($this->currentUser)) : ?>
-<form method="get" action="<?php echo $this->url(array('module' => 'default',
-													   'controller' => 'index',
-													   'action' => 'nodesearch'),
-												null,
-												true); ?>">
-<table class="listing">
-	<thead>
-	<tr>
-			<th><?php echo $this->translate('nodes_index_index_name');?></th>
-			<th><?php echo $this->translate('nodes_index_index_mac');?></th><th></th>
-			</tr>
-			<tr>
-<th><input type="text" name="name" value="<?php echo $this->filter['name']; ?>" /></th>
-<th><input type="text" name="mac" value="<?php echo $this->filter['mac']; ?>" /></th>
-
-<th class="tools">
-			<a name="index_index" class="icon filter"><?php echo $this->translate('nodes_index_index_button_filter'); ?></a>
-			</th>
-
-</tr>
-</thead>
-</table>
-</form>
-<?php endif; ?>
-<div id="nodemap"></div>
 <?php if (isset($this->currentUser)) :?>
 <div id="networkstats">
 	<div><strong><?php echo $this->translate('default_index_index_statistics')?>:</strong>
 	<ul>
-		<li><strong><?php echo $this->translate('default_index_index_devices')?>:</strong>
-    		<ul>
-    			<li><strong><?php echo $this->translate('default_index_index_devices_total')?></strong>: <span id="devicestotal"><?php echo $this->networkStats->getDevicesTotal(); ?></span></li>
-    			<li><strong><?php echo $this->translate('default_index_index_devices_online')?></strong>: <span id="devicesonline"><?php echo $this->networkStats->getDevicesOnline(); ?></span></li>
-    			<li><strong><?php echo $this->translate('default_index_index_devices_offline')?></strong>: <span id="devicesoffline"><?php echo $this->networkStats->getDevicesOffline(); ?></span></li>
-    		</ul>
+		<li>
+			<label><?php echo $this->translate('default_index_index_devices')?>:</label>
+		    <?php echo $this->translate('default_index_index_devices_total')?> (<strong><span id="devicestotal"><?php echo $this->networkStats->getDevicesTotal(); ?></span></strong>)
+		    <?php echo $this->translate('default_index_index_devices_online')?> (<strong><span id="devicesonline"><?php echo $this->networkStats->getDevicesOnline(); ?></span></strong>)
+    	    <?php echo $this->translate('default_index_index_devices_offline')?> (<strong><span id="devicesoffline"><?php echo $this->networkStats->getDevicesOffline(); ?></span></strong>)
 		</li>
     	<li>
-    		<strong><?php echo $this->translate('default_index_index_users')?>:</strong>
-    		<ul>
-    			<li><strong><?php echo $this->translate('default_index_index_users_total')?></strong>: <span id="userstotal"><?php echo $this->networkStats->getUsersTotal(); ?></span></li>
-    			<li><strong><?php echo $this->translate('default_index_index_users_online')?></strong>: <span id="usersonline"><?php echo $this->networkStats->getUsersOnline(); ?></span></li>
-    			<li><strong><?php echo $this->translate('default_index_index_users_garden')?></strong>: <span id="usersgarden"><?php echo $this->networkStats->getUsersGarden(); ?></span></li>
-    		</ul>
+    		<label><?php echo $this->translate('default_index_index_users')?>:</label>
+    		<?php echo $this->translate('default_index_index_users_total')?> (<strong><span id="userstotal"><?php echo $this->networkStats->getUsersTotal(); ?></span></strong>)
+        	<?php echo $this->translate('default_index_index_users_online')?> (<strong><span id="usersonline"><?php echo $this->networkStats->getUsersOnline(); ?></span></strong>)
+        	<?php echo $this->translate('default_index_index_users_garden')?> (<strong><span id="usersgarden"><?php echo $this->networkStats->getUsersGarden(); ?></span></strong>)
     	</li>
 	</ul>
 	</div>
@@ -82,5 +381,52 @@
 	</div>
 	<!-- <div><strong><?php echo $this->translate('default_index_index_bandwidth_up')?>:</strong> <span id="bandwidthup">0</span> <span id="networkgraphup" class="span-13 last" style="float:right; text-align: right;"></span></div>
 	<div><strong><?php echo $this->translate('default_index_index_bandwidth_down')?>:</strong> <span id="bandwidthdown">0</span> <span id="networkgraphdown" class="span-13 last" style="float:right; text-align: right;"></span></div> -->
+</div>
+<form method="get"
+	  action="<?php echo $this->url(array(), 'default', true); ?>">
+	<table class="listing">
+		<thead>
+			<tr>
+				<th><?php echo $this->translate('default_index_index_name');?></th>
+				<th><?php echo $this->translate('default_index_index_mac');?></th>
+				<th></th>
+			</tr>
+			<tr>
+				<th><input type="text" name="name"
+					value="<?php echo $this->filter['name']; ?>" /></th>
+				<th><input type="text" name="mac"
+					value="<?php echo $this->filter['mac']; ?>" /></th>
+
+				<th class="tools">
+					<a name="index_index" class="icon filter"><?php echo $this->translate('nodes_index_index_button_filter'); ?></a>
+					<a name="index_index" class="icon reset"><?php echo $this->translate('nodes_index_index_button_reset'); ?></a>
+				</th>
+			</tr>
+		</thead>
+	</table>
+</form>
+<?php endif;?>
+<div id="nodemap"></div>
+<?php if (isset($this->currentUser)) :?>
+<div id="top_nodes">
+	<h2><?php echo $this->translate('default_index_index_topdevices'); ?></h2>
+	<table class="listing">
+		<tr>
+			<th><?php echo $this->translate('default_index_index_name'); ?></th>
+			<th><?php echo $this->translate('default_index_index_device_up'); ?></th>
+			<th><?php echo $this->translate('default_index_index_device_down'); ?></th>
+			<th><?php echo $this->translate('default_index_index_device_total'); ?></th>
+		</tr>
+		<?php foreach ($this->topNodes as $nodeData) :?>
+		<tr>
+			<td class="devicename"><a href="javascript:;"><?php
+			    echo !$nodeData['node'] ? '#' . $nodeData['node_id'] : $nodeData['node']->getName();
+			?></a></td>
+			<td class="right"><?php echo round($nodeData['up']/1048576, 2); ?> MB</td>
+			<td class="right"><?php echo round($nodeData['down']/1048576, 2); ?> MB</td>
+			<td class="right"><?php echo round($nodeData['total']/1048576, 2); ?> MB</td>
+		</tr>
+		<?php endforeach; ?>
+	</table>
 </div>
 <?php endif; ?>

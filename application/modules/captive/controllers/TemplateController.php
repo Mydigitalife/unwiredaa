@@ -4,6 +4,8 @@ class Captive_TemplateController extends Unwired_Controller_Crud
 {
     protected $_defaultMapper = 'Captive_Model_Mapper_Template';
 
+    protected $_actionsToReferer = array('view', 'add', 'edit', 'delete', 'copy');
+
     public function indexAction()
     {
         $groupService = new Groups_Service_Group();
@@ -75,5 +77,29 @@ class Captive_TemplateController extends Unwired_Controller_Crud
     public function deleteAction()
     {
         $this->_delete();
+    }
+
+    public function copyAction()
+    {
+		if (!$this->getAcl()->isAllowed($this->_currentUser, $this->_getDefaultMapper()->getEmptyModel(), 'add')) {
+			$this->view->uiMessage('access_not_allowed_add', 'error');
+			$this->_gotoIndex();
+		}
+
+		$this->_edit();
+
+		$serviceSplashPage = new Captive_Service_SplashPage();
+
+		try {
+		    $newTemplate = $serviceSplashPage->copyTemplate($this->view->entity);
+		    $this->view->uiMessage($this->view->translate('captive_template_copy_success', $newTemplate->getName()), 'success');
+		} catch (Exception $e) {
+		    $this->view->uiMessage('captive_template_copy_error', 'error');
+		    if (APPLICATION_ENV == 'development') {
+		        $this->view->uiMessage($e->getPrevious() ? $e->getPrevious()->getMessage() : $e->getMessage(), 'warning');
+		    }
+		}
+
+	    $this->_gotoIndex();
     }
 }

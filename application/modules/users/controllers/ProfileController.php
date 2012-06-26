@@ -25,7 +25,7 @@ class Users_ProfileController extends Unwired_Controller_Crud
 	public function indexAction()
 	{
 	    $this->getAcl()->allow($this->_currentUser, $this->_currentUser, 'edit');
-		$this->_add(null, $this->_currentUser, new Users_Form_Profile());
+		$this->_add(null, clone $this->_currentUser, new Users_Form_Profile());
 	}
 
 }

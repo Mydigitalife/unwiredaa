@@ -143,10 +143,10 @@ class Reports_Job_GenerateReport {
             $toDate = clone $fromDate;
             $toDate->add($period);
 
-            if ($report->getReportGroupId() == 120) {
+           /* if ($report->getReportGroupId() == 120) {
                 echo "From: {$fromDate}\n";
                 echo "To: {$toDate}\n";
-            }
+            } */
 
             /**
              * $fromDate and $toDate hold the shifted time frame for report

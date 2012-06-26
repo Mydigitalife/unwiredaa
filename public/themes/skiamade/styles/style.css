@@ -48,12 +48,16 @@ fieldset legend {
 	padding: 0px 5px;
 }
 
+#content h2,
 h1 {
 	font-size: 2.2em;
 	color: #002F59;
 	border-bottom: 1px dotted #465465;
 	padding-bottom: 5px;
 }
+
+#content h2 { font-size: 1.8em; padding-top: 10px; }
+
 #wrapper {
 	width: 950px;
 	margin: 0 auto;
@@ -384,6 +388,9 @@ form div.buttons {
     background-image: url('../images/icons/24x24/instant.png');
 }
 
+.tools a.copy {
+    background-image: url('../images/icons/24x24/copy.png');
+}
 
 /* buttons */
 span.button, a.button {display:inline-block;height:32px;color:#343434;font:bold 12px Tahoma,Helvetica,sans-serif !important;cursor:pointer !important;position:relative;left:5px;text-shadow:1px 1px 0px rgba(255,255,255,0.5);text-decoration:none;margin:0 5px 0 8px;padding-left:0px;vertical-align:middle;background:url("../images/buttons.png") top right no-repeat;white-space:nowrap;border:none;overflow:visible;}
@@ -598,4 +605,36 @@ text-decoration:underline;
 cursor:pointer;
 }
 
+/*  Links */
+.hidden {
+	display: none;
+}
+.formelement.link {
+	border: 1px solid #A6C9E2;
+	margin-bottom: 10px;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	border-radius: 4px;
+}
+.devicelink {
+	border-top: 1px dotted #A6C9E2;
+	padding: 5px;
+	clear: both;
+}
+.deviceLinkButtons {
+	margin-top: 35px;
+}
+.deviceLinkAction.add,
+.deviceLinkAction.remove {
+	float: left;
+	height: 24px;
+	width: 24px;
+	text-indent: -99999em;
+}
 
+.deviceLinkAction.remove {
+	background-image: url('../images/icons/24x24/delete.png');
+}
+.deviceLinkAction.add {
+	background-image: url('../images/icons/24x24/add.png');
+}

@@ -178,6 +178,11 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 
         $reportGenerator->setReportGroup($report);
 
+        $shiftedDates = $this->_calcDateOffset($report, null);
+
+        $report->setDateFrom($shiftedDates['from'])
+               ->setDateTo($shiftedDates['to']);
+
 		$result = $reportGenerator->getData(array_keys($report->getGroupsAssigned()),
 		                                    $report->getDateFrom()->toString('yyyy-MM-dd HH:mm:ss'),
 		                                    $report->getDateTo()->toString('yyyy-MM-dd HH:mm:ss'));
@@ -199,6 +204,197 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 		                                                   'id' => $entity->getItemId()),
 		                                             'default',
 		                                             true);
+	}
+
+	protected function _calcDateOffset($report, $referenceDate = null)
+	{
+        if (!$referenceDate) {
+            $referenceDate = new Zend_Date();
+        }
+
+        $fromDate = $report->getDateFrom();
+        $toDate = $report->getDateTo();
+
+	  /*  if ($report->getReportType == 'interval') {
+            $interval = $report->getReportInterval();
+
+            $dateAdded = $report->getDateAdded();
+
+            if (is_string($dateAdded)) {
+                $dateAdded = new Zend_Date($dateAdded, 'yyyy-MM-dd HH:mm');
+            }
+
+
+            $now = $referenceDate;
+
+            $toDate = new Zend_Date($report->getDateTo());
+            $fromDate = new Zend_Date($report->getDateFrom());
+
+            $period = $toDate->sub($fromDate);
+
+            $offsetFromDateAdded = $dateAdded->sub($fromDate);
+
+            switch ($interval) {
+                case 'year':
+                    $dateAdded->setYear($now->getYear());
+                break;
+
+                case 'month':
+                    $dateAdded->setYear($now->getYear());
+                    $dateAdded->setMonth($now->getMonth());
+                break;
+
+                case 'week':
+                    $diffStamp = $now->getDate()
+                                          ->subDate($fromDate->getDate())
+                                               ->getTimestamp();
+
+                    if (fmod($diffStamp, (7 * 24 * 3600)) == 0) {
+                        $dateAdded->setDate($now);
+                    }
+                ;
+                break;
+
+                case 'day':
+                default:
+                    $dateAdded = $referenceDate;
+                break;
+            }
+
+
+            $dateAdded->setHour($fromDate->getHour())
+                      ->setMinute($fromDate->getMinute())
+                      ->setSecond($fromDate->getSecond());
+
+            $fromDate = clone $dateAdded;
+            $fromDate = $fromDate->sub($offsetFromDateAdded);
+            $toDate = clone $fromDate;
+            $toDate->add($period);
+
+        } else { */
+            switch ($report->getTimeframe()) {
+                case 'today':
+                    $fromDate = $referenceDate;
+                    $toDate = clone $fromDate;
+
+                    $fromDate->setHour(0)
+                             ->setMinute(0)
+                             ->setSecond(0);
+                    $toDate->addDay(1);
+                break;
+                case 'yesterday':
+                    $toDate = $referenceDate;
+
+                    $toDate->setHour(0)
+                           ->setMinute(0)
+                           ->setSecond(0);
+                    $fromDate = clone $toDate;
+                    $fromDate->subDay(1);
+                break;
+                case 'currweek':
+                    $fromDate = $referenceDate;
+
+                    $weekday = $fromDate->toValue(Zend_Date::WEEKDAY_DIGIT);
+
+                    $fromDate->subDay($weekday-1);
+                    $fromDate->setHour(0)
+                             ->setMinute(0)
+                             ->setSecond(0);
+
+                    $toDate = clone $fromDate;
+                    $toDate->addDay(7);
+                break;
+                case 'lastweek':
+                    $toDate = $referenceDate;
+
+                    $weekday = $toDate->toValue(Zend_Date::WEEKDAY_DIGIT);
+
+                    $toDate->subDay($weekday-1);
+                    $toDate->setHour(0)
+                           ->setMinute(0)
+                           ->setSecond(0);
+
+                    $toDate = clone $fromDate;
+                    $toDate->subDay(7);
+                break;
+                case 'currmonth':
+                    $fromDate = $referenceDate;
+                    $fromDate->setDay(1)
+                             ->setHour(0)
+                             ->setMinute(0)
+                             ->setSecond(0);
+
+                    $toDate = clone $fromDate;
+                    $toDate->addMonth(1);
+                break;
+                case 'lastmonth':
+                    $toDate = $referenceDate;
+                    $toDate->setDay(1)
+                           ->setHour(0)
+                           ->setMinute(0)
+                           ->setSecond(0);
+
+                    $fromDate = clone $toDate;
+                    $fromDate->subMonth(1);
+                break;
+                case 'curryear':
+                    $fromDate = $referenceDate;
+                    $fromDate->setMonth(1)
+                             ->setDay(1)
+                             ->setHour(0)
+                             ->setMinute(0)
+                             ->setSecond(0);
+
+                    $toDate = clone $fromDate;
+                    $toDate->addYear(1);
+                break;
+                case 'lastyear':
+                    $toDate = $referenceDate;
+                    $toDate->setMonth(1)
+                           ->setDay(1)
+                           ->setHour(0)
+                           ->setMinute(0)
+                           ->setSecond(0);
+
+                    $fromDate = clone $toDate;
+                    $fromDate->subYear(1);
+                break;
+
+                default:
+                    $dateAdded = $report->getDateAdded();
+
+                    if (is_string($dateAdded)) {
+                        $dateAdded = new Zend_Date($dateAdded, 'yyyy-MM-dd HH:mm');
+                    }
+
+
+                    $now = $referenceDate;
+
+                    $toDate = new Zend_Date($report->getDateTo());
+                    $fromDate = new Zend_Date($report->getDateFrom());
+
+                    $period = $toDate->sub($fromDate);
+
+                    $offsetFromDateAdded = $dateAdded->sub($fromDate);
+
+                    $fromDate = $now;
+                    $fromDate->sub($offsetFromDateAdded);
+
+                    $toDate = clone $fromDate;
+                    $toDate->add($period);
+
+                    $fromDate->setHour($report->getDateFrom()->getHour())
+                             ->setMinute($report->getDateFrom()->getMinute())
+                             ->setSecond($report->getDateFrom()->getSecond());
+
+                    $toDate->setHour($report->getDateTo()->getHour())
+                           ->setMinute($report->getDateTo()->getMinute())
+                           ->setSecond($report->getDateTo()->getSecond());
+                break;
+            }
+       /* } */
+
+        return array('from' => $fromDate, 'to' => $toDate);
 	}
 
 	public function instantAction() {
@@ -328,27 +524,112 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 
 		$this->view->parent_parent = $parent_parent;
 		$this->view->parent = $parent;
+
+		$shiftedDates = $this->_calcDateOffset($parent, new Zend_Date($report->getDateAdded(), 'yyyy-MM-dd HH:mm'));
+
+		$parent->setDateFrom($shiftedDates['from'])
+		       ->setDateTo($shiftedDates['to']);
+
 		$this->view->report = $report;
 
 		$this->view->data = $report->getData(true);
 //Zend_Debug::dump($this->view->data); die();
 		$this->_exportReportData($parent, $report);
+
+		if (!$this->getRequest()->getParam('email', false)) {
+            return;
+		}
+
+		$recipients = $this->getRequest()->getParam('recipients', array());
+		if (empty($recipients)) {
+		    return;
+		}
+
+		$parent->setRecepients($recipients);
+
+        if ($this->_emailReport($parent, $report)) {
+            $this->view->uiMessage('reports_group_view_email_send_success', 'success');
+        } else {
+            $this->view->uiMessage('reports_group_view_email_send_failed', 'error');
+        }
+
+	}
+
+	protected function _generateReportFilename(Reports_Model_Group $reportGroup, Reports_Model_Items $reportData, $extension = 'csv')
+	{
+	    return str_replace(' ', '_', $reportGroup->getTitle()) . '_' . str_replace(array(' ', '-', ':'), '_', $reportData->getDateAdded())
+			        . '.' . $extension;
+	}
+
+	protected function _generatePdf(Reports_Model_CodeTemplate $template,
+	                                Reports_Model_Group $reportGroup,
+	                                Reports_Model_Items $report,
+	                                $filename = null,
+	                                $output = false)
+	{
+        $this->view->parent_parent = $template;
+        $this->view->parent = $reportGroup;
+        $this->view->report = $report;
+        $this->view->data = $report->getData(true);
+
+        $html = $this->view->render('group/view.pdf.phtml');
+
+	    if (!class_exists('DOMPDF')) {
+            require_once('dompdf/dompdf_config.inc.php');
+            $autoloader = Zend_Loader_Autoloader::getInstance();
+            $autoloader->pushAutoloader('DOMPDF_autoload', '');
+	    }
+
+        $dompdf = new DOMPDF();
+        $dompdf->set_paper("a4","portrait");
+        $dompdf->load_html($html);
+        $dompdf->set_base_path(PUBLIC_PATH);
+        $dompdf->render();
+
+        $pdfContents = $dompdf->output();
+        if ($filename) {
+            //$dompdf->stream(PUBLIC_PATH . '/data/reports/' . $filename);
+            file_put_contents(PUBLIC_PATH . '/data/reports/' . $filename, $pdfContents);
+        }
+
+        if ($output) {
+            echo $pdfContents;
+        }
+
+        return $dompdf;
 	}
 
 	protected function _exportReportData(Reports_Model_Group $reportGroup, Reports_Model_Items $reportData)
 	{
+	    $filename = null;
+
 		if ($this->_helper->contextSwitch->getCurrentContext() == 'csv'
 		    || $this->_helper->contextSwitch->getCurrentContext() == 'pdf') {
+
+		    $filename = $this->_generateReportFilename($reportGroup, $reportData, $this->_helper->contextSwitch->getCurrentContext());
+
 			$this->getResponse()->setHeader('Content-disposition',
-					"attachment; filename=" . str_replace(' ', '_', $reportGroup->getTitle()) . '_' . str_replace(array(' ', '-'), '_', $reportData->getDateAdded())
-			        . '_' . rand(1,10000) . '.' . $this->_helper->contextSwitch->getCurrentContext(),
+					"attachment; filename=" . $filename,
 					true);
+		}
+
+		if (!$filename) {
+		    return;
+		}
+
+		if (file_exists(PUBLIC_PATH . '/data/reports/' . $filename)) {
+		    $this->_helper->viewRenderer->setNoRender();
+		    $this->_helper->layout->disableLayout();
+
+		    echo file_get_contents(PUBLIC_PATH . '/data/reports/' . $filename);
+		    return;
 		}
 
 		if ($this->_helper->contextSwitch->getCurrentContext() == 'pdf') {
 		    $this->_helper->viewRenderer->setNoRender();
 		    $this->_helper->layout->disableLayout();
 
+			/*
 		    $html = $this->view->render('group/view.pdf.phtml');
 
 		    if (!class_exists('DOMPDF')) {
@@ -362,8 +643,11 @@ class Reports_GroupController extends Unwired_Controller_Crud {
             $dompdf->load_html($html);
             $dompdf->set_base_path(PUBLIC_PATH);
             $dompdf->render();
-            //$dompdf->stream("sample_report.pdf");
+            $dompdf->stream(PUBLIC_PATH . '/data/reports/' . $filename);
             echo $dompdf->output();
+            */
+
+		    $this->_generatePdf($this->view->parent_parent, $reportGroup, $reportData, $filename, true);
 		}
 	}
 
@@ -408,21 +692,46 @@ class Reports_GroupController extends Unwired_Controller_Crud {
             $view->report = $result;
             $view->reportGroup = $report;
 
-            $csv = $view->render('group/view.csv.phtml');
-
-            if (!$csv) {
-                return false;
-            }
-
             $mailer = new Zend_Mail();
 
-            $at = new Zend_Mime_Part($csv);
-            $at->type        = 'text/csv';
-            $at->disposition = Zend_Mime::DISPOSITION_INLINE;
-            $at->encoding    = Zend_Mime::ENCODING_BASE64;
-            $at->filename    = str_replace(' ', '_', 'Reports_' . $report->getTitle() . '_' . $result->getDateAdded() . '.csv');
+            $filenameCsv = $this->_generateReportFilename($report, $result, 'csv');
 
-            $mailer->addAttachment($at);
+            $csv = null;
+
+            if (!file_exists(PUBLIC_PATH . '/data/reports/' . $filenameCsv)) {
+                $csv = $view->render('group/view.csv.phtml');
+            } else {
+                $csv = @file_get_contents(PUBLIC_PATH . '/data/reports/' . $filenameCsv);
+            }
+
+            if (!empty($csv)) {
+                $at = new Zend_Mime_Part($csv);
+                $at->type        = 'text/csv';
+                $at->disposition = Zend_Mime::DISPOSITION_INLINE;
+                $at->encoding    = Zend_Mime::ENCODING_BASE64;
+                $at->filename    = $filenameCsv;
+
+                $mailer->addAttachment($at);
+            }
+
+            $filenamePdf = $this->_generateReportFilename($report, $result, 'pdf');
+
+            if (!file_exists(PUBLIC_PATH . '/data/reports/' . $filenamePdf)) {
+                $dompdf = $this->_generatePdf($this->view->parent_parent, $report, $result, $filenamePdf, false);
+            }
+
+            $pdf = @file_get_contents(PUBLIC_PATH . '/data/reports/' . $filenamePdf);
+
+            if (!empty($pdf)) {
+                $pdfAttachment = new Zend_Mime_Part($pdf);
+                $pdfAttachment->type        = 'application/pdf';
+                $pdfAttachment->disposition = Zend_Mime::DISPOSITION_INLINE;
+                $pdfAttachment->encoding    = Zend_Mime::ENCODING_BASE64;
+                $pdfAttachment->filename    = $filenamePdf;
+
+                $mailer->addAttachment($pdfAttachment);
+            }
+
 
             $mailer->setSubject($view->systemName . ' Report: ' . $report->getTitle() . ' ' . $result->getDateAdded());
 

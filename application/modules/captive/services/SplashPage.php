@@ -306,4 +306,53 @@ class Captive_Service_SplashPage
          */
         return $success;
     }
+
+    public function copyTemplate(Captive_Model_Template $template)
+    {
+        $mapperTemplate = new Captive_Model_Mapper_Template();
+
+        $mapperTemplate->setEventsDisabled(true);
+
+        $dbAdapter = $mapperTemplate->getDbTable()->getAdapter();
+
+        $dbAdapter->beginTransaction();
+
+        try {
+            $newTemplate = clone $template;
+
+            $newTemplate->setTemplateId(NULL)
+                        ->setName($template->getName() . ' (Copy ' . date('Y-m-d H:i:s') . ')');
+
+            $mapperTemplate->save($newTemplate);
+
+            $mapperContent = new Captive_Model_Mapper_Content();
+            $mapperContent->setEventsDisabled(true);
+
+            $templateContents = $this->getTemplateContent($template);
+
+            foreach ($templateContents as $content) {
+                $content->setContentId(null);
+                $content->setTemplateId($newTemplate->getTemplateId());
+
+                $mapperContent->save($content);
+            }
+
+            $serviceFiles = new Captive_Service_Files();
+
+            if (!$serviceFiles->copyContentDirectory($template, $newTemplate)) {
+                throw new Unwired_Exception('Cannot copy template content.', 500);
+            }
+
+            $dbAdapter->commit();
+
+            $mapperTemplate->setEventsDisabled(false)
+                           ->sendEvent('copy', $newTemplate, $newTemplate->getTemplateId(), $newTemplate->toArray());
+
+        } catch (Exception $e) {
+            $dbAdapter->rollBack();
+            throw $e;
+        }
+
+        return $newTemplate;
+    }
 }

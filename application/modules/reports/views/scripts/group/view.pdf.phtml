@@ -8,6 +8,7 @@
 <?php
     $this->pdf = true;
     echo $this->render('group/view.phtml');
+    unset($this->pdf);
 ?>
 </body>
 </html>

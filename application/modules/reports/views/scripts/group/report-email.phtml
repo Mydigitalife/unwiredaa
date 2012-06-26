@@ -1,5 +1,8 @@
 <?php
-    $interval = $this->translate('report_interval_' . $this->reportGroup->getReportInterval());
+    $interval = '';
+    if ($this->reportGroup->getReportInterval()) {
+        $interval = $this->translate('report_interval_' . $this->reportGroup->getReportInterval());
+    }
 ?>
 
 Bitte öffnen Sie Ihren <?php echo $interval; ?> Report "<?php echo $this->reportGroup->getTitle(); ?>", den Sie als Anhang zu dieser Email als Beistrich getrennte Datei (CSV) finden, welche Sie mit Microsoft Excel oder OpenOffice Calc öffnen können.

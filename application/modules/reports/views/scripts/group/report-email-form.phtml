@@ -1,0 +1,76 @@
+<script type="text/javascript">
+$(document).ready(function(){
+	$('#email_search').keydown(function(e){
+		if (e.which != 13) {
+			return;
+		}
+
+
+    	if (!$(this).val().length || !email_check($(this).val())) {
+    		alert("<?php echo $this->translate('reports_group_edit_email_invalid'); ?>");
+    		return false;
+    	}
+
+    	$('#recipients').val(($('#recipients').val() + ',' + $(this).val()).trim().replace(/^,+/, '').replace(/,+$/,''));
+    	$(this).val('');
+    	e.preventDefault();
+    	return false;
+
+	}).autocomplete({
+        source: "<?php echo $this->url(array('module' => 'users',
+                                             'controller' => 'admin',
+                                             'action' => 'autocomplete',
+                                             'field' => 'email'));?>",
+        minLength: 3,
+        select: function( event, ui ) {
+        	if (!ui.item) {
+        		return;
+        	}
+
+        	$('#recipients').val(($('#recipients').val() + ',' + ui.item.value).trim().replace(/^,+/, '').replace(/,+$/,''));
+        	this.value = '';
+        	return false;
+        }
+    });
+
+    $('#emaildialog form').attr('action', $('a.sendemail').attr('href'));
+
+    $('#emaildialog').dialog({
+		title: '<?php echo $this->translate('report_group_email')?>',
+		modal: true,
+		resizable: false,
+		autoOpen: false,
+		width: 480,
+		buttons: {
+			"<?php echo $this->translate('report_group_email_send');?>": function() {
+				if (!$('#recipients').val().length) {
+					alert("<?php echo $this->translate('reports_group_edit_email_invalid'); ?>", 1);
+					return false;
+				}
+
+				$('#emaildialog form').submit();
+				$(this).dialog( "close" );
+			},
+			"<?php echo $this->translate('report_group_email_close'); ?>": function() {
+				$(this).dialog( "close" );
+			}
+		}
+    });
+	$('a.sendemail').click(function(){
+		$('#emaildialog').dialog('open');
+		return false;
+	});
+});
+</script>
+<div id="emaildialog">
+  <form method="post">
+	<div class="formelement">
+		<label><?php echo $this->translate('report_group_email')?>:</label>
+		<input type="text" id="email_search" value="" />
+	</div>
+	<div class="formelement">
+		<textarea id="recipients" name="recipients"></textarea>
+		<p class="description"><?php echo $this->translate('report_group_email_description');?></p>
+	</div>
+  </form>
+</div>

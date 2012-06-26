@@ -26,6 +26,8 @@ var adminGroups = <?php echo Zend_Json::encode($this->currentUser->getGroupsAssi
 $(function () {
 	$("input[name=group_id]").hide().after($('.grouptree'));
 
+	$("#node_status").insertBefore($('#fieldset-settings'));
+
 <?php if (!isset($this->isViewOnly)) :?>
 	$('#settings-dhcp').change(function(){
 		if ($(this).is(':checked')) {
@@ -241,8 +243,11 @@ $(function () {
 ?>
 <?php if (isset($this->isViewOnly)) :?>
 <div class="span-19 last">
-	<a href="<?php echo $this->refererUrl; ?>" class="button small blue right">
+	<a href="<?php echo $this->refererUrl; ?>" class="button small blue left">
 		<span><?php echo $this->translate('nodes_index_edit_form_button_back'); ?></span>
+	</a>
+	<a href="javascript:window.print();" class="button small blue right">
+		<span><?php echo $this->translate('default_print_document'); ?></span>
 	</a>
 </div>
 <?php endif; ?>
@@ -250,6 +255,33 @@ $(function () {
 <div class="grouptree span-8">
 	<?php echo $this->tree($this->rootGroup, null, array('prefix' => 'group_')); ?>
 </div>
+<fieldset id="node_status" class="span-19 last">
+	<legend><?php echo $this->translate('nodes_index_edit_status_extended'); ?></legend>
+    <div class="span-6">
+		<label><?php echo $this->translate('nodes_index_edit_status_aptype'); ?> :</label>
+		<?php echo $this->entity->getStatusExtended()->getAptype() ? $this->entity->getStatusExtended()->getAptype() : 'N/A'; ?>
+	</div>
+    <div class="span-6">
+		<label><?php echo $this->translate('nodes_index_edit_status_tunnelip'); ?> :</label>
+		<?php echo $this->entity->getStatusExtended()->getTunnelip() ? $this->entity->getStatusExtended()->getTunnelip() : 'N/A'; ?>
+    </div>
+    <div class="span-6 last">
+		<label><?php echo $this->translate('nodes_index_edit_status_uptime'); ?> :</label>
+		<?php echo $this->entity->getStatusExtended()->getUptime() ? $this->entity->getStatusExtended()->getUptime() : 'N/A'; ?>
+	</div>
+    <div class="span-6">
+		<label><?php echo $this->translate('nodes_index_edit_status_kernel'); ?> :</label>
+		<?php echo $this->entity->getStatusExtended()->getKernelbuild() ? $this->entity->getStatusExtended()->getKernelbuild() : 'N/A'; ?>
+    </div>
+    <div class="span-6">
+		<label><?php echo $this->translate('nodes_index_edit_status_traffic'); ?> :</label>
+		<?php echo $this->entity->getStatusExtended()->getMonthlytraffic() ? $this->entity->getStatusExtended()->getMonthlytraffic() : 'N/A'; ?>
+	</div>
+    <div class="span-6 last">
+		<label><?php echo $this->translate('nodes_index_edit_status_lastupdate'); ?> :</label>
+		<?php echo $this->entity->getStatusExtended()->getLastupdate() ? $this->entity->getStatusExtended()->getLastupdate() : 'N/A'; ?>
+    </div>
+</fieldset>
 <div style="display:none">
 	<div id="mapwrap">
 		<div id="map" class="fancymap"> </div>
@@ -280,8 +312,11 @@ $(function () {
 ?>
 <?php if (isset($this->isViewOnly)) :?>
 <div class="buttons span-19 last">
-	<a href="<?php echo $this->refererUrl; ?>" class="button small blue right">
+	<a href="<?php echo $this->refererUrl; ?>" class="button small blue left">
 		<span><?php echo $this->translate('nodes_index_edit_form_button_back'); ?></span>
+	</a>
+	<a href="javascript:window.print();" class="button small blue right">
+		<span><?php echo $this->translate('default_print_document'); ?></span>
 	</a>
 </div>
 <?php endif; ?>
