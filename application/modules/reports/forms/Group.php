@@ -247,6 +247,10 @@ class Reports_Form_Group extends Unwired_Form
 			}
 		}
 
+		if (isset($values['email']) && is_array($values['email'])) {
+		    $values['email'] = implode(',', $values['email']);
+		}
+
 		parent::populate ( $values );
 	}
 
