@@ -107,6 +107,13 @@ class Nodes_IndexController extends Unwired_Rest_Controller
             return;
 	    }
 
+	    $entity->setUpdateConfig(1);
+
+	    try {
+	        $this->_getDefaultMapper()->save($entity);
+	    } catch (Exception $e) {
+	        // do nothing;
+	    }
 	    $serviceNode = new Nodes_Service_Node();
 
 	    if ($serviceNode->writeUci($entity)) {
