@@ -566,7 +566,7 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 //Zend_Debug::dump($this->view->data); die();
 		$this->_exportReportData($parent, $report);
 
-		if (!$this->getRequest()->getParam('email', false)) {
+		if (!$this->getRequest()->getParam('sendemail', false)) {
             return;
 		}
 
