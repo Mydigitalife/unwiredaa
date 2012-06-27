@@ -113,6 +113,8 @@ class Reports_Form_Group extends Unwired_Form
 		                                                                       'lastweek' => 'report_group_edit_timeframe_last_week',
 		                                                                       'currmonth' => 'report_group_edit_timeframe_current_month',
 		                                                                       'lastmonth' => 'report_group_edit_timeframe_last_month',
+		                                                                       'currquarter' => 'report_group_edit_timeframe_current_quarter',
+		                                                                       'lastquarter' => 'report_group_edit_timeframe_last_quarter',
 		                                                                       'curryear' => 'report_group_edit_timeframe_current_year',
 		                                                                       'lastyear' => 'report_group_edit_timeframe_last_year',
 		                                                                       )));

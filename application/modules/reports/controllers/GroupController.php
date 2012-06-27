@@ -22,7 +22,7 @@ class Reports_GroupController extends Unwired_Controller_Crud {
                         						. date("Y-m-d_H-i-s") . '.csv'),
 		                           ))
 		              ->addContext('pdf', array(
-                            				'suffix'    => 'csv',
+                            				'suffix'    => 'pdf',
                             				'headers'   => array(/*'Content-Type' => 'application/pdf',
                             						'Content-disposition' => 'attachment; filename='
                             						. date("Y-m-d_H-i-s") . '.pdf'*/),
@@ -471,7 +471,7 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 
 		$this->view->entity = $report;
 
-	    if (!$this->getRequest()->isPost() && !$this->getRequest()->getParam('groups_assigned')) {
+	    if (!$this->getRequest()->isPost() && !$this->getRequest()->getParam('timeframe')) {
 	        /*$date = new Zend_Date();
 	        $date->setDay(1);
 	        $form->getElement('date_from')->setValue($date->toString(Zend_Date::DATETIME_SHORT));
@@ -498,11 +498,13 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 				} catch (Exception $e) {
 					// nothing
 				}
+			$this->getRequest()->setParam('format', null);
 	        return;
 	    }
 
 	    $report->fromArray($form->getValues());
-        $report->setRecepients($this->getRequest()->getParam('email',''));
+	    $recipients = $this->getRequest()->getParam('email', array());
+        $report->setRecepients(!empty($recipients) ? $recipients : array());
 	    $report->setTitle('Instant report');
 
 	    $groupsAssigned = $report->getGroupsAssigned();
@@ -543,10 +545,11 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 		if ($this->getRequest()->isPost()) {
 		    if ($this->getRequest()->getParam('sendemail', 0)) {
     		    $recipients = $this->getRequest()->getParam('recipients', array());
-    		    $report->setRecepients($recipients);
+    		    $report->setRecepients(!empty($recipients) ? $recipients : array());
 		    }
 
 		    $recipients = $report->getRecepients();
+
     		if (!empty($recipients)) {
     		    if ($this->_emailReport($report, $items)) {
     		        $this->view->uiMessage('reports_group_view_email_send_success', 'success');
