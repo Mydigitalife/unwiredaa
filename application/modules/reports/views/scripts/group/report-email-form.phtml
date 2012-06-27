@@ -14,8 +14,8 @@ $(document).ready(function(){
     	if ($('#recipients').val().indexOf($(this).val()) == -1) {
     		$('#recipients').val(($('#recipients').val() + ',' + $(this).val()).trim().replace(/^,+/, '').replace(/,+$/,''));
     	}
-    	$(this).val('');
     	e.preventDefault();
+    	$(this).val('');
     	return false;
 
 	}).autocomplete({
@@ -28,8 +28,9 @@ $(document).ready(function(){
         	if (!ui.item) {
         		return;
         	}
-
-        	$('#recipients').val(($('#recipients').val() + ',' + ui.item.value).trim().replace(/^,+/, '').replace(/,+$/,''));
+        	if ($('#recipients').val().indexOf(ui.item.value) == -1) {
+        		$('#recipients').val(($('#recipients').val() + ',' + ui.item.value).trim().replace(/^,+/, '').replace(/,+$/,''));
+        	}
         	this.value = '';
         	return false;
         }

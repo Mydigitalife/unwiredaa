@@ -364,8 +364,9 @@ $(function () {
 					alert("<?php echo $this->translate('reports_group_edit_email_invalid'); ?>");
 					return false;
 				}
-
-				$('#email').val(($('#email').val() + ',' + $(this).val()).trim().replace(/^,+/, '').replace(/,+$/,''));
+				if ($('#email').val().indexOf($(this).val()) == -1) {
+					$('#email').val(($('#email').val() + ',' + $(this).val()).trim().replace(/^,+/, '').replace(/,+$/,''));
+				}
 				$(this).val('');
 				e.preventDefault();
 				return false;
@@ -380,8 +381,9 @@ $(function () {
 				if (!ui.item) {
 					return;
 				}
-
-				$('#email').val(($('#email').val() + ',' + ui.item.value).trim().replace(/^,+/, '').replace(/,+$/,''));
+				if ($('#email').val().indexOf(ui.item.value) == -1) {
+					$('#email').val(($('#email').val() + ',' + ui.item.value).trim().replace(/^,+/, '').replace(/,+$/,''));
+				}
 				this.value = '';
 				return false;
 			}
