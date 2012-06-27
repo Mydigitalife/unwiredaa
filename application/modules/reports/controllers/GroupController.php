@@ -542,7 +542,11 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 
 		    $recipients = $report->getRecepients();
     		if (!empty($recipients)) {
-    		    $this->_emailReport($report, $items);
+    		    if ($this->_emailReport($report, $items)) {
+    		        $this->view->uiMessage('reports_group_view_email_send_success', 'success');
+    		    } else {
+    		        $this->view->uiMessage('reports_group_view_email_send_failed', 'error');
+    		    }
     		}
 		}
 
