@@ -24,7 +24,7 @@ class Default_Service_Htaccess implements Unwired_Event_Handler_Interface
             return;
         }
 
-        if (!$data->entity->getKey() !== 'uwaa_allowed_ip') {
+        if ($data->entity->getKey() !== 'uwaa_allowed_ip') {
             return;
         }
 
@@ -40,13 +40,13 @@ class Default_Service_Htaccess implements Unwired_Event_Handler_Interface
 
 
         if (preg_match('/#start ip restriction(.*)#end ip restriction/ius', $htaccess)) {
-            $htaccess = preg_replace('/#start ip restriction(.*)#end ip restriction/ius', '', $htaccess);
+            $htaccess = preg_replace('/#start ip restriction(.*)#end ip restriction[\r\n]{1,2}/ius', '', $htaccess);
         }
 
         if (!empty($allowedHosts)) {
         $htaccess = <<<EOF
 #start ip restriction
-order deny, allow
+order deny,allow
 deny from all
 allow from $allowedHosts
 #end ip restriction
