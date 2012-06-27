@@ -134,7 +134,37 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 			$entity->setRecepients($this->getRequest()->getParam('email'));
 		}
 		*/
-		$this->_edit ();
+		$this->_edit();
+	}
+
+	protected function _edit(Unwired_Model_Mapper $mapper = null,
+							 Zend_Form $form = null)
+	{
+		if (null === $mapper) {
+			$mapper = $this->_getDefaultMapper();
+		}
+
+		$id = (int) $this->getRequest()->getParam('id');
+
+		if (!$id) {
+			$this->view->uiMessage('entity_not_found', 'error');
+			$this->_gotoIndex();
+			return false;
+		}
+
+		$entity = $mapper->find($id);
+
+		if (!$entity) {
+			$this->view->uiMessage('entity_not_found', 'error');
+			$this->_gotoIndex();
+			return false;
+		}
+
+		if ($this->getRequest()->isPost() && $this->getRequest()->getParam('email', null)) {
+		    $entity->setRecipients($this->getRequest()->getParam('email', null));
+		}
+
+		return $this->_add($mapper, $entity, $form);
 	}
 
 	public function reportsAction() {
