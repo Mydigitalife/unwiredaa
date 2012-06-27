@@ -12,6 +12,8 @@
 
 class Nodes_IndexController extends Unwired_Rest_Controller
 {
+    protected $_cache = null;
+
 	public function init()
 	{
 		parent::init();
