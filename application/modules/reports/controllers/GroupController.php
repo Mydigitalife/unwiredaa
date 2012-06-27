@@ -526,17 +526,25 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 		$items->setData($result);
 		$items->setReportGroupId($codeTemplate->getCodetemplateId());
 
-		if ($this->getRequest()->isPost() && $report->getRecepients()) {
-		    $this->_emailReport($report, $items);
-		}
-
 		$this->view->parent_parent = $codeTemplate;
 		$this->view->parent = $report;
 
 		$this->view->report = $items;
-
 		$this->view->data = $items->getData(true);
+
 		$this->_helper->viewRenderer->setScriptAction('view');
+
+		if ($this->getRequest()->isPost()) {
+		    if ($this->getRequest()->getParam('sendemail', 0)) {
+    		    $recipients = $this->getRequest()->getParam('recipients', array());
+    		    $report->setRecepients($recipients);
+		    }
+
+		    $recipients = $report->getRecepients();
+    		if (!empty($recipients)) {
+    		    $this->_emailReport($report, $items);
+    		}
+		}
 
 		$this->_exportReportData($report, $items);
 	}
