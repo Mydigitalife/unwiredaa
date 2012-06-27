@@ -223,6 +223,12 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 		$entity->setReportGroupId($this->getRequest()->getParam('id'));
 		$iMapper->save($entity);
 
+		$this->view->parent_parent = $parent;
+		$this->view->parent = $report;
+
+		$this->view->report = $entity;
+		$this->view->data = $entity->getData(true);
+
 		if ($report->getRecepients()) {
 		    $this->_emailReport($report, $entity);
 		}
