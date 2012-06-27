@@ -16,6 +16,7 @@ class Nodes_IndexController extends Unwired_Rest_Controller
 	{
 		parent::init();
 		$this->_defaultMapper = new Nodes_Model_Mapper_Node();
+		$this->_actionsToReferer[] = 'reset-config';
 	}
 
 	/**
@@ -87,6 +88,34 @@ class Nodes_IndexController extends Unwired_Rest_Controller
 		$this->view->group = $group;
 
 		$this->_index();
+	}
+
+	public function resetConfigAction()
+	{
+	    $id = $this->getRequest()->getParam('id', 0);
+        if (!$id) {
+            $this->view->uiMessage('entity_not_found', 'error');
+            $this->_gotoIndex();
+            return;
+        }
+
+	    $entity = $this->_getDefaultMapper()->find($id);
+
+	    if (!$entity) {
+            $this->view->uiMessage('entity_not_found', 'error');
+            $this->_gotoIndex();
+            return;
+	    }
+
+	    $serviceNode = new Nodes_Service_Node();
+
+	    if ($serviceNode->writeUci($entity)) {
+	        $this->view->uiMessage('nodes_resetconfig_success', 'success');
+	    } else {
+	        $this->view->uiMessage('nodes_resetconfig_failed', 'error');
+	    }
+
+	    $this->_gotoIndex();
 	}
 
 	public function viewAction()

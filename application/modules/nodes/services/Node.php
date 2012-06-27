@@ -16,6 +16,8 @@ class Nodes_Service_Node
 
 	protected $_authKeysCmd = '/opt/unwired/genconfig.sh';
 
+	protected $_configPath = '/opt/unwired/routers';
+
 	public function writeUci(Nodes_Model_Node $node)
 	{
 		$mac = $node->getMac();
@@ -28,10 +30,10 @@ class Nodes_Service_Node
 
 		    if (!empty($path)) {
 		        @unlink($path);
-
-		        /**
-		         * @todo Remove the .tgz file also
-		         */
+                @unlink($this->_configPath . '/' . str_replace(':','',$node->getMac()) . '.conf.tgz');
+                if (strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN') {
+                    @exec('rm -rf ' . $this->_configPath . '/' . str_replace(':','',$node->getMac()));
+                }
 		    }
 			return true;
 		}
