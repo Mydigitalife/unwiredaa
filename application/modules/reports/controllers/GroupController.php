@@ -161,7 +161,7 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 		}
 
 		if ($this->getRequest()->isPost() && $this->getRequest()->getParam('email', null)) {
-		    $entity->setRecipients($this->getRequest()->getParam('email', null));
+		    $entity->setRecepients($this->getRequest()->getParam('email', null));
 		}
 
 		return $this->_add($mapper, $entity, $form);
