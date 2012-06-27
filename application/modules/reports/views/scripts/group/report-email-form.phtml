@@ -11,7 +11,9 @@ $(document).ready(function(){
     		return false;
     	}
 
-    	$('#recipients').val(($('#recipients').val() + ',' + $(this).val()).trim().replace(/^,+/, '').replace(/,+$/,''));
+    	if ($('#recipients').val().indexOf($(this).val()) == -1) {
+    		$('#recipients').val(($('#recipients').val() + ',' + $(this).val()).trim().replace(/^,+/, '').replace(/,+$/,''));
+    	}
     	$(this).val('');
     	e.preventDefault();
     	return false;
