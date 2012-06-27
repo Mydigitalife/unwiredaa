@@ -23,9 +23,7 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 		                           ))
 		              ->addContext('pdf', array(
                             				'suffix'    => 'pdf',
-                            				'headers'   => array(/*'Content-Type' => 'application/pdf',
-                            						'Content-disposition' => 'attachment; filename='
-                            						. date("Y-m-d_H-i-s") . '.pdf'*/),
+                            				'headers'   => array('Content-Type' => 'application/pdf'),
                             		))
             		  ->addActionContext('view', 'csv')
             		  ->addActionContext('view', 'pdf')
