@@ -259,15 +259,10 @@ class Reports_Form_Group extends Unwired_Form
 	}
 
 	public function isValid($data) {
-		$valid = parent::isValid ( $data );
-		if (! $valid) {
+		$valid = parent::isValid($data);
 
+		if (!$valid) {
 			return false;
-		}
-
-		if (isset($data['report_type']) && $data['report_type'] == 'interval'
-		    && $this->getEntity()->getCodeTemplate()->getTimeframeLiveMax() === 0) {
-		    return true;
 		}
 
 		$testEntity = clone $this->getEntity();
@@ -278,18 +273,33 @@ class Reports_Form_Group extends Unwired_Form
 
 		$endDate = clone $testEntity->getDateTo();
 
+		$testEntity = null;
+
+	    if ($endDate->isEarlier($fromDate)) {
+		    $this->getElement('date_to')->addError('reports_group_edit_timeframe_end_before_start');
+		    $this->markAsError();
+		    return false;
+		}
+
+		if (isset($data['report_type'])) {
+		    if ($data['report_type'] == 'interval') {
+		        $timeframeMax = $this->getEntity()->getCodeTemplate()->getTimeframeIntervalMax();
+		    } else {
+		        $timeframeMax = $this->getEntity()->getCodeTemplate()->getTimeframeLiveMax();
+		    }
+		} else {
+
+		}
+
+	    if (isset($data['report_type']) && $data['report_type'] == 'interval'
+		    && $this->getEntity()->getCodeTemplate()->getTimeframeLiveMax() === 0) {
+		    return true;
+		}
+
 		$liveMax = $testEntity->getCodeTemplate()->getTimeframeLiveMax();
 
 		if (!$liveMax) {
 		    $liveMax = 527040;
-		}
-
-		$testEntity = null;
-
-		if ($endDate->isEarlier($fromDate)) {
-		    $this->getElement('date_to')->addError('reports_group_edit_timeframe_end_before_start');
-		    $this->markAsError();
-		    return false;
 		}
 
 		$fromDate->addMinute($liveMax);

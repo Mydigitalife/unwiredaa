@@ -38,6 +38,10 @@ class Reports_Bootstrap extends Unwired_Application_Module_Bootstrap
 
         Zend_Registry::set('reports.global', $globalSettings);
 
+        if (isset($globalSettings['timeframe_max'])) {
+            Reports_Model_CodeTemplate::setTimeframeGlobalMax($globalSettings['timeframe_max']);
+        }
+
         return $globalSettings;
 	}
 }

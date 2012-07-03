@@ -77,48 +77,49 @@ class Reports_Job_GenerateReport {
 
         $pendingReports = array();
 
+        $serviceReports = new Reports_Service_Reports();
+
         /**
          * Loop over pending periodical reports
          */
         foreach ($periodicalReports as $report) {
-            //$report = new Reports_Model_Group();
             $interval = $report->getReportInterval();
-
-            $dateAdded = $report->getDateAdded();
-
-            if (is_string($dateAdded)) {
-                $dateAdded = new Zend_Date($dateAdded, 'yyyy-MM-dd HH:mm');
-            }
-
 
             $now = new Zend_Date();
 
-            $toDate = new Zend_Date($report->getDateTo());
-            $fromDate = new Zend_Date($report->getDateFrom());
-
-            $period = $toDate->sub($fromDate);
-
-            $offsetFromDateAdded = $dateAdded->sub($fromDate);
-
             switch ($interval) {
                 case 'year':
-                    $dateAdded->setYear($now->getYear());
+                    if ((int) $now->toString(Zend_Date::DAY) !== 1 || (int) $now->toString(Zend_Date::MONTH) !== 1) {
+                        continue;
+                    }
+                    $timeframe = 'lastyear';
+                break;
+
+                case 'quarter':
+                    $month = (int) $now->toString(Zend_Date::MONTH);
+
+                    if ((int) $now->toString(Zend_Date::DAY) !== 1) {
+                        continue;
+                    }
+
+                    if (!in_array((int) $now->toString(Zend_Date::MONTH), array(1,4,7,10))) {
+                        continue;
+                    }
+                    $timeframe = 'lastquarter';
                 break;
 
                 case 'month':
-                    $dateAdded->setYear($now->getYear());
-                    $dateAdded->setMonth($now->getMonth());
+                    if ((int)$now->toString(Zend_Date::DAY) !== 1) {
+                        continue;
+                    }
+                    $timeframe = 'lastmonth';
                 break;
 
                 case 'week':
-                    $diffStamp = $now->getDate()
-                                          ->subDate($fromDate->getDate())
-                                               ->getTimestamp();
-
-                    if (fmod($diffStamp, (7 * 24 * 3600)) == 0) {
-                        $dateAdded->setDate($now);
+                    if ((int) $now->getWeekday()->toString(Zend_Date::WEEKDAY_DIGIT) !== 1) {
+                        continue;
                     }
-                ;
+                    $timeframe = 'lastweek';
                 break;
 
                 case 'day':
@@ -126,41 +127,16 @@ class Reports_Job_GenerateReport {
                     /**
                      * Assumed that the report job will be ran once daily
                      */
-                    $dateAdded = $now;
+                    $timeframe = 'yesterday';
                 break;
             }
 
-            if (!$dateAdded->isToday()) {
-                continue;
-            }
+            $shiftedDates = $serviceReports->calculateTimeframeOffset($report);
 
-            $dateAdded->setHour($fromDate->getHour())
-                      ->setMinute($fromDate->getMinute())
-                      ->setSecond($fromDate->getSecond());
-
-            $fromDate = clone $dateAdded;
-            $fromDate = $fromDate->sub($offsetFromDateAdded);
-            $toDate = clone $fromDate;
-            $toDate->add($period);
-
-           /* if ($report->getReportGroupId() == 120) {
-                echo "From: {$fromDate}\n";
-                echo "To: {$toDate}\n";
-            } */
-
-            /**
-             * $fromDate and $toDate hold the shifted time frame for report
-             * It will be used in future. For now reports are generated with
-             * the original time frame
-             */
+            $report->setDateFrom($shiftedDates['from'])
+                   ->setDateTo($shiftedDates['to']);
 
             $pendingReports[] = $report;
-
-            /**
-             * Generate with shifted timeframe
-             */
-            $report->setDateFrom($fromDate)
-                   ->setDateTo($toDate);
         }
 
         return $pendingReports;
@@ -189,6 +165,8 @@ class Reports_Job_GenerateReport {
     		$entity = $resultMapper->getEmptyModel();
 
     		$entity->setDateAdded(date('Y-m-d H:i:s'));
+    		$entity->setDateFrom(clone $report->getDateFrom());
+    		$entity->setDateTo(clone $report->getDateTo());
     		$entity->setData($result);
     		$entity->setReportGroupId($report->getReportGroupId());
 

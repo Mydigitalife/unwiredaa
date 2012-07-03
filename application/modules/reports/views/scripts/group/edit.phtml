@@ -167,6 +167,50 @@ $(function () {
 					dateTo.setTime(dateTo.getTime()-24*3600*1000);
 	  			break;
 
+				case 'currquarter':
+    				dateFrom.setDate(1);
+    				dateTo.setDate(1);
+
+    				if (dateFrom.getMonth() <= 2) {
+    					dateFrom.setMonth(0);
+    					dateTo.setMonth(3);
+    				} else if (dateFrom.getMonth() <= 5) {
+    					dateFrom.setMonth(3);
+    					dateTo.setMonth(6);
+    				} else if (dateFrom.getMonth() <= 8) {
+    					dateFrom.setMonth(6);
+    					dateTo.setMonth(9);
+    				} else {
+    					dateFrom.setMonth(9);
+    					dateTo.setMonth(1);
+    					dateTo.setFullYear(to.getFullYear()+1);
+    				}
+
+    				dateTo.setDate(0);
+				break;
+
+				case 'lastquarter':
+    				dateFrom.setDate(1);
+    				dateTo.setDate(1);
+
+    				if (dateFrom.getMonth() <= 2) {
+    					dateFrom.setMonth(9);
+    					dateTo.setMonth(1);
+						dateFrom.setFullYear(dateFrom.getFullYear()-1);
+    				} else if (dateFrom.getMonth() <= 5) {
+    					dateFrom.setMonth(0);
+    					dateTo.setMonth(3);
+    				} else if (dateFrom.getMonth() <= 8) {
+    					dateFrom.setMonth(3);
+    					dateTo.setMonth(6);
+    				} else {
+    					dateFrom.setMonth(6);
+    					dateTo.setMonth(9);
+    				}
+
+    				dateTo.setDate(0);
+				break;
+
 	  			case 'lastyear':
 					dateFrom.setFullYear(dateFrom.getFullYear()-1);
 
