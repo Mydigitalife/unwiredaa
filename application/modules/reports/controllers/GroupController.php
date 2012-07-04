@@ -199,14 +199,21 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 		if (!$this->view->canGenerateManual($report)) {
 		    $this->view->uiMessage('reports_group_report_cannot_generate_manual','error');
 
-		    $this->_helper->redirector->gotoUrlAndExit('/reports/group/reports/id/'.$report->getReportGroupId());
+		    $this->_helper->redirector->gotoRouteAndExit(array('module' => 'reports',
+		                                                       'controller' => 'group',
+		                                                       'action' => 'reports',
+		                                                       'id' => $report->getReportGroupId()),
+		                                                'default',
+		                                                true);
 		}
+
 		$className = $parent->getClassName();
 		$reportGenerator = new $className;
 
         $reportGenerator->setReportGroup($report);
 
-        $shiftedDates = $this->_calcDateOffset($report, null);
+        $serviceReports = new Reports_Service_Reports();
+        $shiftedDates = $serviceReports->calculateTimeframeOffset($report, null);
 
         $report->setDateFrom($shiftedDates['from'])
                ->setDateTo($shiftedDates['to']);
@@ -217,6 +224,8 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 
 		$entity = new Reports_Model_Items();
 		$entity->setDateAdded(date('Y-m-d H:i:s'));
+		$entity->setDateFrom(clone $report->getDateFrom());
+		$entity->setDateTo(clone $report->getDateTo());
 		$entity->setData($result);
 		$entity->setReportGroupId($this->getRequest()->getParam('id'));
 		$iMapper->save($entity);
@@ -238,197 +247,6 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 		                                                   'id' => $entity->getItemId()),
 		                                             'default',
 		                                             true);
-	}
-
-	protected function _calcDateOffset($report, $referenceDate = null)
-	{
-        if (!$referenceDate) {
-            $referenceDate = new Zend_Date();
-        }
-
-        $fromDate = $report->getDateFrom();
-        $toDate = $report->getDateTo();
-
-	  /*  if ($report->getReportType == 'interval') {
-            $interval = $report->getReportInterval();
-
-            $dateAdded = $report->getDateAdded();
-
-            if (is_string($dateAdded)) {
-                $dateAdded = new Zend_Date($dateAdded, 'yyyy-MM-dd HH:mm');
-            }
-
-
-            $now = $referenceDate;
-
-            $toDate = new Zend_Date($report->getDateTo());
-            $fromDate = new Zend_Date($report->getDateFrom());
-
-            $period = $toDate->sub($fromDate);
-
-            $offsetFromDateAdded = $dateAdded->sub($fromDate);
-
-            switch ($interval) {
-                case 'year':
-                    $dateAdded->setYear($now->getYear());
-                break;
-
-                case 'month':
-                    $dateAdded->setYear($now->getYear());
-                    $dateAdded->setMonth($now->getMonth());
-                break;
-
-                case 'week':
-                    $diffStamp = $now->getDate()
-                                          ->subDate($fromDate->getDate())
-                                               ->getTimestamp();
-
-                    if (fmod($diffStamp, (7 * 24 * 3600)) == 0) {
-                        $dateAdded->setDate($now);
-                    }
-                ;
-                break;
-
-                case 'day':
-                default:
-                    $dateAdded = $referenceDate;
-                break;
-            }
-
-
-            $dateAdded->setHour($fromDate->getHour())
-                      ->setMinute($fromDate->getMinute())
-                      ->setSecond($fromDate->getSecond());
-
-            $fromDate = clone $dateAdded;
-            $fromDate = $fromDate->sub($offsetFromDateAdded);
-            $toDate = clone $fromDate;
-            $toDate->add($period);
-
-        } else { */
-            switch ($report->getTimeframe()) {
-                case 'today':
-                    $fromDate = $referenceDate;
-                    $toDate = clone $fromDate;
-
-                    $fromDate->setHour(0)
-                             ->setMinute(0)
-                             ->setSecond(0);
-                    $toDate->addDay(1);
-                break;
-                case 'yesterday':
-                    $toDate = $referenceDate;
-
-                    $toDate->setHour(0)
-                           ->setMinute(0)
-                           ->setSecond(0);
-                    $fromDate = clone $toDate;
-                    $fromDate->subDay(1);
-                break;
-                case 'currweek':
-                    $fromDate = $referenceDate;
-
-                    $weekday = $fromDate->toValue(Zend_Date::WEEKDAY_DIGIT);
-
-                    $fromDate->subDay($weekday-1);
-                    $fromDate->setHour(0)
-                             ->setMinute(0)
-                             ->setSecond(0);
-
-                    $toDate = clone $fromDate;
-                    $toDate->addDay(7);
-                break;
-                case 'lastweek':
-                    $toDate = $referenceDate;
-
-                    $weekday = $toDate->toValue(Zend_Date::WEEKDAY_DIGIT);
-
-                    $toDate->subDay($weekday-1);
-                    $toDate->setHour(0)
-                           ->setMinute(0)
-                           ->setSecond(0);
-
-                    $toDate = clone $fromDate;
-                    $toDate->subDay(7);
-                break;
-                case 'currmonth':
-                    $fromDate = $referenceDate;
-                    $fromDate->setDay(1)
-                             ->setHour(0)
-                             ->setMinute(0)
-                             ->setSecond(0);
-
-                    $toDate = clone $fromDate;
-                    $toDate->addMonth(1);
-                break;
-                case 'lastmonth':
-                    $toDate = $referenceDate;
-                    $toDate->setDay(1)
-                           ->setHour(0)
-                           ->setMinute(0)
-                           ->setSecond(0);
-
-                    $fromDate = clone $toDate;
-                    $fromDate->subMonth(1);
-                break;
-                case 'curryear':
-                    $fromDate = $referenceDate;
-                    $fromDate->setMonth(1)
-                             ->setDay(1)
-                             ->setHour(0)
-                             ->setMinute(0)
-                             ->setSecond(0);
-
-                    $toDate = clone $fromDate;
-                    $toDate->addYear(1);
-                break;
-                case 'lastyear':
-                    $toDate = $referenceDate;
-                    $toDate->setMonth(1)
-                           ->setDay(1)
-                           ->setHour(0)
-                           ->setMinute(0)
-                           ->setSecond(0);
-
-                    $fromDate = clone $toDate;
-                    $fromDate->subYear(1);
-                break;
-
-                default:
-                    $dateAdded = $report->getDateAdded();
-
-                    if (is_string($dateAdded)) {
-                        $dateAdded = new Zend_Date($dateAdded, 'yyyy-MM-dd HH:mm');
-                    }
-
-
-                    $now = $referenceDate;
-
-                    $toDate = new Zend_Date($report->getDateTo());
-                    $fromDate = new Zend_Date($report->getDateFrom());
-
-                    $period = $toDate->sub($fromDate);
-
-                    $offsetFromDateAdded = $dateAdded->sub($fromDate);
-
-                    $fromDate = $now;
-                    $fromDate->sub($offsetFromDateAdded);
-
-                    $toDate = clone $fromDate;
-                    $toDate->add($period);
-
-                    $fromDate->setHour($report->getDateFrom()->getHour())
-                             ->setMinute($report->getDateFrom()->getMinute())
-                             ->setSecond($report->getDateFrom()->getSecond());
-
-                    $toDate->setHour($report->getDateTo()->getHour())
-                           ->setMinute($report->getDateTo()->getMinute())
-                           ->setSecond($report->getDateTo()->getSecond());
-                break;
-            }
-       /* } */
-
-        return array('from' => $fromDate, 'to' => $toDate);
 	}
 
 	public function instantAction() {
@@ -529,6 +347,8 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 
 		$items = new Reports_Model_Items();
 		$items->setDateAdded(date('Y-m-d H:i:s'));
+		$items->setDateFrom(clone $report->getDateFrom());
+		$items->setDateTo(clone $report->getDateTo());
 		$items->setData($result);
 		$items->setReportGroupId($codeTemplate->getCodetemplateId());
 
@@ -574,7 +394,12 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 		$this->view->parent_parent = $parent_parent;
 		$this->view->parent = $parent;
 
-		$shiftedDates = $this->_calcDateOffset($parent, new Zend_Date($report->getDateAdded(), 'yyyy-MM-dd HH:mm'));
+		$serviceReports = new Reports_Service_Reports();
+
+		/**
+		 * @todo Remove this and use from/to dates which are saved with report results
+		 */
+		$shiftedDates = $serviceReports->calculateTimeframeOffset($parent, new Zend_Date($report->getDateAdded(), 'yyyy-MM-dd HH:mm'));
 
 		$parent->setDateFrom($shiftedDates['from'])
 		       ->setDateTo($shiftedDates['to']);

@@ -20,12 +20,13 @@
 </tr>
 <tr>
 	<td><?php echo $this->translate('report_result_parameters_type'); ?></td>
-<?php if ($this->parent->getReportType() == 'interval') :?>
 	<td><?php echo $this->parent->getReportType(); ?></td>
+<?php if ($this->parent->getReportType() == 'interval') :?>
 	<td><?php echo $this->translate('report_result_parameters_interval'); ?></td>
-	<td><?php echo $this->translate('report_group_edit_timeframe_' . $this->parent->getTimeframe()); ?></td>
+	<td><?php echo $this->translate($this->parent->getReportInterval()); ?></td>
 <?php else: ?>
-	<td colspan="3"><?php echo $this->parent->getReportType(); ?></td>
+	<td><?php echo $this->translate('report_result_parameters_timeframe'); ?></td>
+	<td><?php echo $this->translate('report_group_edit_timeframe_' . str_replace(array('curr', 'last'), array('current_', 'last_'), $this->parent->getTimeframe())); ?></td>
 <?php endif; ?>
 </tr>
 <?php if ($this->parent->getCodeTemplate()->isInnerIntervalSupported()) :?>

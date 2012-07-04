@@ -54,12 +54,13 @@
 </tr>
 <tr>
 	<td><?php echo $this->translate('report_result_parameters_type'); ?></td>
-<?php if ($this->parent->getReportType() == 'interval') :?>
 	<td><?php echo $this->parent->getReportType(); ?></td>
+<?php if ($this->parent->getReportType() == 'interval') :?>
 	<td><?php echo $this->translate('report_result_parameters_interval'); ?></td>
-	<td><?php echo $this->translate('report_group_edit_timeframe_' . $this->parent->getTimeframe()); ?></td>
+	<td><?php echo $this->translate($this->parent->getReportInterval()); ?></td>
 <?php else: ?>
-	<td colspan="3"><?php echo $this->parent->getReportType(); ?></td>
+	<td><?php echo $this->translate('report_result_parameters_timeframe'); ?></td>
+	<td><?php echo $this->translate('report_group_edit_timeframe_' . str_replace(array('curr', 'last'), array('current_', 'last_'), $this->parent->getTimeframe())); ?></td>
 <?php endif; ?>
 </tr>
 <?php if ($this->parent->getCodeTemplate()->isInnerIntervalSupported()) :?>
@@ -103,7 +104,7 @@
 </tr>
 <?php endif;?>
 <tr>
-	<td><?php echo $this->translate('report_result_parameters_datefrom'); ?></td><td><?php echo $this->parent->getDateFrom();?></td><td><?php echo $this->translate('report_result_parameters_dateto'); ?></td><td><?php echo $this->parent->getDateTo();?></td>
+	<td><?php echo $this->translate('report_result_parameters_datefrom'); ?></td><td><?php echo $this->report->getDateFrom();?></td><td><?php echo $this->translate('report_result_parameters_dateto'); ?></td><td><?php echo $this->report->getDateTo();?></td>
 </tr>
 <?php if ($this->parent->getCodeTemplate()->isGroupSelectionSupported()) :?>
 <tr>
@@ -269,9 +270,9 @@ $acl = Zend_Registry::get ( 'acl' );
 							<?php if (isset($v->height)): ?>height="<?php echo $v->height?>"<?php endif; ?>
 							<?php if (isset($v->rowspan)): ?>rowspan="<?php echo $v->rowspan?>"<?php endif; ?>
 							<?php if (isset($v->colspan)): ?>colspan="<?php echo $v->colspan?>"<?php endif; ?>
-						><div <?php if (isset($v->iclass)): ?>class="<?php echo $v->iclass?>"<?php endif; ?>><?=(isset($v->translatable) && $v->translatable && $v->name)?$this->translate($v->name):$v->name?></div></th>
+						><div <?php if (isset($v->iclass)): ?>class="<?php echo $v->iclass?>"<?php endif; ?>><?=(isset($v->translatable) && $v->translatable && $v->name)?$this->translate((string) $v->name):$v->name?></div></th>
 					<?php else: ?>
-						<th><?php echo $this->translate($v); ?></th>
+						<th><?php echo $this->translate((string)$v); ?></th>
 					<?php endif; ?>
 					<?php endforeach; ?>
 			</tr>
@@ -297,7 +298,7 @@ $acl = Zend_Registry::get ( 'acl' );
 
 					<td class="<?php echo (isset($v->class[$kk]))? $v->class[$kk]:'';?>" <?php if (is_object($vv) && isset($vv->rowspan)): ?>rowspan="<?php echo $vv->rowspan?>"<?php endif; ?> <?php if (is_object($vv) && isset($vv->colspan)): ?>colspan="<?php echo $vv->colspan?>"<?php endif; ?>>
 					<?php if (is_object($vv)):?>
-						<?php echo (isset($vv->translatable) && $vv->translatable)?$this->translate($vv->data):$vv->data?>
+						<?php echo (isset($vv->translatable) && $vv->translatable)?$this->translate((string)$vv->data):$vv->data?>
 					<?php else: ?>
 						<?php echo $vv?>
 					<?php endif; ?>

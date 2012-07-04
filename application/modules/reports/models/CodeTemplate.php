@@ -45,6 +45,8 @@ class Reports_Model_CodeTemplate extends Unwired_Model_Generic implements Zend_A
 
 	protected $_timeframeIntervalMax = null;
 
+	static protected $_timeframeGlobalMax = null;
+
 	protected $_formatDefault = 'NotUserDefineable';
 
 	protected $_options = array();
@@ -320,6 +322,12 @@ class Reports_Model_CodeTemplate extends Unwired_Model_Generic implements Zend_A
      */
     public function getTimeframeLiveMax()
     {
+        $timeframeGlobalMax = self::getTimeframeGlobalMax();
+
+        if (null !== $timeframeGlobalMax && $timeframeGlobalMax > 0 && $this->_timeframeLiveMax < $timeframeGlobalMax) {
+            $this->setTimeframeLiveMax($timeframeGlobalMax);
+        }
+
         return $this->_timeframeLiveMax;
     }
 
@@ -342,6 +350,12 @@ class Reports_Model_CodeTemplate extends Unwired_Model_Generic implements Zend_A
      */
     public function getTimeframeIntervalMax()
     {
+        $timeframeGlobalMax = self::getTimeframeGlobalMax();
+
+        if (null !== $timeframeGlobalMax && $timeframeGlobalMax > 0 && $this->_timeframeIntervalMax < $timeframeGlobalMax) {
+            $this->setTimeframeIntervalMax($timeframeGlobalMax);
+        }
+
         return $this->_timeframeIntervalMax;
     }
 
@@ -357,6 +371,30 @@ class Reports_Model_CodeTemplate extends Unwired_Model_Generic implements Zend_A
         $this->_timeframeIntervalMax = $timeframeIntervalMax;
 
         return $this;
+    }
+
+    /**
+     * Get global timeframe limit
+     *
+     * @return null|integer
+     */
+    static public function getTimeframeGlobalMax()
+    {
+        return self::$_timeframeGlobalMax;
+    }
+
+    /**
+     * Set global timeframe limit
+     *
+     * @param null|integer $timeframeMax
+     */
+    static public function setTimeframeGlobalMax($timeframeMax = null)
+    {
+        if (null !== $timeframeMax) {
+            $timeframeMax = (int) $timeframeMax;
+        }
+
+        self::$_timeframeGlobalMax = $timeframeMax;
     }
 
 	/**

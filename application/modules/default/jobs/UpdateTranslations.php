@@ -102,5 +102,6 @@ class Default_Job_UpdateTranslations
 			Zend_Debug::dump($e->getMessage());
 			Zend_Debug::dump($e->getTrace());
 		}
+		echo "Updated $toFile\n";
     }
 }

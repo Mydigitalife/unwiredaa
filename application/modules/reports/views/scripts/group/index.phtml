@@ -22,8 +22,7 @@ $acl = Zend_Registry::get('acl');
 			<tr>
 				<th><?php echo $this->translate('report_index_id');?></th>
 				<th><?php echo $this->translate('report_index_title');?></th>
-				<th><?php echo $this->translate('report_index_from');?></th>
-				<th><?php echo $this->translate('report_index_to');?></th>
+				<th><?php echo $this->translate('report_index_timeframe');?></th>
 				<th><?php echo $this->translate('report_index_devices');?></th>
 				<th class="tools">
                     <?php
@@ -48,7 +47,6 @@ $acl = Zend_Registry::get('acl');
 					value="<?php echo $this->filter['title']; ?>" /></th>
 				<th>&nbsp;</th>
 				<th>&nbsp;</th>
-				<th>&nbsp;</th>
 				<th class="tools"><a name="index" class="icon filter"><?php echo $this->translate('report_index_button_filter'); ?></a>
 					<a name="index" class="icon reset"><?php echo $this->translate('report_index_button_reset'); ?></a>
 				</th>
@@ -61,8 +59,13 @@ $acl = Zend_Registry::get('acl');
 		<tr class="<?php echo $this->cycle(array('odd', 'even'))->next(); ?>">
 				<td class="column_id"><?php echo $reportGroup->getReportGroupId(); ?></td>
 				<td><?php echo $reportGroup->getTitle(); ?></td>
-				<td><?php echo $reportGroup->getDateFrom(); ?></td>
-				<td><?php echo $reportGroup->getDateTo(); ?></td>
+				<td><?php
+				    if ($reportGroup->getTimeframe() == 'manual') {
+                        echo $reportGroup->getDateFrom() . ' - ' . $reportGroup->getDateTo();
+				    } else {
+				        echo $this->translate('report_group_edit_timeframe_' . str_replace(array('curr', 'last'), array('current_', 'last_'), $reportGroup->getTimeframe()));
+				    }
+				?></td>
 				<td><?php echo nl2br($reportGroup->getGroupsAssignedFormatted()); ?></td>
 				<td class="tools">
 				  <?php

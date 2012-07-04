@@ -43,3 +43,9 @@ a.button {
 	page-break-before: always;
 	page-break-inside: avoid;
 }
+
+.message {
+	display: none!important;
+	opacity: 0;
+	visibility: hidden;
+}
