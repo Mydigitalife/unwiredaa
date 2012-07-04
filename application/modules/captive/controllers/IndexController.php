@@ -49,6 +49,13 @@ class Captive_IndexController extends Unwired_Controller_Crud
 
 		        if (!$entity) {
 		            $entity = new Captive_Model_SplashPage();
+
+		            if (!$this->getAcl()->isAllowed($this->_currentUser, $entity, 'add')) {
+            			$this->view->uiMessage('access_not_allowed_add', 'error');
+            			$this->_setAutoRedirect(true);
+            			$this->_gotoIndex();
+            			return false;
+        			}
 		        }
 
 		        $result = parent::_add($mapper, $entity, $form);

@@ -158,6 +158,13 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 			return false;
 		}
 
+	    if (!$this->getAcl()->isAllowed($this->_currentUser, $entity, 'edit')) {
+			$this->view->uiMessage('access_not_allowed_edit', 'error');
+			$this->_setAutoRedirect(true);
+			$this->_gotoIndex();
+			return false;
+		}
+
 		if ($this->getRequest()->isPost() && $this->getRequest()->getParam('email', null)) {
 		    $entity->setRecepients($this->getRequest()->getParam('email', null));
 		}
