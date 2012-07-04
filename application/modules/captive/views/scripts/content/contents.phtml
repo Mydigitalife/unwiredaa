@@ -620,7 +620,9 @@
     		    ?>
     		    	<div class="toolset">
         			<input type="hidden" name="content_id" value="<?php echo $data->getContentId(); ?>" />
+        			<?php if ($acl->isAllowed($this->currentUser, $data->getParent(), 'edit')) :?>
         			<a class="icon edit"><?php echo $this->translate('captive_content_widget_edit'); ?></a>
+        			<?php endif; ?>
         			<?php if ($acl->isAllowed($this->currentUser, $data->getParent(), 'delete')
         			          && ((isset($this->splashPage) && $data->getParent()->getSplashId())
         			               || (!isset($this->splashPage) && $data->getParent()->getTemplateId()))) :?>
