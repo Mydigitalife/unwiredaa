@@ -180,6 +180,7 @@ if (($plimit++)>100) {$path.="/[ploop!]";break;}
 		/*verify if groupdepth is activated for this report!!??*/
 		if ($this->getReportGroup()->getCodeTemplate()->isGroupDepthSupported()) $this->maxdepth=$this->getReportGroup()->getGroupDepthMax();
 		else $this->maxdepth=-3;
+
 		$this->startTime=$this->duration=$this->getReportGroup()->getDateTo()->getTimestamp();
 		$this->duration=$this->startTime-$this->getReportGroup()->getDateFrom()->getTimestamp();
 		$this->innerCount=0;//means no inner interval
@@ -193,6 +194,9 @@ if (($plimit++)>100) {$path.="/[ploop!]";break;}
 
 		$this->setReportOptions();//maxdepth -3 means unspecified -> codetemplate may choose
 		if ($this->maxdepth==-3) $this->maxdepth=2;
+
+               	/*add one depth if multiple groups #!?*/
+		//if (($this->maxdepth>=0) && (count($groupIds)>1)) $this->maxdepth++;
 
 		$this->prepareTemporaryTable($groupIds);
 

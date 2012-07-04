@@ -70,16 +70,20 @@ if (($plimit++)>10) {$path.="/[ploop!]";break;}
 		if ($mode=='unique') $this->summable=false;
 		else $this->summable=true;
 
-		if ($mode!='billingb') {
+		/*hmm use a maxdepth -3 as temporary default like APCountStructured*/
+		if (($mode!='billingb')&&($mode!='billingc')) {
 			/*verify if groupdepth is activated for this report!!??*/
 			if ($this->getReportGroup()->getCodeTemplate()->isGroupDepthSupported()) $this->maxdepth=$this->getReportGroup()->getGroupDepthMax();
 			else $this->maxdepth=2;
 		} else $this->maxdepth=1;
 
+		/*add one depth if multiple groups #!?*/
+		if (($this->maxdepth>=0) && (count($groupIds)>1)) $this->maxdepth++;
+
                 $this->startTime=$this->duration=$this->getReportGroup()->getDateFrom()->getTimestamp();
                 $this->duration=$this->getReportGroup()->getDateTo()->getTimestamp()-$this->startTime;
 		$this->innerCount=0;//means no inner interval
-		if (($mode!='billingb')&&($this->getReportGroup()->getCodeTemplate()->isInnerIntervalSupported())) {
+		if (($mode!='billingb')&&($mode!='billingc')&&($this->getReportGroup()->getCodeTemplate()->isInnerIntervalSupported())) {
 			$this->innerInterval=$this->getReportGroup()->getInnerInterval()*60;
 			if (($this->innerInterval)&&($this->innerInterval>0)) $this->innerCount=ceil($this->duration/$this->innerInterval);
 			else $this->innerInterval=$this->duration;
@@ -108,7 +112,7 @@ die("</pre>");
 		$resi=$this->db->fetchall("SELECT DISTINCT node_id from node_reportgroup");//GROUP_CONCAT(DISTINCT macht desweilen zuviele "," *G
 		foreach ($resi as $line) if ($line[0]) $ids[]=$line[0];
 
-		if ($mode=='unique') {
+		if (($mode=='unique')||($mode=='billingc')) {
 			$this->db->query("INSERT INTO unique_session
 SELECT DISTINCT i.session_id, i.node_id, ( (UNIX_TIMESTAMP(time)-UNIX_TIMESTAMP('$dateFrom') ) DIV $this->innerInterval) as intv
 FROM acct_internet_interim i
@@ -229,7 +233,7 @@ else {
 	if ($type=='notuserdefineable') $type=$dtype; /*we choose the actual default*/
 }
 
-/*configure mathcing chart depths (for maxdepth 0 or -1 we should check if real available depth >= 2)*/
+/*configure matching chart depths (for maxdepth 1 or -2 we should check if real available depth >= 2)*/
 /*if ($this->maxdepth==1) $cdepths=array(1);
 else $cdepths=array(1,2);*/
 
@@ -254,7 +258,7 @@ if ($this->innerCount>0) {
                                 'main'=>array( /*table 1*/
 /*use title specifed by user?*/
 					'type'=>$type
-					,'name'=>($mode!='unique'?'Traffic in MByte'.((isset($rows[0]) && is_array($rows[0]['data']))?' ('.$rows[0]['data'][0].': '.$rows[0]['data'][1].')':''):'Unique Users')/*!!?? move to chartOptions?*/
+					,'name'=>((($mode!='unique')&&($mode!='billingc'))?'Traffic in MByte'.((isset($rows[0]) && is_array($rows[0]['data']))?' ('.$rows[0]['data'][0].': '.$rows[0]['data'][1].')':''):'Unique Users')/*!!?? move to chartOptions?*/
 					,'chartOptions'=>array(
 						'type'=>(($this->innerCount>1)?'LineChart':'BarChart')/*ColumnChart*/
 						,'width'=>880 /*max 370 for 2 charts sidebyside*/
@@ -281,7 +285,7 @@ if ($this->innerCount>0) {
 						array_merge(
 							array(
 								array('name'=>'Group','translatable'=>false,'class'=>'bold')
-								,array('name'=>($mode!='unique'?'MByte':'Unique Users'),'translatable'=>false,'class'=>'bold right')
+								,array('name'=>((($mode!='unique')&&($mode!='billingc'))?'MByte':'Unique Users'),'translatable'=>false,'class'=>'bold right')
 							)
 							,$innerColumns
 						)

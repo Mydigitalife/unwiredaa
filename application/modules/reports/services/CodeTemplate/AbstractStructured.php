@@ -19,8 +19,9 @@ abstract class Reports_Service_CodeTemplate_AbstractStructured extends Reports_S
         protected $summable; /*whether results of subgroups are summable (i.e. nodes of reprot-subgroups are not additionall assigned to all parent report-groups)*/
         protected $maxdepth; /*number of level to go into subgroups, 0 means all, -1 all + listnodes*/
 
-        private function addChildGroups($group,$name,$depth,$parent) {/*listnodes=1 will not work well with maxdepth, may merge into special maxdepth avlue like 254, just groups (nearly unlimited, 255, listnode s too$
+        private function addChildGroups($group,$name,$depth,$parent) {/*listnodes=1 will not work well with maxdepth, may merge into special maxdepth value like 254, just groups (nearly unlimited, 255, listnode s too$
                 /*if maxdepth not reached (else just seach nodes and subgroups, but do not add new reoprtgroups)*/
+/*!!??may this line was missed in the depth0.patch*/
                 if ( ($this->maxdepth <= 0) || ($depth <= $this->maxdepth) ) { /*if depth is allowed create new rgroup entry*/
                         $this->rid++;
                         $this->dcache[$depth]=$this->rid;

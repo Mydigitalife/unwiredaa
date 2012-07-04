@@ -110,16 +110,51 @@ class Reports_Service_CodeTemplate_ConnectedSessions extends Reports_Service_Cod
 			$table = array(
 					'colDefs' => array(
 							array(
-									array('name' => 'report_result_group', 'rowspan' => 2),
-									array('name' => 'report_result_offline'),
-									array('name' => 'report_result_online', 'colspan' => 3),
-									array('name' => 'report_result_total', 'rowspan' => 2),
+									array(
+										'name' => 'report_result_group'
+										, 'translatable' => true
+										, 'rowspan' => 2
+										),
+									array(
+										'name' => 'report_result_offline'
+										, 'translatable' => true
+										, 'width' => '16%'
+										),
+									array(
+										'name' => 'report_result_online'
+										, 'translatable' => true
+										, 'colspan' => 3
+										),
+									array(
+										'name' => 'report_result_total'
+										, 'translatable' => true
+										, 'rowspan' => 2
+										, 'class' => 'right'
+										, 'width' => '14%'
+										),
 							),
 							array(
-									array('name' => 'report_result_garden'),
-									array('name' => 'report_result_guest'),
-									array('name' => 'report_result_macauth'),
-									array('name' => 'report_result_auth'),
+									array(
+										'name' => 'report_result_garden'
+										, 'translatable' => true
+										, 'class' => 'right'
+										),
+									array(
+										'name' => 'report_result_guest'
+										, 'translatable' => true
+										, 'class' => 'right'
+										, 'width' => '16%'
+										),
+									array(
+										'name' => 'report_result_macauth'
+										, 'translatable' => true
+										, 'class' => 'right'
+										),
+									array(
+										'name' => 'report_result_auth'
+										, 'translatable' => true
+										, 'class' => 'right'
+										),
 							),
 					)
 			);
@@ -168,20 +203,20 @@ class Reports_Service_CodeTemplate_ConnectedSessions extends Reports_Service_Cod
 				array(
 					'name' => 'report_status_sessions_status',
 					'type' => 'PieChart',
-					'headers' => array('report_result_sessions', 'report_result_session_count'),
+					'headers' => array('Session type', 'Session count'),//report_result_sessions', 'report_result_session_count
 					'rows' => array(
-						array('report_result_offline', ($totals ['garden'] [$k])),
-						array('report_result_online', ($totals ['guest'] [$k] + $totals ['macauth'] [$k] + $totals ['auth'] [$k]))
+						array('Offline/Garden', ($totals ['garden'] [$k])),//report_result_offline
+						array('Online/Internet', ($totals ['guest'] [$k] + $totals ['macauth'] [$k] + $totals ['auth'] [$k]))//report_result_online
 					)
 				),
 				array(
 					'name' => 'report_status_sessions_authmethod',
 					'type' => 'PieChart',
-					'headers' => array('report_result_authmethod', 'report_result_session_count'),
+					'headers' => array('Authenthication method', 'Session count'),//'report_result_authmethod', 'report_result_session_count'
 					'rows' => array(
-						array('report_result_guest', ($totals ['garden'] [$k])),
-						array('report_result_macauth', ($totals ['macauth'] [$k])),
-						array('report_result_auth', ($totals ['auth'] [$k]))
+						array('Guest users', ($totals ['garden'] [$k])),//report_result_guest
+						array('Mac-auth. users', ($totals ['macauth'] [$k])),//report_result_macauth
+						array('Authenticated users', ($totals ['auth'] [$k]))//report_result_auth
 					)
 				),
 			),

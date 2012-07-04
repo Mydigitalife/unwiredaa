@@ -67,6 +67,10 @@ if (($plimit++)>10) {$path.="/[ploop!]";break;}
 		/*verify if groupdepth is activated for this report!!??*/
 		if ($this->getReportGroup()->getCodeTemplate()->isGroupDepthSupported()) $this->maxdepth=$this->getReportGroup()->getGroupDepthMax();
 		else $this->maxdepth=2;
+
+                /*add one depth if multiple groups #!?*/
+//                if (($this->maxdepth>=0) && (count($groupIds)>1)) $this->maxdepth++;
+
 		$this->prepareTemporaryTable($groupIds);
 		$tables=array();
 /*
@@ -129,7 +133,7 @@ else {
 	if ($type=='notuserdefineable') $type=$dtype; /*we choose the actual default*/
 }
 
-/*configure mathcing chart depths (for maxdepth 0 or -1 we should check if real available depth >= 2)*/
+/*configure mathcing chart depths (for maxdepth -1 or -2 we should check if real available depth >= 2)*/
 if ($this->maxdepth==1) $cdepths=array(1);
 else $cdepths=array(1,2);
 
