@@ -273,9 +273,9 @@ class Reports_Form_Group extends Unwired_Form
 
 		$endDate = clone $testEntity->getDateTo();
 
-		$testEntity = null;
+        $testEntity = null;
 
-	    if ($endDate->isEarlier($fromDate)) {
+		if ($endDate->isEarlier($fromDate)) {
 		    $this->getElement('date_to')->addError('reports_group_edit_timeframe_end_before_start');
 		    $this->markAsError();
 		    return false;
@@ -288,21 +288,14 @@ class Reports_Form_Group extends Unwired_Form
 		        $timeframeMax = $this->getEntity()->getCodeTemplate()->getTimeframeLiveMax();
 		    }
 		} else {
-
+            $timeframeMax = Reports_Model_CodeTemplate::getTimeframeGlobalMax();
 		}
 
-	    if (isset($data['report_type']) && $data['report_type'] == 'interval'
-		    && $this->getEntity()->getCodeTemplate()->getTimeframeLiveMax() === 0) {
-		    return true;
+		if (!$timeframeMax) {
+		    $timeframeMax = 527040;
 		}
 
-		$liveMax = $testEntity->getCodeTemplate()->getTimeframeLiveMax();
-
-		if (!$liveMax) {
-		    $liveMax = 527040;
-		}
-
-		$fromDate->addMinute($liveMax);
+		$fromDate->addMinute($timeframeMax);
 
 		if ($fromDate->isEarlier($endDate)) {
 		    $this->getElement('date_to')->addError('reports_group_edit_timeframe_overlimit_error');
