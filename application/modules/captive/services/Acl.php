@@ -27,6 +27,13 @@ class Captive_Service_Acl implements Zend_Acl_Assert_Interface
         }
 
         /**
+         * This is a generic check for permission on content entity
+         */
+        if (!$resource->getContentId()) {
+            return true;
+        }
+
+        /**
          * Content block belongs to splashpage and role does not have access to edit splashpage
          */
         if ($resource->getSplashId() && !$acl->isAllowed($role, 'captive_splashpage', 'edit')) {
@@ -41,9 +48,16 @@ class Captive_Service_Acl implements Zend_Acl_Assert_Interface
         }
 
         /**
+         * Resource is restricted to normal admin privileges so we need to check for a 'special' priv
+         */
+        if ($resource->isRestricted() && !$acl->isAllowed($role, $resource, 'special')) {
+            return false;
+        }
+
+        /**
          * Content block is not editable and we need to check for 'special' permission
          */
-        if (((!$resource->isEditable() && $resource->getSplashId()) || $resource->isRestricted()) && !$acl->isAllowed($role, $resource, 'special')) {
+        if ((!$resource->isEditable() && $resource->getSplashId()) && !$acl->isAllowed($role, $resource, 'special')) {
             return false;
         }
 
