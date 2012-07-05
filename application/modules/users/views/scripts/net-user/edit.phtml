@@ -12,6 +12,10 @@
 ?>
 var adminGroups = <?php echo Zend_Json::encode($this->currentUser->getGroupsAssigned());?>;
 
+/**
+ * Preselect user group or first available group for the current administrator
+ */
+var selectedGroup = <?php echo ($this->entity->getGroupId() ? $this->entity->getGroupId() : key($this->currentUser->getGroupsAssigned()));?>;
 $(function () {
 	$("input[name=group_id]").hide().after($('.grouptree'));
 
@@ -19,7 +23,7 @@ $(function () {
         .jstree({
             "plugins" : ["themes","html_data","ui"],
             "core" : { "initially_open" : [ "group_<?php echo ($this->entity->getGroupId()); ?>" ] },
-            "ui" : { select_limit : 1,  "initially_select" : [ "group_<?php echo ($this->entity->getGroupId()); ?>" ] }
+            "ui" : { select_limit : 1,  "initially_select" : [ "group_" + selectedGroup ] }
         })
         .bind("select_node.jstree", function (event, data) {
 			var groupId = data.rslt.obj.attr("id").replace(/[^\d]+/gi,'');
