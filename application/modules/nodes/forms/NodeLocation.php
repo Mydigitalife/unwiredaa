@@ -41,7 +41,8 @@ class Nodes_Form_NodeLocation extends Unwired_Form
 													'required' => false,
 													'class' => 'span-6',
 													'validators' => array('len' => array('validator' => 'Regex',
-																					     'options' => array('pattern' => '/^[a-z0-9]+[a-z0-9\s]+$/i')))));
+																					     'options' => array('pattern' => '/^[a-z0-9]+[a-z0-9\s]+$/i',
+		                                                                                                    'messages' => array('regexNotMatch' => 'nodes_index_edit_form_zip_error'))))));
 		$this->addElement('CountrySelect', 'country', array('label' => 'nodes_index_edit_form_country',
 															'required' => true,
 															'class' => 'span-6'));

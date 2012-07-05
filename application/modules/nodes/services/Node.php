@@ -114,7 +114,7 @@ class Nodes_Service_Node
          LIMIT 10*/
 
 	    $sql = <<<EOS
-		 SELECT node_id, SUM(up) as "up", SUM(down) as "down", SUM(up)+SUM(down) as total FROM
+		 SELECT node_id, SUM(up) as "traffic_up", SUM(down) as "traffic_down", SUM(up)+SUM(down) as total FROM
          (SELECT MAX(bytes_up)-MIN(bytes_up) as up, MAX(bytes_down)-MIN(bytes_down) as down, node_id
          FROM acct_garden_interim
          WHERE time >= DATE_SUB(NOW(), INTERVAl 5 DAY) AND NOT ISNULL(node_id)

@@ -50,7 +50,8 @@ class Users_Form_NetUser extends Unwired_Form
 													'required' => false,
 													'class' => 'span-5',
 													'validators' => array('len' => array('validator' => 'Regex',
-																					     'options' => array('pattern' => '/^\+[0-9]+[0-9\s]+[0-9]+$/')))));
+																					     'options' => array('pattern' => '/^\+[0-9]+[0-9\s]+[0-9]+$/',
+		                                                                                                    'messages' => array('regexNotMatch' => 'users_netuser_edit_form_phone_error'))))));
 		$this->addElement('text', 'address', array('label' => 'users_netuser_edit_form_address',
 													'required' => false,
 													'class' => 'span-5',
@@ -65,7 +66,8 @@ class Users_Form_NetUser extends Unwired_Form
 													'required' => false,
 													'class' => 'span-5',
 													'validators' => array('len' => array('validator' => 'Regex',
-																					     'options' => array('pattern' => '/^[a-z0-9]+[a-z0-9\s]+$/i')))));
+																					     'options' => array('pattern' => '/^[a-z0-9]+[a-z0-9\s]+$/i',
+		                                                                                                    'messages' => array('regexNotMatch' => 'users_netuser_edit_form_zip_error'))))));
 		$this->addElement('CountrySelect', 'country', array('label' => 'users_netuser_edit_form_country',
 															'required' => true,
 															'class' => 'span-5'));
