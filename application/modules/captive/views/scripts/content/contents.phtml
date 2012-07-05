@@ -503,6 +503,9 @@
 		<?php
 		 foreach ($columnContents as $contents) :
 
+		 /**
+		  * @todo Get rid of this loop here. Move it to the view helper.
+		  */
              $data = null;
              $dataMobile = null;
 
@@ -538,7 +541,7 @@
 
 		     ?>">
     		<div class="portlet-header ui-helper-clearfix">
-    		    <div class="title"><?php echo $data->getTitle(); ?></div>
+    		    <div class="title"><?php echo $this->contentTitle($data); ?></div>
                 <?php
     		        if (!isset($this->splashPage) || $data->getParent()->isEditable()) :
     		    ?>
@@ -614,7 +617,7 @@
 
 		    ?>">
     		<div class="portlet-header ui-helper-clearfix">
-    		    <div class="title"><?php echo $data->getTitle(); ?></div>
+    		    <div class="title"><?php echo $this->contentTitle($data, true); ?></div>
                 <?php
     		        if (!isset($this->splashPage) || $data->getParent()->isEditable()) :
     		    ?>
