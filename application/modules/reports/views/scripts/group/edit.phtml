@@ -432,6 +432,19 @@ $(function () {
 				return false;
 			}
 		});
+
+
+		<?php
+		    /**
+		     * Load stored inner interval
+		     * if entity is being edited or form contains errors
+		     */
+		    if ($this->entity->getReportGroupId() || $this->form->isErrors()) :
+		?>
+			$('#inner_interval').val(<?php echo (int) $this->entity->getInnerInterval(); ?>);
+		<?php
+		    endif;
+		?>
 });
 
 function filterInnerInterval()
