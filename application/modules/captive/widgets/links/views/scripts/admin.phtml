@@ -82,22 +82,45 @@
 			}
 			var fieldset = $(this).parents('fieldset:first');
 			if ($(fieldset).children('.devicelink').length > 1) {;
+				if ($(this).next().is(':visible')) {
+					$(this).parents('.devicelink:first').prev().find('a.deviceLinkAction.add').show();
+				}
+
 				$(this).parents('.devicelink:first').remove();
+
+				/**
+				 * Leave the "x" icon when there is another link. Removing the last device link removes the whole link fieldset.
+				 */
+				if ($(fieldset).parents('.ui-tabs-panel:first').find('fieldset').length < 2 && $(fieldset).children('.devicelink').length < 2) {
+					$(fieldset).children('.devicelink').find('a.deviceLinkAction.remove').hide();
+				}
 			} else {
-				if ($(fieldset).parents('.linkwidget:first').find('fieldset').length < 2) {
+				if ($(fieldset).parents('.ui-tabs-panel:first').find('fieldset').length < 2) {
 					alert('<?php echo $this->translate('widget_links_admin_error_nolinks'); ?>');
 					return;
 				}
 
+				var tab = $(fieldset).parents('.ui-tabs-panel:first');
 				$(fieldset).parent().remove();
+
+				/**
+				 * Check if there is only one fieldset (link group) left and if it contains
+				 * just one entry then we need to disable the "x" icon.
+				 */
+				if ($(tab).find('fieldset').length < 2 && $(tab).find('fieldset:first .devicelink').length < 2) {
+					(tab).find('fieldset:first .devicelink a.deviceLinkAction.remove').hide();
+				}
 			}
 		});
 
 		$('a.deviceLinkAction.add').die('click');
 		$('a.deviceLinkAction.add').live('click', function(){
-			var cloned = $(this).parents('.devicelink:first').find('.deviceLinkAction').toggle().end().clone();
+			$(this).parents('.devicelink:first').find('.deviceLinkAction:first').show();
+			$(this).parents('.devicelink:first').find('.deviceLinkAction:last').hide();
 
-			cloned.find('.deviceLinkAction.remove').hide()
+			var cloned = $(this).parents('.devicelink:first').clone();
+
+			cloned.find('.deviceLinkAction.remove').show()
 			cloned.find('.deviceLinkAction.add').show();
 
 			$(this).parents('fieldset').find('.devicelink:last').after(cloned);
