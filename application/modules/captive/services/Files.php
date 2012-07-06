@@ -157,7 +157,7 @@ class Captive_Service_Files implements Unwired_Event_Handler_Interface
                 exec($cmd, $output, $cmdResult);
                 if ($cmdResult) {
                     $mkdirCmd = "{$paths['ssh']} {$sshOptions} {$remoteUserHost} --cmd \" mkdir -m 0777 -p " . dirname($remotePath) . '"';
-                    exec($mkdirCmd, $output, $cmdResuls);
+                    exec($mkdirCmd, $output, $cmdResult);
                     exec($cmd, $output, $cmdResult);
                 }
 
@@ -167,6 +167,51 @@ class Captive_Service_Files implements Unwired_Event_Handler_Interface
 
                     return false;
                 }
+            }
+        }
+
+        return true;
+    }
+
+    protected function _executeRemote($cmd)
+    {
+        /**
+         * Don't try to do anything if there are no splashpages defined or OS is Windows ;)
+         */
+        if (!Zend_Registry::isRegistered('splashpages') || strtoupper(substr(PHP_OS, 0, 3)) == 'WIN') {
+            return true;
+        }
+
+        $splashpages = Zend_Registry::get('splashpages');
+        $paths = Zend_Registry::get('shellpaths');
+
+        foreach ($splashpages as $splashpage) {
+    		/**
+             * Build ssh/scp command
+             */
+            $sshOptions = '';
+            if (isset($splashpage['sshoptions'])) {
+                foreach ($splashpage['sshoptions'] as $switch => $value) {
+                    $sshOptions .= " -{$switch} {$value}";
+                }
+            }
+
+            $remoteUserHost = (isset($splashpage['user']) ? " {$splashpage['user']}@" : '') . "{$splashpage['host']}";
+
+            $cmd = str_replace(PUBLIC_PATH, $splashpage['publicpath'], $cmd);
+
+            $shellCommand = "{$paths['ssh']} {$sshOptions} {$remoteUserHost} --cmd \"{$cmd}\"";
+
+            /**
+             * Exec the remote command
+             */
+            exec($shellCommand, $output, $cmdResult);
+
+            /**
+             * Non zero exit status means error
+             */
+            if ($cmdResult) {
+                return false;
             }
         }
 
@@ -244,11 +289,14 @@ class Captive_Service_Files implements Unwired_Event_Handler_Interface
 
          $fileInfo = explode('.', $file);
 
-         if (@rename($filePath, $path . '/' . $newFileName . '.' . end($fileInfo))) {
-             return $newFileName . '.' . end($fileInfo);
+         $newFilePath = $path . '/' . $newFileName . '.' . end($fileInfo);
+         if (!@rename($filePath, $newFilePath)) {
+            return false;
          }
 
-         return false;
+         $this->_executeRemote("/bin/mv {$filePath} {$newFilePath}");
+
+         return $newFileName . '.' . end($fileInfo);
     }
 
     public function deleteFile($file, $entity)
@@ -267,7 +315,13 @@ class Captive_Service_Files implements Unwired_Event_Handler_Interface
              return false;
          }
 
-         return @unlink($filePath);
+         if (!@unlink($filePath)) {
+             return false;
+         }
+
+         $this->_executeRemote("/bin/rm -f {$filePath}");
+
+         return true;
     }
 
     protected function _copyRecursive($source, $target)
