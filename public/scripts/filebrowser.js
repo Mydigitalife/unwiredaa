@@ -36,12 +36,14 @@ function reloadFiles() {
 
 function renameFile()
 {
-	if (!confirm("Are you sure you want to RENAME the file '" + fileName + "'?\n\n" +
-				 "WARNING: Renaming a file from splashpage/template may cause distortions in pages in which this file is used!")) {
-		return false;
-	}
 	var filePath = $(this).siblings('input[type=hidden]').val();
 	var fileName = $(this).siblings('.filename').text();
+	
+	if (!confirm("Are you sure you want to RENAME the file '" + fileName + "'?\n\n" +
+				 "WARNING: Renaming a file from splashpage/template may cause distortions in pages in which this file is used!")) {
+			return false;
+	}
+	
 	var newFileName = prompt('Enter new file name (without extension):', fileName.replace(/\..*?$/gi, ''));
 	
 	if (!newFileName) {
