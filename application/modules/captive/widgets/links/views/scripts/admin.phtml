@@ -26,24 +26,57 @@
 		$('select.contenttype').die('change');
 		$('select.contenttype').live('change', function(){
 			$(this).parent().next().children(':not(input, label)').remove();
-			if ($(this).val() == 'text') {
-				$(this).parent().next().children('input').show();
-			} else {
-				var input = $(this).parent().next().children('input');
+			var input = $(this).parent().next().children('input');
 
+			if (!$(this).data('text') && !$(this).data('image')) {
+				$(this).data($(this).val(), $(input).val());
+			}
+
+			if ($(this).val() == 'text') {
+				/**
+				 * Save the currently selected image
+				 */
+				$(this).data('image', $(input).val());
+
+				if ($(this).data('text')) {
+					$(input).val($(this).data('text'));
+				}
+
+				$(input).show();
+			} else {
 				$(input).hide();
 
 				var imageHtml = $(input).val().replace(/\:templatePath:/gi, templatePath)
-							   			      .replace(/\:splashpagePath:/gi, splashpagePath);
+				 							  .replace(/\:splashpagePath:/gi, splashpagePath);
 
 				var image = $(imageHtml);
 
 				if (!image.length) {
-					image = $('<img src="<?php echo $this->baseUrl('themes/default/images/icons/24x24/view.png'); ?>" />');
+					/**
+					 * Save the current input text
+					 */
+					$(this).data('text', $(input).val());
+
+					/**
+					 * Check if user has selected image before and is just switching text and image
+					 */
+ 					if ($(this).data('image')) {
+						imageHtml = $(this).data('image').replace(/\:templatePath:/gi, templatePath)
+														 .replace(/\:splashpagePath:/gi, splashpagePath);
+
+						image = $(imageHtml);
+						$(input).val($(this).data('image'));
+ 					}
 				}
+
+				if (!image.length) {
+					image = $('<img src="<?php echo $this->baseUrl('themes/default/images/icons/24x24/view.png'); ?>" />');
+				} else {
+					$(this).data('image', $(input).val());
+				}
+
 				$(image).css({'cursor' : 'pointer'})
 						.addClass('changeImage');
-
 
 				$(input).after(image);
 
@@ -72,7 +105,7 @@
 		$('div.link').each(function(){
 			$(this).find('.devicelink:not(:last) a.add').hide();
 			$(this).find('.devicelink:not(:last) a.remove').show();
-			$(this).find('.devicelink:last a.remove').hide();
+			//$(this).find('.devicelink:last a.remove').hide();
 		});
 
 		$('a.deviceLinkAction.remove').die('click');

@@ -393,6 +393,9 @@ class Captive_ContentController extends Unwired_Controller_Crud
     }
 
 
+    /**
+     * Get file list for splashpage/template
+     */
     public function filesAction()
     {
         $this->_helper->layout->disableLayout();
@@ -400,28 +403,88 @@ class Captive_ContentController extends Unwired_Controller_Crud
         $splashId = (int) $this->getRequest()->getParam('splash', 0);
 
         if (!$splashId) {
-            $templateId = (int) $this->getRequest()->getParam('template', 0);
+            $id = (int) $this->getRequest()->getParam('template', 0);
+            $mapper = new Captive_Model_Mapper_Template();
+
+        } else {
+            $id = $splashId;
+            $mapper = new Captive_Model_Mapper_SplashPage();
         }
 
-        if (!$splashId && !$templateId) {
+        if (!$id) {
             return;
         }
 
+        $entity = $mapper->find($id);
+
+        if (!$entity) {
+            return;
+        }
+
+        /**
+         * Get specific command for file operation
+         */
+        $command = $this->getRequest()->getParam('cmd', 'list');
+
+        /**
+         * Get file on which we are going to do the operation.
+         * It might be null if we are listing files
+         */
+        $file = $this->getRequest()->getParam('file', null);
+
         $serviceFiles = new Captive_Service_Files();
 
-        if ($splashId) {
-            $files = $serviceFiles->getSplashPageFiles($splashId);
-        } else {
-            $files = $serviceFiles->getTemplateFiles($templateId);
+        $files = array();
+
+        switch ($command) {
+            case 'delete':
+                if (!$file) {
+                    return;
+                }
+                $result = $serviceFiles->deleteFile($file, $entity);
+
+                if ($result) {
+                    $files[] = array('name' => $file,
+                             		 'path' => '',
+                                     'deleted' => 1);
+                }
+            break;
+
+            case 'rename':
+                if (!$file) {
+                    return;
+                }
+
+                $newFile = trim($this->getRequest()->getParam('new_name', null));
+                if ($newFile) {
+                     $result = $serviceFiles->renameFile($file, $newFile, $entity);
+
+                     if ($result) {
+                         $files[] = array('name' => $result,
+                             		      'old_name' => $file,
+                                          'renamed' => 1);
+                     }
+                }
+            break;
+
+            default:
+                $files = $serviceFiles->getFiles($entity);
+            break;
         }
 
         $this->view->files = $files;
     }
 
+    /**
+     * Handle file upload for a splashpage/template files
+     */
     public function uploadAction()
     {
         $this->_helper->layout->disableLayout();
 
+        /**
+         * Allow only post to hit this action/controller
+         */
         if (!$this->getRequest()->isPost()) {
             return;
         }

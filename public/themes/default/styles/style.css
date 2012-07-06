@@ -613,3 +613,70 @@ ul#widgetSet li {
 .deviceLinkAction.add {
     background-image: url('../images/icons/24x24/add.png');
 }
+
+
+.fileList {
+    width: 490px;
+    height: 350px;
+    overflow: auto;
+}
+
+.fileList .files label {
+    width: 70px;
+    height: 70px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+
+.fileList .files label span {
+    display: block;
+    padding: 3px;
+    height: 64px;
+    width: 64px;
+    overflow: hidden;
+}
+
+.fileList .files label.ui-state-active {
+    border: 1px solid #ffd324;
+}
+
+.fileList .files label span img {
+    max-height: 100%;
+    max-width: 100%;
+}
+
+.tipsy .file_toolbar {
+    height: 24px;
+    white-space: no-wrap;
+}
+.tipsy .file_toolbar span {
+    float: left;
+    margin-right: 5px;
+    margin-top: 3px;
+}
+
+.tipsy .file_toolbar .icon {
+    width: 16px;
+    height: 16px;
+}
+
+.tipsy .file_toolbar a {
+    border: 1px solid transparent;
+}
+
+.tipsy .file_toolbar a.icon:hover {
+    background-color: transparent;
+    border: 1px solid #79B7E7;
+}
+
+.tipsy .file_toolbar .icon.select {
+    background-image: url('../images/icons/16x16/accept.png');
+}
+
+.tipsy .file_toolbar .icon.edit {
+    background-image: url('../images/icons/16x16/edit.png');
+}
+
+.tipsy .file_toolbar .icon.delete {
+    background-image: url('../images/icons/16x16/delete.png');
+}

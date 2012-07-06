@@ -43,61 +43,60 @@ class Captive_Service_Files implements Unwired_Event_Handler_Interface
 		 */
 	}
 
-    public function getSplashPageFiles($splash)
-    {
-        return $this->_getFiles($splash, 'splash');
-    }
+	/**
+	 * Get file list for a splashpage/template
+	 *
+	 * @param Captive_Model_SplashPage|Captive_Model_Template $entity
+	 */
+	public function getFiles($entity)
+	{
+	    if ($entity instanceof Captive_Model_SplashPage) {
+	        return $this->_getFiles($entity, 'splash');
+	    } else if ($entity instanceof Captive_Model_Template) {
+	        return $this->_getFiles($entity, 'template');
+	    }
 
-    public function getTemplateFiles($template)
-    {
-        return $this->_getFiles($template, 'template');
-    }
+	    return array();
+	}
 
-    protected function _getFiles($id, $type = 'splash')
+    protected function _getFiles($entity)
     {
-        if (!$id) {
+        if (!$entity) {
             return array();
         }
 
-        if ($type == 'splash') {
-            $splash = $id;
-
-            if (!$splash instanceof Captive_Model_SplashPage) {
-
-                $mapperSplash = new Captive_Model_Mapper_SplashPage();
-
-                $splash = $mapperSplash->find($splash);
-
-                if (!$splash) {
-                    return array();
-                }
+        if ($entity instanceof Captive_Model_SplashPage) {
+            /**
+             * Check and get path for splashpage
+             */
+            if (!$entity->getSplashId()) {
+                return array();
             }
 
-            $id = $splash->getSplashId();
+            $id = $entity->getSplashId();
 
             $path = $this->getSplashPagePath($id);
 
-        } else {
+        } else if ($entity instanceof Captive_Model_Template) {
 
-            $template = $id;
-
-            if (!$template instanceof Captive_Model_Template) {
-
-                $mapperTemplate = new Captive_Model_Mapper_Template();
-
-                $template = $mapperTemplate->find($template);
-
-                if (!$template) {
-                    return array();
-                }
+            /**
+             * Check and get path for template
+             */
+            if (!$entity->getTemplateId()) {
+                return array();
             }
 
-            $id = $template->getTemplateId();
+            $id = $entity->getTemplateId();
 
             $path = $this->getTemplatePath($id);
+
+        } else {
+            return array();
         }
 
-
+        /**
+         * Path does not exist
+         */
         if (!file_exists($path)) {
             @mkdir($path, 0755, true);
             return array();
@@ -121,7 +120,7 @@ class Captive_Service_Files implements Unwired_Event_Handler_Interface
 
     public function copyToSplashpages($files)
     {
-        if (!Zend_Registry::isRegistered('splashpages')) {
+        if (!Zend_Registry::isRegistered('splashpages') || strtoupper(substr(PHP_OS, 0, 3)) == 'WIN') {
             return true;
         }
 
@@ -217,6 +216,58 @@ class Captive_Service_Files implements Unwired_Event_Handler_Interface
         @rmdir($path);
 
         return true;
+    }
+
+    /**
+     * Rename a file to a new name preserving the extension.
+     *
+     * @param string $file
+     * @param string $newFileName
+     * @param Captive_Model_SplashPage|Captive_Model_Template $entity
+     * @return false|string False on failure and new filename on success
+     */
+    public function renameFile($file, $newFileName, $entity)
+    {
+         if ($entity instanceof Captive_Model_SplashPage) {
+             $path = $this->getSplashPagePath($entity->getSplashId());
+         } else if ($entity instanceof Captive_Model_Template) {
+             $path = $this->getTemplatePath($entity->getTemplateId());
+         } else {
+             return false;
+         }
+
+         $filePath = $path . '/' . $file;
+
+         if (!file_exists($filePath)) {
+             return false;
+         }
+
+         $fileInfo = explode('.', $file);
+
+         if (@rename($filePath, $path . '/' . $newFileName . '.' . end($fileInfo))) {
+             return $newFileName . '.' . end($fileInfo);
+         }
+
+         return false;
+    }
+
+    public function deleteFile($file, $entity)
+    {
+         if ($entity instanceof Captive_Model_SplashPage) {
+             $path = $this->getSplashPagePath($entity->getSplashId());
+         } else if ($entity instanceof Captive_Model_Template) {
+             $path = $this->getTemplatePath($entity->getTemplateId());
+         } else {
+             return false;
+         }
+
+         $filePath = $path . '/' . $file;
+
+         if (!file_exists($filePath)) {
+             return false;
+         }
+
+         return @unlink($filePath);
     }
 
     protected function _copyRecursive($source, $target)

@@ -640,7 +640,7 @@ cursor:pointer;
 }
 
 .fileList {
-	width: 450px;
+	width: 490px;
 	height: 350px;
 	overflow: auto;
 }
@@ -648,7 +648,8 @@ cursor:pointer;
 .fileList .files label {
 	width: 70px;
 	height: 70px;
-	margin-right: 3px;
+	margin-right: 5px;
+	margin-bottom: 5px;
 }
 
 .fileList .files label span {
@@ -677,7 +678,29 @@ cursor:pointer;
 	margin-right: 5px;
 	margin-top: 3px;
 }
+
 .tipsy .file_toolbar .icon {
 	width: 16px;
 	height: 16px;
+}
+
+.tipsy .file_toolbar a {
+	border: 1px solid transparent;
+}
+
+.tipsy .file_toolbar a.icon:hover {
+    background-color: transparent;
+    border: 1px solid #79B7E7;
+}
+
+.tipsy .file_toolbar .icon.select {
+	background-image: url('../images/icons/16x16/accept.png');
+}
+
+.tipsy .file_toolbar .icon.edit {
+	background-image: url('../images/icons/16x16/edit.png');
+}
+
+.tipsy .file_toolbar .icon.delete {
+	background-image: url('../images/icons/16x16/delete.png');
 }
