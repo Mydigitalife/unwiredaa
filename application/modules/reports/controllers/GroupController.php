@@ -581,6 +581,7 @@ class Reports_GroupController extends Unwired_Controller_Crud {
 
             if (!file_exists(PUBLIC_PATH . '/data/reports/' . $filenameCsv)) {
                 $csv = $view->render('group/view.csv.phtml');
+                @file_put_contents(PUBLIC_PATH . '/data/reports/' . $filenameCsv, $csv);
             } else {
                 $csv = @file_get_contents(PUBLIC_PATH . '/data/reports/' . $filenameCsv);
             }
