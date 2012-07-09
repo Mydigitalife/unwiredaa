@@ -106,8 +106,8 @@ class Reports_Service_Reports
                        ->setMinute(0)
                        ->setSecond(0);
 
-                $toDate = clone $fromDate;
-                $toDate->subDay(7);
+                $fromDate = clone $toDate;
+                $fromDate->subDay(7);
             break;
             case 'currmonth':
                 $fromDate = clone $referenceDate;
