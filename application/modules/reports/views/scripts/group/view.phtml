@@ -68,7 +68,7 @@
 	<td><?php echo $this->translate('report_result_parameters_innerinterval'); ?></td>
 	<td><?php
 	    $message = 'report_group_edit_inner_none';
-	    switch ($this->parent->getReportInterval()) {
+	    switch ($this->parent->getInnerInterval()) {
 	        case 0: $message = 'report_group_edit_inner_none';
 	                break;
 	        case 5: $message = 'report_group_edit_inner_5min';
