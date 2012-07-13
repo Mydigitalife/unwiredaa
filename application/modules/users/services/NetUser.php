@@ -33,9 +33,13 @@ class Users_Service_NetUser implements Unwired_Event_Handler_Interface
 				 /**
 				  * Do not kick enabled users ;)
 				  */
-				 if (!in_array(self::DISABLED_GROUP_ID, $policyIds)) {
-				 	break;
-				 }
+				 /* if (!in_array(self::DISABLED_GROUP_ID, $policyIds)) {
+				 	 break;
+
+				 }*/
+				 /**
+				  * Changed! Kick everybody so new settings take effect
+				  */
 			case 'delete':
 				$mac = $data->entity->getMac();
 				$mac = trim($mac);
@@ -51,13 +55,13 @@ class Users_Service_NetUser implements Unwired_Event_Handler_Interface
 				}
 
 				$mac = str_replace(array(':','-'), '', $mac);
-				$mac = str_split($mac, 2);
-				$mac = implode('-', $mac);
+				/* $mac = str_split($mac, 2);
+				$mac = implode('-', $mac); */
+
+				$serviceChilli = new Default_Service_Chilli();
 
 				try {
-					$client = new Zend_Http_Client($this->_logoutUri . $mac,
-												   array('timeout'      => 30));
-					$client->request();
+				    $serviceChilli->logoutUser($mac);
 				} catch (Exception $e) {
 					// @todo Maybe handle logoff error responses?
 				}

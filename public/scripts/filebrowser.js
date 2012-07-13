@@ -130,7 +130,7 @@ function createFileBrowser(cbkUrl, uplUrl)
 	uploadUrl = uplUrl;
 	
 	if($('#fileBrowser').length > 0) {
-		return;
+		$('#fileBrowser').remove();
 	}
 	
 

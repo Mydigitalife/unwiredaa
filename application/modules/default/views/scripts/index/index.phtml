@@ -28,6 +28,7 @@
 	var nodes = <?php echo Zend_Json::encode($nodes);?>;
 	var map;
 	var infowindow;
+	var defaultTimeout = 5000;
 
 	function stringToDate(datestring)
 	{
@@ -96,7 +97,12 @@
 				if (data) {
 
 					var garden_users = '0';
-					if (data.session_count == -1) {
+
+					if (data.session_count < -1) {
+						defaultTimeout = defaultTimeout + 1000;
+					}
+
+					if (data.session_count < 0) {
 						data = defaultData;
 					} else {
 						garden_users = data.session_count - data.internet_users;
@@ -113,7 +119,7 @@
 				}
 
 				if ($('#infowindowcontainer').is(':visible')) {
- 					statsTimer = setTimeout("loadStatistics(lastDevice);", 3000);
+ 					statsTimer = setTimeout("loadStatistics(lastDevice);", defaultTimeout);
 				}
 			}
 		});
@@ -144,7 +150,7 @@
 					$('#networkgraphdown').sparkline(networkDownGraph, { width: 510 })
 				}
 
- 				networkTimer = setTimeout("loadNetworkStatistics();", 5000);
+ 				networkTimer = setTimeout("loadNetworkStatistics();", defaultTimeout);
 			}
 		});
 	}

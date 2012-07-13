@@ -78,17 +78,19 @@
 				}
 
 				$(image).css({'cursor' : 'pointer'})
-						.addClass('changeImage');
+						.addClass('changeImage')
+						.load(function(){
+        					if ($(this).width() > 150) {
+        						$(this).width(150);
+        					}
+        				})
+						.error(function(){
+							$(this).attr('src', '<?php echo $this->baseUrl('themes/default/images/icons/24x24/view.png'); ?>');
+						});
 
 				$(input).after(image);
 
 				$(image).wrap('<div class="span-5 last" />');
-
-				$(image).load(function(){
-					if ($(this).width() > 150) {
-						$(this).width(150);
-					}
-				});
 			}
 		});
 
@@ -104,10 +106,16 @@
 			});
 		});
 
-		$('div.link').each(function(){
-			$(this).find('.devicelink:not(:last) a.add').hide();
-			$(this).find('.devicelink:not(:last) a.remove').show();
-			//$(this).find('.devicelink:last a.remove').hide();
+		$('.desktop-content, .mobile-content').each(function(){
+			var links = $(this).find('.link');
+
+			$(links).each(function(){
+				$(this).find('.devicelink:not(:last) a.add').hide();
+				$(this).find('.devicelink:not(:last) a.remove').show();
+				if (links.length == 1) {
+					$(this).find('.devicelink a.remove').hide();
+				}
+			});
 		});
 
 		$('a.deviceLinkAction.remove').die('click');
@@ -175,29 +183,28 @@
 				$(this).val('');
 			});
 
-			$(cloned).find('.deviceLinkAction.remove').hide();
+			/* $(cloned).find('.deviceLinkAction.remove').hide(); */
 			$(cloned).find('.deviceLinkAction.add').show();
 
 			$(this).parent().before(cloned);
 		});
 
-		createFileBrowser('<?php echo $this->url(array('module' => 'captive',
-		                                               'controller' => 'content',
-		                                               'action' => 'files',
-		                                               'splash' => isset($this->splashPage) ? $this->splashPage->getSplashId() : null,
-		                                               'template' => !isset($this->splashPage) ? $this->content->getTemplateId() : null),
-		                                         'default',
-		                                         true); ?>',
-                          '<?php echo $this->url(array('module' => 'captive',
-		                                               'controller' => 'content',
-		                                               'action' => 'upload',
-		                                               'splash' => isset($this->splashPage) ? $this->splashPage->getSplashId() : null,
-		                                               'template' => !isset($this->splashPage) ? $this->content->getTemplateId() : null),
-		                                         'default',
-		                                         true); ?>');
-
         $('.changeImage').die('click');
 		$('.changeImage').live('click', function(){
+			createFileBrowser('<?php echo $this->url(array('module' => 'captive',
+                    'controller' => 'content',
+                    'action' => 'files',
+                    'splash' => isset($this->splashPage) ? $this->splashPage->getSplashId() : null,
+                    'template' => !isset($this->splashPage) ? $this->content->getTemplateId() : null),
+              'default',
+              true); ?>',
+				'<?php echo $this->url(array('module' => 'captive',
+                    'controller' => 'content',
+                    'action' => 'upload',
+                    'splash' => isset($this->splashPage) ? $this->splashPage->getSplashId() : null,
+                    'template' => !isset($this->splashPage) ? $this->content->getTemplateId() : null),
+              'default',
+              true); ?>');
 			openFileBrowser($(this).parent().prev(), '<?php echo $this->baseUrl(); ?>/');
 		});
 
@@ -443,7 +450,7 @@
                 foreach ($linksData['links'] as $link) :
                     $linkCounter++;
             ?>
-            <div class="formelement">
+            <div class="formelement link">
             	<fieldset>
             	<legend><?php echo $this->translate('widget_links_admin_link'); ?></legend>
             	<?php foreach ($link as $device => $linkData) :?>
@@ -486,7 +493,7 @@
                 		<input class="span-5 last linkcontent" type="text" name="content[mobile][<?php echo $languageId; ?>][content][links][<?php echo $linkCounter;?>][<?php echo $device;?>][content]" value="<?php echo $this->escape($linkData['content']);?>" />
                 	</div>
 
-                	<div class="span-1 last">
+                	<div class="span-1 deviceLinkButtons last">
                 		<a href="javascript:;" class="deviceLinkAction remove"><?php echo $this->translate('widget_link_admin_devicelink_remove')?></a>
                 		<a href="javascript:;" class="deviceLinkAction add"><?php echo $this->translate('widget_link_admin_devicelink_add')?></a>
                 	</div>

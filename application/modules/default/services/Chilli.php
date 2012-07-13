@@ -90,4 +90,20 @@ class Default_Service_Chilli
             return json_decode($body);
         }
     }
+
+    public function logoutUser($mac)
+    {
+        $client = new Zend_Http_Client();
+
+        $client->setUri($this->getOption('statsUrl'))
+               ->setParameterGet('logout', $mac);
+
+        $result = $client->request();
+
+        if ($result->getStatus() != 200) {
+            return false;
+        } else {
+            return true;
+        }
+    }
 }
