@@ -28,7 +28,7 @@ class Users_Service_NetUser implements Unwired_Event_Handler_Interface
 
 		switch ($message->getMessageId()) {
 			case 'edit':
-				 $policyIds = $data->entity->getPolicyIds();
+				 // $policyIds = $data->entity->getPolicyIds();
 
 				 /**
 				  * Do not kick enabled users ;)
@@ -55,8 +55,8 @@ class Users_Service_NetUser implements Unwired_Event_Handler_Interface
 				}
 
 				$mac = str_replace(array(':','-'), '', $mac);
-				/* $mac = str_split($mac, 2);
-				$mac = implode('-', $mac); */
+				$mac = str_split($mac, 2);
+				$mac = implode('-', $mac);
 
 				$serviceChilli = new Default_Service_Chilli();
 
