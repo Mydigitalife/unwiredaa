@@ -689,3 +689,7 @@ ul#widgetSet li {
 .hidden {
     display: none;
 }
+
+.message a {
+    color: #002F59 !important;
+}

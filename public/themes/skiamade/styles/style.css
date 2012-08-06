@@ -713,3 +713,7 @@ cursor:pointer;
 .hidden {
 	display: none;
 }
+
+.message a {
+	color: #002F59 !important;
+}
