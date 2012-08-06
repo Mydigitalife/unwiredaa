@@ -36,7 +36,7 @@ class Nodes_IndexController extends Unwired_Rest_Controller
         return $this->_cache;
     }
 
-	public function indexAction()
+	public function _index()
 	{
 
 		$groupService = new Groups_Service_Group();
@@ -51,7 +51,7 @@ class Nodes_IndexController extends Unwired_Rest_Controller
 													null,
 													false,
 													$filter);
-		$this->_index();
+		parent::_index();
 	}
 
 
@@ -140,6 +140,7 @@ class Nodes_IndexController extends Unwired_Rest_Controller
 		$filter['mac'] = strtoupper($this->getRequest()->getParam('mac', null));
 		$filter['ipaddress'] = $this->getRequest()->getParam('ipaddress', null);
 		$filter['billable'] = $this->getRequest()->getParam('billable', null);
+		$filter['online_status'] = $this->getRequest()->getParam('online_status', null);
 
 		$this->view->filter = $filter;
 

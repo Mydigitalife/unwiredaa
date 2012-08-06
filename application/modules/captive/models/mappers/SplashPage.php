@@ -14,6 +14,8 @@ class Captive_Model_Mapper_SplashPage extends Unwired_Model_Mapper
 	    $model = parent::rowToModel($row, $updateRepo);
 
 	    if ($model) {
+	        $mapperGroup = new Groups_Model_Mapper_Group();
+
             $rowTemplate = $row->findParentRow('Captive_Model_DbTable_Template');
 
             if ($rowTemplate) {
@@ -31,6 +33,12 @@ class Captive_Model_Mapper_SplashPage extends Unwired_Model_Mapper
             foreach ($groupRows as $groupRow) {
                 $model->setGroupId($groupRow->group_id);
                 $model->setSelected($groupRow->selected);
+
+                $group = $mapperGroup->find($groupRow->group_id);
+
+                if ($group) {
+                    $model->setGroup($group);
+                }
             }
 
             $settingsRows = $row->findDependentRowset('Captive_Model_DbTable_SplashPageSettings');

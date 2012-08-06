@@ -31,7 +31,17 @@ class Users_IndexController extends Unwired_Controller_Action {
 
 		$this->view->form = $form;
 
+	    $forgotLink = '<a href="'
+	                . $this->_helper->url->url(array('module' => 'users',
+                          								'controller' => 'index',
+                          								'action'	=> 'forgot'),
+                    							 'default',
+                                                 true)
+                    . '">' . $this->view->translate('users_index_login_forgotlink') . '</a>';
+
 		if (!$form->isValid($this->getRequest()->getPost())) {
+			$this->view->uiMessage($this->view->translate('user_login_failed', $forgotLink), 'error');
+            $this->_helper->redirector->gotoRouteAndExit(array(), 'default', true);
 			return;
 		}
 
@@ -40,7 +50,7 @@ class Users_IndexController extends Unwired_Controller_Action {
 		$service = new Users_Service_Admin();
 
 		if (!$service->login($data['username'], $data['password'])) {
-			$this->view->uiMessage('user_login_failed', 'error');
+			$this->view->uiMessage($this->view->translate('user_login_failed', $forgotLink), 'error');
             $this->_helper->redirector->gotoRouteAndExit(array(), 'default', true);
 			return;
 		}
@@ -69,6 +79,37 @@ class Users_IndexController extends Unwired_Controller_Action {
 		$this->view->uiMessage('user_logout_success', 'success');
 
 		$this->_helper->redirector->gotoRouteAndExit(array(), 'default', true);
+	}
+
+	public function forgotAction()
+	{
+        $form = new Users_Form_ForgotPassword();
+
+        $this->view->form = $form;
+
+        if (!$this->getRequest()->isPost() || !$form->isValid($this->getRequest()->getPost())) {
+            return;
+        }
+
+        $mapperAdmins = new Users_Model_Mapper_Admin();
+
+        $admin = $mapperAdmins->findOneBy(array('email' => $form->getElement('email')->getValue()));
+
+        if (!$admin) {
+            $form->getElement('email')->addError('users_index_forgot_usernotfound');
+        }
+
+        $template = $this->view->render('index/forgot-email.phtml');
+
+        $serviceAdmin = new Users_Service_Admin();
+
+        if (!$serviceAdmin->createTempPassword($admin, $template)) {
+            $this->view->uiMessage('users_index_forgot_newpassword_error', 'error');
+            return;
+        }
+
+        $this->view->uiMessage('users_index_forgot_newpassword_success', 'success');
+        $this->_helper->redirector->gotoRouteAndExit(array(), 'default', true);
 	}
 
 }

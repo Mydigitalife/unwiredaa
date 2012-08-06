@@ -1,3 +1,15 @@
-<?php
- echo $this->form;
-?>
+<div id="content" class="loginform">
+    <h1><?php echo $this->translate('users_index_login_header')?></h1>
+    <?php
+     echo $this->form;
+    ?>
+    <p>
+	<a href="<?php
+	    echo $this->url(array('module' => 'users',
+	                          'controller' => 'index',
+	                          'action'	=> 'forgot'),
+	                    'default',
+	                    true);
+	?>"><?php echo $this->translate('users_index_login_forgotlink')?></a>
+    </p>
+</div>

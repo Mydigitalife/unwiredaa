@@ -76,4 +76,57 @@ class Users_Service_Admin implements Zend_Acl_Assert_Interface
 
 	}
 
+	/**
+	 * Create temporary new password for admin
+	 *
+	 * @param Users_Model_Admin $admin
+	 * @param string $template
+	 * @return boolean
+	 */
+	public function createTempPassword(Users_Model_Admin $admin, $template = null)
+	{
+        if (!$template) {
+            $template = "Your temporary password is: %%password%%\n";
+        }
+
+        $tempPassword = substr(sha1(date() . $admin->getEmail()),0,8);
+
+
+        $template = str_replace('%%password%%', $tempPassword, $template);
+
+        $originalAdmin = clone $admin;
+
+        $admin->setPassword($tempPassword);
+
+        $mapperAdmin = new Users_Model_Mapper_Admin();
+
+        /**
+         * Don't fire save event
+         */
+        $mapperAdmin->setEventsDisabled(true);
+
+        try {
+            $mapperAdmin->save($admin);
+        } catch (Exception $e) {
+            return false;
+        }
+
+        try {
+             $mailer = new Zend_Mail();
+             $mailer->addTo($admin->getEmail(), $admin->getFirstname() . ' ' . $admin->getLastname())
+                    ->setSubject("Password reset")
+                    ->setBodyHtml($template);
+
+             $mailer->send();
+        } catch (Exception $e) {
+            $mapperAdmin->save($originalAdmin);
+            return false;
+        }
+
+        /**
+         * @todo Fire reset password event
+         */
+        return true;
+	}
+
 }

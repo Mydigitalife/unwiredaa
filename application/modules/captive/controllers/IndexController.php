@@ -15,7 +15,43 @@ class Captive_IndexController extends Unwired_Controller_Crud
     {
         $groupService = new Groups_Service_Group();
 
-        $splashMapper = $groupService->prepareMapperListingByAdmin($this->_getDefaultMapper(), null, false);
+		$rootGroup = $groupService->getGroupTreeByAdmin();
+
+		$this->view->rootGroup = $rootGroup;
+
+        $filters = $this->_getFilters();
+
+        $this->view->filters = $filters;
+
+        $group = null;
+
+        if (isset($filters['group_id']) && $filters['group_id'] > 1) {
+
+            $groupMapper = new Groups_Model_Mapper_Group();
+
+	    	$group = $groupMapper->find($filters['group_id']);
+        }
+
+        if ($group) {
+            /**
+             * Filter by group
+             */
+            try {
+                $splashMapper = $groupService->prepareMapperListing($group, $this->_getDefaultMapper(), null, false, $filters);
+                $this->view->group = $group;
+            } catch (Exception $e) {
+                /**
+                 * Probably the admin has no access to that group so list all his groups
+                 */
+                $splashMapper = $groupService->prepareMapperListingByAdmin($this->_getDefaultMapper(), null, false, $filters);
+                $this->view->filters['group_id'] = null;
+            }
+        } else {
+            /**
+             * Plain listing of all splashpages for all groups for this admin
+             */
+            $splashMapper = $groupService->prepareMapperListingByAdmin($this->_getDefaultMapper(), null, false, $filters);
+        }
 
         $this->_index($splashMapper);
     }
@@ -121,4 +157,27 @@ class Captive_IndexController extends Unwired_Controller_Crud
 
         echo $this->view->json($templateArray);
     }
+
+	protected function _getFilters()
+	{
+		$filter = array();
+
+		$filter['title'] = $this->getRequest()->getParam('title', null);
+		$filter['group_id'] = (int) $this->getRequest()->getParam('group_id', 0);
+
+		$this->view->filter = $filter;
+
+		foreach ($filter as $key => $value) {
+			if (null == $value || (!is_numeric($value) && empty($value))) {
+				unset($filter[$key]);
+				continue;
+			}
+
+			if (!is_numeric($filter[$key])) {
+			    $filter[$key] = '%' . preg_replace('/[^a-z0-9ÄÖÜäöüßêñéçìÈùø\s\@\-\:\.]+/iu', '', $value) . '%';
+			}
+		}
+
+		return $filter;
+	}
 }

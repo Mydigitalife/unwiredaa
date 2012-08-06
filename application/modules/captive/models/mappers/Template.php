@@ -14,17 +14,26 @@ class Captive_Model_Mapper_Template extends Unwired_Model_Mapper
             return null;
         }
 
+        $mapperGroups = new Groups_Model_Mapper_Group();
+
         $groupRows = $row->findDependentRowset('Captive_Model_DbTable_GroupTemplate');
 
         $groups = array();
-
+        $groupObjects = array();
         foreach ($groupRows as $group) {
             $groups[] = $group->group_id;
+            $groupInstance = $mapperGroups->find($group->group_id);
+
+            if ($groupInstance) {
+                $groupObjects[] = $groupInstance;
+            }
         }
 
         $groupRows = null;
 
         $model->setGroupsAssigned($groups);
+
+        $model->setGroups($groupObjects);
 
         $settingRows = $row->findDependentRowset('Captive_Model_DbTable_SplashPageSettings');
 

@@ -26,6 +26,14 @@ var adminGroups = <?php echo Zend_Json::encode($this->currentUser->getGroupsAssi
 $(function () {
 	$("input[name=group_id]").hide().after($('.grouptree'));
 
+	<?php
+	    if ($this->entity->getOnlineStatus()) :
+	?>
+	$("input[name=mac]").attr('disabled','disabled');
+	$("input[name=mac]").after('<input type="hidden" name="mac" value="' + $("input[name=mac]").val() +'" />');
+	<?php
+	    endif;
+	?>
 	$("#node_status").insertBefore($('#fieldset-settings'));
 
 <?php if (!isset($this->isViewOnly)) :?>

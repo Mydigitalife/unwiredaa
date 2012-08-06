@@ -1,15 +1,30 @@
 <h1><?php echo $this->translate('captive_template_index_heading'); ?></h1>
 
 <?php
+	$this->headScript()->appendFile($this->baseUrl('scripts/fancybox/jquery.fancybox-1.3.4.pack.js'));
+	$this->headLink()->appendStylesheet($this->baseUrl('scripts/fancybox/jquery.fancybox-1.3.4.css'));
 	echo $this->paginationControl($this->paginator, 'Sliding', 'partial/pagination.phtml');
 
 	$acl = Zend_Registry::get('acl');
+	$this->headScript()->captureStart();
 ?>
+$(document).ready(function(){
+	$('#groupfilterlink').fancybox();
+});
+<?php
+    $this->headScript()->captureEnd();
+?>
+<form class="span-19 last" method="get" action="<?php echo $this->url(array('module' => 'captive',
+													   'controller' => 'template',
+													   'action' => 'index'),
+												null,
+												true); ?>">
 <table class="listing">
 	<thead>
 		<tr>
 			<th><?php echo $this->translate('captive_template_index_id');?></th>
 			<th><?php echo $this->translate('captive_template_index_name');?></th>
+			<th><?php echo $this->translate('captive_template_index_group');?></th>
 			<th class="tools">
 			<?php
 			if ($acl->isAllowed($this->currentUser, 'captive_template', 'add')) :
@@ -27,6 +42,24 @@
 			?>
 			</th>
 		</tr>
+		<tr>
+			<th></th>
+			<th><input type="text" name="title" value="<?php echo str_replace('%', '', $this->filters['title']); ?>" /></th>
+			<th>
+				<input type="hidden" id="filter_group_id" name="group_id" value="<?php echo $this->filters['group_id']; ?>" />
+				<a href="#groupfilter" id="groupfilterlink">
+					<?php if (!isset($this->group)) :?>
+				        <?php echo $this->translate('captive_template_index_group_filter'); ?>
+			        <?php else :?>
+                        <?php echo $this->translate('captive_template_index_group_filter_applied', $this->group->getName()); ?>
+			        <?php endif; ?>
+				</a>
+			</th>
+			<th class="tools">
+				<a name="index" class="icon filter"><?php echo $this->translate('captive_template_index_button_filter'); ?></a>
+				<a name="index" class="icon reset"><?php echo $this->translate('captive_template_index_button_reset'); ?></a>
+			</th>
+		</tr>
 	</thead>
 	<tbody>
 		<?php
@@ -35,6 +68,22 @@
 		<tr class="<?php echo $this->cycle(array('odd', 'even'))->next(); ?>">
 			<td class="column_id"><?php echo $template->getTemplateId(); ?></td>
 			<td><?php echo $template->getName(); ?></td>
+			<td><?php
+                $groups = $template->getGroups();
+
+                if (count($groups) > 1) {
+                    $groupsText = array();
+
+                    foreach ($groups as $group) {
+                        $groupsText[] = $group->getName();
+                    }
+                    ?>
+                    <a title="<?php echo implode(', ', $groupsText); ?>" class="qtip tip"><?php echo $this->translate('captive_template_index_template_groups', count($groups));?></a>
+                    <?php
+                } else {
+                    echo $groups[0]->getName();
+                }
+			?></td>
 			<td class="tools">
 				<?php
 					$actions = array(/*'view',*/ 'add', 'edit', 'delete');
@@ -77,4 +126,6 @@
 		<?php endforeach; ?>
 	</tbody>
 </table>
+</form>
+<?php echo $this->partial('index/groups-filter.phtml', 'captive', array('rootGroup' => $this->rootGroup)); ?>
 <?php echo $this->paginationControl($this->paginator, 'Sliding', 'partial/pagination.phtml'); ?>

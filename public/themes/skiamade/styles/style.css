@@ -704,3 +704,12 @@ cursor:pointer;
 .tipsy .file_toolbar .icon.delete {
 	background-image: url('../images/icons/16x16/delete.png');
 }
+
+.loginform div.formelement,
+.resetform div.formelement {
+	width: 90%;
+}
+
+.hidden {
+	display: none;
+}

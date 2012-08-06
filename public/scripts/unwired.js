@@ -206,6 +206,13 @@ $(document).ready(function(){
 		opacity: 0.8
 	});
 	
+	$('.tip').tipsy({
+		delayIn: 500,
+		delayOut: 0,
+		fade: true,
+		opacity: 0.8
+	});
+	
 	/*if (uiLanguage == 'en') {
 		$.datepicker.setDefaults($.datepicker.regional['']);
 		$.timepicker.setDefaults($.datepicker.regional['']);

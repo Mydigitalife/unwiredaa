@@ -10,6 +10,8 @@ class Captive_Model_Template extends Unwired_Model_Generic implements Zend_Acl_R
 
     protected $_groupsAssigned = array();
 
+    protected $_groups = array();
+
     protected $_settings = array();
 
 	/**
@@ -79,6 +81,16 @@ class Captive_Model_Template extends Unwired_Model_Generic implements Zend_Acl_R
         $this->_groupsAssigned = $groups;
 
         return $this;
+    }
+
+    public function setGroups(array $groups = array())
+    {
+        $this->_groups = $groups;
+    }
+
+    public function getGroups()
+    {
+        return $this->_groups;
     }
 
     public function getSettings()

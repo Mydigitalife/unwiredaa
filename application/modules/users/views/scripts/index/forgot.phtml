@@ -1,0 +1,15 @@
+<?php $this->headScript()->captureStart(); ?>
+$(document).ready(function(){
+	$('#recaptcha-input').show();
+});
+<?php $this->headScript()->captureEnd(); ?>
+<div id="content" class="resetform">
+    <h1><?php echo $this->translate('users_index_forgot_header')?></h1>
+    <?php
+    try {
+     echo $this->form->__toString();
+    } catch (Exception $e) {
+        echo $e->getMessage();
+    }
+    ?>
+</div>

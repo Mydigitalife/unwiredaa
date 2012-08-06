@@ -16,6 +16,8 @@ class Captive_Model_SplashPage extends Unwired_Model_Generic implements Zend_Acl
 
 	protected $_groupId = null;
 
+	protected $_group = null;
+
 	protected $_selected = 0;
 
 	protected $_settings = array();
@@ -166,6 +168,28 @@ class Captive_Model_SplashPage extends Unwired_Model_Generic implements Zend_Acl
     public function setGroupId($groupId)
     {
         $this->_groupId = (int) $groupId;
+
+        return $this;
+    }
+
+    /**
+     * Get the group object
+     * @return Groups_Model_Group
+     */
+    public function getGroup()
+    {
+        return $this->_group;
+    }
+
+    /**
+     * Set the group object instance
+     *
+     * @param Groups_Model_Group $group
+     * @return Captive_Model_SplashPage
+     */
+    public function setGroup($group = null)
+    {
+        $this->_group = $group;
 
         return $this;
     }
