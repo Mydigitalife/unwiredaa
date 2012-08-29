@@ -122,7 +122,10 @@ class Rest_Service_Auth
     {
         $serverDate = new Zend_Date();
 
-        $serverTime = $serverDate->getTimestamp() - $serverDate->getGmtOffset();
+        /**
+         * Timestamp is always in UTC
+         */
+        $serverTime = $serverDate->getTimestamp();
 
         $delta = abs($serverTime - $timestamp);
 
