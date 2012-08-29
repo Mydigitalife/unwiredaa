@@ -20,6 +20,8 @@ class Captive_Form_Template extends Unwired_Form
 	{
 		parent::init();
 
+		$this->setAttrib('enctype', 'multipart/form-data');
+
         $mapperLanguages = new Captive_Model_Mapper_Language();
 
 		$this->addElement('text', 'name', array('label' => 'captive_template_edit_form_name',
@@ -33,8 +35,23 @@ class Captive_Form_Template extends Unwired_Form
 																						        'field' => 'name'
 																					)))));
 
-		/*$this->addElement('file', 'filename', array('label' => 'captive_template_edit_form_filename',
-												'required' => false));*/
+		$this->addElement('file', 'filename', array('label' => 'captive_template_edit_form_filename',
+														 'required' => true,
+														 'destination' => PUBLIC_PATH . '/data/templates/',
+														 'decorators' => array(
+																		'element' => array('decorator' => 'File'),
+															        	'label' => array('decorator' => 'Label',
+															            				 'options' => array('optionalSuffix' => ':',
+															                								'requiredSuffix' => ' * :',
+																											'placement' => 'prepend')
+																						),
+																		'errors' => 'errors',
+																		'htmltag' => array('decorator' => 'HtmlTag',
+															            				   'options' => array ('tag' => 'div',
+																											   'class' => 'formelement'))
+																		),
+														'validators' => array('File_Extension' => array('extension' => 'zip'),
+																			  'File_TemplatePackage')));
 
 		$this->addElement('multiselect', 'language_ids', array('label' => 'captive_template_edit_form_settings_languages',
 															  'belongsTo' => 'settings',

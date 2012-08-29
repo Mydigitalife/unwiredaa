@@ -355,4 +355,116 @@ class Captive_Service_SplashPage
 
         return $newTemplate;
     }
+
+    public function unpackTemplate(Captive_Model_Template $template, $file)
+    {
+		$archive = new ZipArchive();
+
+		if (!$archive->open($file)) {
+			throw new Unwired_Exception('Cannot open template package');
+		}
+
+		$templateDir = PUBLIC_PATH . '/data/templates/' . $template->getTemplateId();
+		if (!file_exists($templateDir)) {
+			@mkdir($templateDir);
+		}
+		if (!$archive->extractTo($templateDir)) {
+			throw new Unwired_Exception('Cannot extract files from template package');
+		}
+
+		/**
+		 * Close the archive
+		 */
+		$archive->close();
+		$archive = null;
+
+		/**
+		 * Delete the template archive
+		 */
+		@unlink($file);
+
+		/**
+		 * Find available layouts in template
+		 */
+		$layouts = glob($templateDir . '/*.html');
+
+		/**
+		 * Process template tags for each layout
+		 */
+		foreach ($layouts as $layout) {
+			$layoutHtml = file_get_contents($layout);
+
+			/**
+			 * Strip all PHP tags
+			 */
+			$layoutHtml = preg_replace('/\<\?.*?\?\>/ius',
+									   '',
+									   $layoutHtml);
+
+			/**
+			 * Replace containers
+			 */
+			$layoutHtml = preg_replace('/\[\%(container-?\d+|content)\%\]/ius',
+									   '<?php echo $this->layout()->{"${1}"}; ?>',
+									   $layoutHtml);
+			/**
+			 * Replace head script / css
+			 */
+			$layoutHtml = str_ireplace('[%headContent%]',
+									   "\n<?php\necho \$this->headLink();\necho \$this->headScript();\n?>\n",
+									   $layoutHtml);
+			/**
+			 * Replace templateId
+			 */
+			$layoutHtml = str_ireplace('[%templateId%]',
+									   "<?php echo \$this->splashPage->getTemplateId(); ?>",
+									   $layoutHtml);
+			/**
+			 * Replace messages
+			 */
+			$layoutHtml = str_ireplace('[%messages%]',
+									   "<?php echo \$this->uiMessage(); ?>",
+									   $layoutHtml);
+			/**
+			 * Replace title
+			 */
+			$layoutHtml = str_ireplace('[%title%]',
+									   "<?php echo \$this->splashPage->getTitle(); ?>",
+									   $layoutHtml);
+			/**
+			 * Replace baseUrl
+			 */
+			$layoutHtml = str_ireplace('[%baseUrl%]',
+									   "<?php echo \$this->baseUrl(); ?>",
+									   $layoutHtml);
+
+		   /**
+		    * Replace translations
+		    */
+			$layoutHtml = preg_replace('/\[\%translate "?(.*?)"?\%\]/ius',
+									   '<?php echo $this->translate(\'${1}\'); ?>',
+									   $layoutHtml);
+
+		   /**
+		    * Replace template links (imprint, layout switch, language, etc.)
+		    */
+			$layoutHtml = preg_replace('/\[\%link "?(.*?)"?\%\]/ius',
+									   '<?php echo $this->templateLink(\'${1}\'); ?>',
+									   $layoutHtml);
+
+			file_put_contents(str_replace('.html', '.phtml', $layout), $layoutHtml);
+		}
+
+		/**
+		 * Copy the template files to splashpage server
+		 */
+		if (strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN') {
+			$fileService = new Captive_Service_Files();
+
+			$fileService->copyToSplashpages(array('destination' => str_ireplace('/' . $template->getTemplateId(), '', $templateDir),
+                                           		  'name' => $template->getTemplateId()));
+		}
+
+		return true;
+    }
 }

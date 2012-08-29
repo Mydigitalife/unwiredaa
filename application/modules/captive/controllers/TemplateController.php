@@ -61,6 +61,105 @@ class Captive_TemplateController extends Unwired_Controller_Crud
 
 		$this->view->rootGroup = $rootGroup;
 
+		$isAddAction = (!$entity || !$entity->getTemplateId()) ? true : false;
+
+		/**
+		 * Nothing more to do than usual if we don't have POST request
+		 */
+		if (!$this->getRequest()->isPost()) {
+			parent::_add($mapper, $entity, $form);
+			return;
+		}
+
+		$referer = null;
+
+		/**
+		 * Check if user wants to edit template contents after save
+		 */
+		if ($this->getRequest()->getParam('form_element_submit_edit')) {
+			$referer = true;
+		}
+
+		$this->_autoRedirect = false;
+
+		$result = parent::_add($mapper, $entity, $form);
+
+        if (!$result) {
+            return;
+        }
+
+        /**
+         * Get the entity instance in case it is newly created by parent::_add()
+         */
+        $entity = $this->view->entity;
+
+		/**
+		 * Process uploaded template file
+         */
+		$splashpageService = new Captive_Service_SplashPage();
+
+		$fileElement = $this->view->form->getElement('filename');
+
+		$templateProcessed = false;
+		try {
+			if ($fileElement && $fileElement->isUploaded() && $fileElement->receive()) {
+				$templateProcessed = $splashpageService->unpackTemplate($entity,
+										   								$fileElement->getFileName());
+			}
+		} catch (Exception $e) {
+			$templateProcessed = false;
+		}
+
+		/**
+		 * Check if template package is processed OK
+		 * Mark form as error if not.
+		 */
+		if ($fileElement && $fileElement->isUploaded() && !$templateProcessed) {
+			$this->view->form->markAsError();
+			$fileElement->addError('Error processing template file');
+
+			if ($isAddAction) {
+				/**
+				 * Delete the template and start again on add
+				 */
+				if (!$mapper) {
+					$mapper = $this->_getDefaultMapper();
+				}
+
+				$mapper->setEventsDisabled();
+				$mapper->delete($entity);
+			}
+
+			return;
+		}
+
+		if ($referer) {
+    		if (!$isAddAction) {
+                $this->_referer = $this->view->serverUrl($this->_helper->url->url(array('module' => 'captive',
+                                                            'controller' => 'content',
+                                                            'action' => 'template',
+                                                            'id' => $entity->getTemplateId()),
+                									  'default',
+                                                      true));
+		    } else {
+				$this->_referer = $this->view->serverUrl($this->_helper->url->url(array('module' => 'captive',
+                                                            'controller' => 'content',
+                                                            'action' => 'template',
+                                                            'id' => $entity->getTemplateId()),
+                									  'default',
+                                                      true));
+			}
+		}
+
+		$this->_autoRedirect = true;
+		$this->_gotoIndex();
+
+		return;
+		/**
+		 * @todo remove below after new code above works 100% ok
+		 */
+
+
 		if ($this->getRequest()->isPost() && $this->getRequest()->getParam('form_element_submit_edit')) {
 		    /**
 		     * Redirect to template content editing on update
@@ -83,6 +182,40 @@ class Captive_TemplateController extends Unwired_Controller_Crud
 		        if (!$result) {
 		            return;
 		        }
+
+		        /**
+				 * Process uploaded template file
+		         */
+				$splashpageService = new Captive_Service_SplashPage();
+
+				$fileElement = $this->view->form->getElement('filename');
+
+				$templateProcessed = false;
+				try {
+					if ($fileElement->isUploaded() && $fileElement->receive()) {
+						$templateProcessed = $splashpageService->unpackTemplate($entity,
+												   								$fileElement->getFileName());
+						$templateProcessed = true;
+					}
+				} catch (Exception $e) {
+					$templateProcessed = false;
+				}
+
+				if (!$templateProcessed) {
+					$this->view->form->markAsError();
+					$fileElement->addError('Error processing template file');
+
+					/**
+					 * Delete the template and start again
+					 */
+					if (!$mapper) {
+						$mapper = $this->_getDefaultMapper();
+						$mapper->setEventsDisabled();
+						$mapper->delete($entity);
+					}
+					return;
+				}
+
 
 		        $this->_autoRedirect = true;
 
@@ -107,7 +240,14 @@ class Captive_TemplateController extends Unwired_Controller_Crud
 
     public function editAction()
     {
-        $this->_edit();
+    	/**
+    	 * Hide the file upload field on edit
+    	 */
+    	$templateForm = new Captive_Form_Template();
+
+    	$templateForm->removeElement('template_file');
+
+        $this->_edit(null, $templateForm);
     }
 
     public function deleteAction()
