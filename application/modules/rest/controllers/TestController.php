@@ -57,7 +57,7 @@ class Rest_TestController extends Unwired_Controller_Action
         unset($params['resturl']);
 
         $date = new Zend_Date();
-        $params['timestamp'] = $date->getTimestamp() - $date->getGmtOffset();
+        $params['timestamp'] = $date->getTimestamp();
 
         $data = $resturl . '?' . http_build_query($params);
 
