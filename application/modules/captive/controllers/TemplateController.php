@@ -245,7 +245,7 @@ class Captive_TemplateController extends Unwired_Controller_Crud
     	 */
     	$templateForm = new Captive_Form_Template();
 
-    	$templateForm->removeElement('template_file');
+    	$templateForm->removeElement('filename');
 
         $this->_edit(null, $templateForm);
     }

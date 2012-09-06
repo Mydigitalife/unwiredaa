@@ -384,78 +384,6 @@ class Captive_Service_SplashPage
 		@unlink($file);
 
 		/**
-		 * Find available layouts in template
-		 */
-		$layouts = glob($templateDir . '/*.html');
-
-		/**
-		 * Process template tags for each layout
-		 */
-		foreach ($layouts as $layout) {
-			$layoutHtml = file_get_contents($layout);
-
-			/**
-			 * Strip all PHP tags
-			 */
-			$layoutHtml = preg_replace('/\<\?.*?\?\>/ius',
-									   '',
-									   $layoutHtml);
-
-			/**
-			 * Replace containers
-			 */
-			$layoutHtml = preg_replace('/\[\%(container-?\d+|content)\%\]/ius',
-									   '<?php echo $this->layout()->{"${1}"}; ?>',
-									   $layoutHtml);
-			/**
-			 * Replace head script / css
-			 */
-			$layoutHtml = str_ireplace('[%headContent%]',
-									   "\n<?php\necho \$this->headLink();\necho \$this->headScript();\n?>\n",
-									   $layoutHtml);
-			/**
-			 * Replace templateId
-			 */
-			$layoutHtml = str_ireplace('[%templateId%]',
-									   "<?php echo \$this->splashPage->getTemplateId(); ?>",
-									   $layoutHtml);
-			/**
-			 * Replace messages
-			 */
-			$layoutHtml = str_ireplace('[%messages%]',
-									   "<?php echo \$this->uiMessage(); ?>",
-									   $layoutHtml);
-			/**
-			 * Replace title
-			 */
-			$layoutHtml = str_ireplace('[%title%]',
-									   "<?php echo \$this->splashPage->getTitle(); ?>",
-									   $layoutHtml);
-			/**
-			 * Replace baseUrl
-			 */
-			$layoutHtml = str_ireplace('[%baseUrl%]',
-									   "<?php echo \$this->baseUrl(); ?>",
-									   $layoutHtml);
-
-		   /**
-		    * Replace translations
-		    */
-			$layoutHtml = preg_replace('/\[\%translate "?(.*?)"?\%\]/ius',
-									   '<?php echo $this->translate(\'${1}\'); ?>',
-									   $layoutHtml);
-
-		   /**
-		    * Replace template links (imprint, layout switch, language, etc.)
-		    */
-			$layoutHtml = preg_replace('/\[\%link "?(.*?)"?\%\]/ius',
-									   '<?php echo $this->templateLink(\'${1}\'); ?>',
-									   $layoutHtml);
-
-			file_put_contents(str_replace('.html', '.phtml', $layout), $layoutHtml);
-		}
-
-		/**
 		 * Copy the template files to splashpage server
 		 */
 		if (strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN') {
@@ -463,6 +391,34 @@ class Captive_Service_SplashPage
 
 			$fileService->copyToSplashpages(array('destination' => str_ireplace('/' . $template->getTemplateId(), '', $templateDir),
                                            		  'name' => $template->getTemplateId()));
+		}
+
+		if (!file_exists($templateDir . '/template.xml')) {
+		    return true;
+		}
+
+		try {
+		    $config = new Zend_Config_Xml($templateDir . '/template.xml');
+
+		    /**
+		     * No data to process.
+		     */
+		    if (!isset($config->layouts)) {
+		        $config = null;
+		        return true;
+		    }
+
+		    /**
+		     * There is layout data. We need to import it into the database
+		     */
+		    foreach ($config->layouts as $layoutData) {
+		        if (!$this->importLayout($layoutData, $template)) {
+		            return false;
+		        }
+		    }
+
+		} catch (Exception $e) {
+		    return false;
 		}
 
 		return true;
