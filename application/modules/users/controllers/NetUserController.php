@@ -96,13 +96,18 @@ class Users_NetUserController extends Unwired_Rest_Controller
 		$this->_helper->viewRenderer->setScriptAction('edit');
 	}
 
-	public function editAction()
+	public function _edit($mapper = null, $form = null)
 	{
 		$form = new Users_Form_NetUser();
 
 		$form->getElement('password')->setRequired(false);
 		$form->getElement('cfmpassword')->setRequired(false);
-		$this->_edit(null, $form);
+		parent::_edit($mapper, $form);
+	}
+
+	public function editAction()
+	{
+		$this->_edit();
 	}
 
 	public function deleteAction()
