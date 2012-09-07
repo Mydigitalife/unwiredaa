@@ -9,9 +9,10 @@
 * (AGPLv3 - http://www.gnu.org/licenses/agpl.html) or our proprietory
 * license available at http://www.unwired.at/license.html
 */
-
-if ($this->form->isErrors()) :
-    echo $this->arrayToXml($this->form->getErrors(), 'errors');
+$errorMessages = $this->uiMessage()->getMessages('error');
+if ($this->form->isErrors() || count($errorMessages)) :
+    $this->uiMessage()->clearMessages();
+    echo $this->arrayToXml(array_merge($this->form->getErrors(), $errorMessages), 'errors');
 else :
     echo $this->arrayToXml($this->entity->toArray(), 'netuser', array('user_id' => 'id'), array('password'));
 endif;
