@@ -49,6 +49,10 @@ class Captive_Form_SplashPage extends Unwired_Form
 		                                               'multiOptions' => array('0' => 'captive_index_edit_form_selected_offline',
 		                                                                       '1' => 'captive_index_edit_form_selected_online')));
 
+		$this->addElement('text', 'redirect', array('label' => 'captive_index_edit_form_settings_redirect',
+												'required' => false,
+		                                        'belongsTo' => 'settings'));
+
 		$this->addElement('hidden', 'group_id', array('label' => 'captive_index_edit_form_group',
 											  	 	  'required' => true,
 													  'validators' => array('Int')));
@@ -91,7 +95,7 @@ class Captive_Form_SplashPage extends Unwired_Form
 																		   				 		 	  'class' => 'button blue')),
 																						)));
 
-	    $this->addDisplayGroup(array('title', 'template_id', 'selected'), 'pagedata');
+	    $this->addDisplayGroup(array('title', 'template_id', 'selected','redirect'), 'pagedata');
 
 		$this->addDisplayGroup(array('group_id'), 'groupinfo');
 

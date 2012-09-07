@@ -14,6 +14,8 @@ class Captive_Model_Template extends Unwired_Model_Generic implements Zend_Acl_R
 
     protected $_settings = array();
 
+    protected $_layouts = array();
+
 	/**
      * @return the $templateId
      */
@@ -109,6 +111,28 @@ class Captive_Model_Template extends Unwired_Model_Generic implements Zend_Acl_R
         return $this;
     }
 
+    public function setLayouts($layouts = array())
+    {
+        foreach ($layouts as $layout) {
+            $this->addLayout($layout);
+        }
+
+        return $this;
+    }
+
+    public function addLayout(Captive_Model_Layout $layout)
+    {
+        $layout->setSplashId(null)
+               ->setTemplateId($this->getTemplateId());
+
+        $this->_layouts[] = $layout;
+
+        return $this;
+    }
+    public function getLayouts()
+    {
+        return $this->_layouts;
+    }
     public function getResourceId()
     {
         return 'captive_template';

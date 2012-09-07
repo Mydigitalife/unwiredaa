@@ -22,6 +22,8 @@ class Captive_Model_SplashPage extends Unwired_Model_Generic implements Zend_Acl
 
 	protected $_settings = array();
 
+	protected $_layouts = array();
+
 	/**
      * @return the $splashId
      */
@@ -192,6 +194,30 @@ class Captive_Model_SplashPage extends Unwired_Model_Generic implements Zend_Acl
         $this->_group = $group;
 
         return $this;
+    }
+
+    public function setLayouts($layouts = array())
+    {
+        foreach ($layouts as $layout) {
+            $this->addLayout($layout);
+        }
+        return $this;
+    }
+
+    public function addLayout(Captive_Model_Layout $layout)
+    {
+        $layout->setTemplateId(null)
+               ->setSplashId($this->getSplashId());
+
+        $this->_layouts[] = $layout;
+
+        return $this;
+    }
+
+    public function getLayouts()
+    {
+        $templateLayouts = $this->getTemplate() ? $this->getTemplate()->getLayouts() : array();
+        return $templateLayouts + $this->_layouts;
     }
 
     public function getResourceId()
