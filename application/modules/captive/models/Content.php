@@ -8,9 +8,13 @@ class Captive_Model_Content extends Unwired_Model_Generic implements Zend_Acl_Re
 
     protected $_templateId = null;
 
+    protected $_layoutId = null;
+
     protected $_type = null;
 
     protected $_column = 1;
+
+    protected $_order = 1;
 
     protected $_widget = null;
 
@@ -40,24 +44,6 @@ class Captive_Model_Content extends Unwired_Model_Generic implements Zend_Acl_Re
         foreach ($this->_data as $data) {
             $data->setContentId($contentId);
         }
-
-        return $this;
-    }
-
-	/**
-     * @return the $languageId
-     */
-    public function getLanguageId()
-    {
-        return $this->_languageId;
-    }
-
-	/**
-     * @param field_type $languageId
-     */
-    public function setLanguageId($languageId)
-    {
-        $this->_languageId = $languageId;
 
         return $this;
     }
@@ -98,6 +84,18 @@ class Captive_Model_Content extends Unwired_Model_Generic implements Zend_Acl_Re
         return $this;
     }
 
+    public function getLayoutId()
+    {
+        return $this->_layoutId;
+    }
+
+    public function setLayoutId($layoutId)
+    {
+        $this->_layoutId = $layoutId;
+
+        return $this;
+    }
+
     public function getData()
     {
         return $this->_data;
@@ -108,6 +106,9 @@ class Captive_Model_Content extends Unwired_Model_Generic implements Zend_Acl_Re
         $this->_data = array();
 
         foreach ($data as $contentData) {
+            if (!$contentData instanceof Captive_Model_ContentData) {
+                continue;
+            }
             $this->addData($contentData);
         }
         return $this;
@@ -160,19 +161,11 @@ class Captive_Model_Content extends Unwired_Model_Generic implements Zend_Acl_Re
     }
 
 	/**
-     * @return the desktop layout order $order
+     * @return the $order
      */
     public function getOrder()
     {
-        foreach ($this->getData() as $contentData) {
-            if ($contentData->isMobile()) {
-                continue;
-            }
-
-            return $contentData->getOrder();
-        }
-
-        return 1;
+        return $this->_order;
     }
 
 	/**
@@ -180,45 +173,7 @@ class Captive_Model_Content extends Unwired_Model_Generic implements Zend_Acl_Re
      */
     public function setOrder($order)
     {
-        foreach ($this->getData() as $contentData) {
-            if ($contentData->isMobile()) {
-                continue;
-            }
-
-            $contentData->setOrder($order);
-        }
-
-        return $this;
-    }
-
-	/**
-     * @return the $orderMobile
-     */
-    public function getOrderMobile()
-    {
-        foreach ($this->getData() as $contentData) {
-            if (!$contentData->isMobile()) {
-                continue;
-            }
-
-            return $contentData->getOrder();
-        }
-
-        return $this;
-    }
-
-	/**
-     * @param field_type $orderMobile
-     */
-    public function setOrderMobile($order)
-    {
-        foreach ($this->getData() as $contentData) {
-            if (!$contentData->isMobile()) {
-                continue;
-            }
-
-            $contentData->setOrder($order);
-        }
+        $this->_order = (int) $order;
 
         return $this;
     }

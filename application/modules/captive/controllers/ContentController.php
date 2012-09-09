@@ -56,22 +56,71 @@ class Captive_ContentController extends Unwired_Controller_Crud
         $languages = $mapperLanguages->findBy(array('language_id' => $settings['language_ids']));
 
         $languagesSorted = array();
+        $uiLanguage = null;
+
+        $translate = Zend_Registry::get('Zend_Translate');
 
         foreach ($languages as $language) {
+            if ($language->getCode() == $translate->getAdapter()->getLocale()) {
+                $uiLanguage = $language;
+            }
             $languagesSorted[$language->getLanguageId()] = $language;
         }
 
-        $contents = $serviceSplashPage->getSplashPageContents($splashPage);
+        if (null === $uiLanguage) {
+            $uiLanguage = $languages[0];
+        }
 
         $languages = null;
         $this->view->languages = $languagesSorted;
+        $this->view->uiLanguage = $uiLanguage;
 
         $mapperLanguages = null;
 
+        $this->view->entity = $splashPage;
         $this->view->splashPage = $splashPage;
         $this->view->template = $splashPage->getTemplate();
-        $this->view->contents = $contents;
+
+        /**
+         * We don't need content anymore. Layouts content will be loaded via AJAX calls
+         */
+        // $contents = $serviceSplashPage->getSplashPageContents($splashPage);
+        // $this->view->contents = $contents;
         $this->_helper->viewRenderer->setScriptAction('contents');
+	}
+
+	/**
+	 * Returns a json representation of the layout content
+	 *
+	 * @throws Unwired_Exception
+	 */
+	public function layoutContentAction()
+	{
+        $this->_helper->layout->disableLayout();
+
+        $layoutId = (int) $this->getRequest()->getParam('id', 0);
+
+        if (!$layoutId) {
+            throw new Unwired_Exception('Invalid layout ID requested');
+        }
+
+        $mapperLayout = new Captive_Model_Mapper_Layout();
+
+        $layout = $mapperLayout->find($layoutId);
+
+        if (!$layout) {
+            throw new Unwired_Exception('Invalid layout ID requested');
+        }
+
+        $splashId = (int) $this->getRequest()->getParam('splashId', 0);
+        $templateId = (int) $this->getRequest()->getParam('templateId', 0);
+
+        $serviceSplash = new Captive_Service_SplashPage();
+
+        $layoutContent = $serviceSplash->getLayoutContentSortedArray($layout, $splashId, $templateId);
+
+        echo $this->view->json($layoutContent);
+        $this->_helper->viewRenderer->setNoRender();
 	}
 
 	public function reorderAction()
@@ -112,6 +161,8 @@ class Captive_ContentController extends Unwired_Controller_Crud
 
         $templateId = (int) $this->getRequest()->getParam('templateId', 0);
         $splashId = (int) $this->getRequest()->getParam('splashId', 0);
+
+        $layoutId = (int) $this->getRequest()->getParam('layoutId', 0);
         $widget = $this->getRequest()->getParam('widget', 'Html');
         $contentType = $this->getRequest()->getParam('type', 'content');
 
@@ -132,6 +183,10 @@ class Captive_ContentController extends Unwired_Controller_Crud
 
         if (!$templateId && !$splashId) {
             throw new Unwired_Exception('No template or splashpage specified', 500);
+        }
+
+        if (!$layoutId) {
+            throw new Unwired_Exception('No layout specified', 500);
         }
 
         $splashPage = null;
@@ -164,13 +219,14 @@ class Captive_ContentController extends Unwired_Controller_Crud
                 $contentData->setLanguageId($language);
                 $content->addData($contentData);
 
-                $mobileContentData = clone $contentData;
-                $mobileContentData->setMobile(1);
+                //$mobileContentData = clone $contentData;
+                //$mobileContentData->setMobile(1);
 
-                $content->addData($mobileContentData);
+                //$content->addData($mobileContentData);
             }
             $content->setWidget($widget)
                     ->setType($contentType);
+
         } else {
             // Prefill missing languages?!
         }
@@ -182,8 +238,8 @@ class Captive_ContentController extends Unwired_Controller_Crud
         }
 
 
-        $content->setColumn($column);
-
+        $content->setColumn($column)
+                ->setLayoutId($layoutId);
 
         $mapperLanguages = new Captive_Model_Mapper_Language();
 
@@ -215,6 +271,8 @@ class Captive_ContentController extends Unwired_Controller_Crud
             throw new Unwired_Exception('No content provided');
         }
 
+
+        $content->setOrder((int) $this->getRequest()->getParam('order', 1));
         $content->setEditable((int) $this->getRequest()->getParam('editable', $content->isEditable()));
         $content->setRestricted((int) $this->getRequest()->getParam('restricted', $content->isRestricted()));
 
@@ -222,14 +280,13 @@ class Captive_ContentController extends Unwired_Controller_Crud
 
         $contentData = $content->getData();
 
-        foreach ($postedContentData['desktop'] as $languageId => $desktopContent) {
-            $desktopContent['language_id'] = $languageId;
-            $desktopContent['mobile'] = 0;
+        foreach ($postedContentData as $languageId => $postedData) {
+            $postedData['language_id'] = $languageId;
 
             $foundContent = null;
 
             foreach ($contentData as $key => $data) {
-                if (!$data->getLanguageId() != $languageId || $data->isMobile()) {
+                if ($data->getLanguageId() != $languageId) {
                     continue;
                 }
 
@@ -242,34 +299,10 @@ class Captive_ContentController extends Unwired_Controller_Crud
                 $foundContent->setLanguageId($languageId);
             }
 
-            $foundContent->fromArray($desktopContent);
+            $foundContent->fromArray($postedData);
             $contentModified[] = $foundContent;
         }
 
-        foreach ($postedContentData['mobile'] as $languageId => $mobileContent) {
-            $mobileContent['language_id'] = $languageId;
-            $mobileContent['mobile'] = 1;
-
-            $foundContent = null;
-
-            foreach ($contentData as $key => $data) {
-                if (!$data->getLanguageId() != $languageId || !$data->isMobile()) {
-                    continue;
-                }
-
-                $foundContent = $data;
-                unset($contentData[$key]);
-            }
-
-            if (!$foundContent) {
-                $foundContent = new Captive_Model_ContentData();
-                $foundContent->setLanguageId($languageId)
-                             ->setMobile(1);
-            }
-
-            $foundContent->fromArray($mobileContent);
-            $contentModified[] = $foundContent;
-        }
 
         $postedContentData = null;
         $contentData = null;
@@ -351,12 +384,24 @@ class Captive_ContentController extends Unwired_Controller_Crud
 
         $languagesSorted = array();
 
+        $uiLanguage = null;
+
+        $translate = Zend_Registry::get('Zend_Translate');
+
         foreach ($languages as $language) {
+            if ($language->getCode() == $translate->getAdapter()->getLocale()) {
+                $uiLanguage = $language;
+            }
             $languagesSorted[$language->getLanguageId()] = $language;
+        }
+
+        if (null === $uiLanguage) {
+            $uiLanguage = $languages[0];
         }
 
         $languages = null;
         $this->view->languages = $languagesSorted;
+        $this->view->uiLanguage = $uiLanguage;
 
         $mapperLanguages = null;
 
@@ -382,12 +427,13 @@ class Captive_ContentController extends Unwired_Controller_Crud
         }
 
         /**
-         * Get template content blocks
+         * We don't need content anymore. Layouts content will be loaded via AJAX calls
          */
-        $contents = $serviceSplashPage->getTemplateContent($template);
+        // $contents = $serviceSplashPage->getTemplateContent($template);
+        // $this->view->contents = $contents;
 
+        $this->view->entity = $template;
         $this->view->template = $template;
-        $this->view->contents = $contents;
 
         $this->_helper->viewRenderer->setScriptAction('contents');
     }

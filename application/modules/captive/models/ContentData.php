@@ -10,8 +10,6 @@ class Captive_Model_ContentData extends Unwired_Model_Generic
 
     protected $_content = null;
 
-    protected $_order = 1;
-
     protected $_mobile = 0;
 
     protected $_parent = null;
@@ -102,24 +100,6 @@ class Captive_Model_ContentData extends Unwired_Model_Generic
         }
 
         $this->_content = $content;
-
-        return $this;
-    }
-
-	/**
-     * @return the $order
-     */
-    public function getOrder()
-    {
-        return $this->_order;
-    }
-
-	/**
-     * @param field_type $order
-     */
-    public function setOrder($order)
-    {
-        $this->_order = (int) $order;
 
         return $this;
     }

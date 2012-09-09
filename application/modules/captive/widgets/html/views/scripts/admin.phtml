@@ -18,100 +18,52 @@
     endif;
 ?>
 <input type="hidden" name="column" value="<?php echo $this->escape($this->content->getColumn()); ?>"/>
+<input type="hidden" name="layout_id" value="<?php echo $this->escape($this->content->getLayoutId()); ?>"/>
+<input type="hidden" name="order" value="<?php echo $this->escape($this->content->getOrder()); ?>"/>
 <input type="hidden" name="type" value="<?php echo $this->escape($this->content->getType()); ?>"/>
 <input type="hidden" name="widget" value="Html"/>
 <?php
-    $content = array('mobile' => array(), 'desktop' => array());
+    $contentData = array();
 
-    foreach ($this->content->getData() as $contentData) {
-        $key = 'desktop';
-        if ($contentData->isMobile()) {
-            $key = 'mobile';
-        }
-
-        $content[$key][$contentData->getLanguageId()] = $contentData;
+    foreach ($this->content->getData() as $data) {
+        $contentData[$data->getLanguageId()] = $data;
     }
 ?>
-<div class="span-18 tabs">
+
+<div id="content" class="tabs span-18 last">
 	<ul>
-		<li><a href="#desktop_content"><?php echo $this->translate('captive_content_edit_desktop_content');?></a></li>
-		<li><a href="#mobile_content"><?php echo $this->translate('captive_content_edit_mobile_content');?></a></li>
+	<?php
+	    $templateSettings = $this->template->getSettings();
+	    foreach ($templateSettings['language_ids'] as $languageId) :
+    ?>
+		<li><a href="#language-<?php echo $languageId; ?>"><?php echo $this->languages[$languageId]->getName();?></a></li>
+    <?php
+	    endforeach;
+	?>
 	</ul>
-	<div id="desktop_content" class="tabs subtabs">
-		<ul>
-		<?php
-		    $templateSettings = $this->template->getSettings();
-    	    foreach ($templateSettings['language_ids'] as $languageId) :
-        ?>
-			<li><a href="#desktop-<?php echo $languageId; ?>"><?php echo $this->languages[$languageId]->getName();?></a></li>
-        <?php
-		    endforeach;
-		?>
-		</ul>
-		<?php
-		    foreach ($templateSettings['language_ids'] as $languageId) :
-			    if (!isset($content['desktop'][$languageId])) {
-			        $contentData = new Captive_Model_ContentData();
-			        $contentData->setLanguageId($languageId);
-			        $content['desktop'][$languageId] = $contentData;
-			    }
-		?>
-		<div id="desktop-<?php echo $languageId; ?>" class="desktop-content">
-			<div class="formelement span-16 last">
-    			<label for="title-desktop-<?php echo $languageId; ?>"><?php echo $this->translate('widget_html_admin_title');?>:</label>
-    			<input class="span-12 last" type="text" name="content[desktop][<?php echo $languageId; ?>][title]"
-    			id="title-desktop-<?php echo $languageId; ?>" value="<?php echo $content['desktop'][$languageId]->getTitle(); ?>" />
-    			<input type="hidden" name="content[desktop][<?php echo $languageId; ?>][order]" value="<?php echo $content['desktop'][$languageId]->getOrder(); ?>" />
-			</div>
-			<div class="formelement span-16 last">
-    			<label for="content-desktop-<?php echo $languageId; ?>"><?php echo $this->translate('widget_html_admin_content');?>:</label>
-    			<div class="span-16 last">
-        			<textarea class="span-16 last" name="content[desktop][<?php echo $languageId; ?>][content]"
-        			id="content-desktop-<?php echo $languageId; ?>"><?php echo $content['desktop'][$languageId]->getContent(); ?></textarea>
-    			</div>
+	<?php
+	    foreach ($templateSettings['language_ids'] as $languageId) :
+		    if (!isset($contentData[$languageId])) {
+		        $data = new Captive_Model_ContentData();
+		        $data->setLanguageId($languageId);
+		        $contentData[$languageId] = $data;
+		    }
+	?>
+	<div id="language-<?php echo $languageId; ?>" class="content">
+		<div class="formelement span-16 last">
+			<label for="title-<?php echo $languageId; ?>"><?php echo $this->translate('widget_html_admin_title');?>:</label>
+			<input class="span-12 last" type="text" name="content[<?php echo $languageId; ?>][title]"
+			id="title-<?php echo $languageId; ?>" value="<?php echo $contentData[$languageId]->getTitle(); ?>" />
+		</div>
+		<div class="formelement span-16 last">
+			<label for="content-<?php echo $languageId; ?>"><?php echo $this->translate('widget_html_admin_content');?>:</label>
+			<div class="span-16 last">
+    			<textarea class="span-16 last" name="content[<?php echo $languageId; ?>][content]"
+    			id="content-<?php echo $languageId; ?>"><?php echo $contentData[$languageId]->getContent(); ?></textarea>
 			</div>
 		</div>
-		<?php
-		    endforeach;
-		?>
 	</div>
-
-	<div id="mobile_content" class="tabs subtabs">
-		<ul>
-		<?php
-    	    foreach ($templateSettings['language_ids'] as $languageId) :
-        ?>
-			<li><a href="#mobile-<?php echo $languageId; ?>"><?php echo $this->languages[$languageId]->getName();?></a></li>
-        <?php
-		    endforeach;
-		?>
-		</ul>
-
-		<?php
-		    foreach ($templateSettings['language_ids'] as $languageId) :
-			    if (!isset($content['mobile'][$languageId])) {
-			        $contentData = new Captive_Model_ContentData();
-			        $contentData->setLanguageId($languageId);
-			        $content['mobile'][$languageId] = $contentData;
-			    }
-		?>
-		<div id="mobile-<?php echo $languageId; ?>" class="mobile-content">
-			<div class="formelement span-16 last">
-    			<label for="title-mobile-<?php echo $languageId; ?>"><?php echo $this->translate('widget_html_admin_title');?>:</label>
-    			<input class="span-12 last" type="text" name="content[mobile][<?php echo $languageId; ?>][title]"
-    			id="title-mobile-<?php echo $languageId; ?>" value="<?php echo $content['mobile'][$languageId]->getTitle(); ?>" />
-    			<input type="hidden" name="content[mobile][<?php echo $languageId; ?>][order]" value="<?php echo $content['mobile'][$languageId]->getOrder(); ?>" />
-			</div>
-			<div class="formelement span-16 last">
-    			<label for="content-mobile-<?php echo $languageId; ?>"><?php echo $this->translate('widget_html_admin_content');?>:</label>
-    			<div class="span-16 last">
-        			<textarea class="span-16 last" name="content[mobile][<?php echo $languageId; ?>][content]"
-        			id="content-mobile-<?php echo $languageId; ?>"><?php echo $content['mobile'][$languageId]->getContent(); ?></textarea>
-    			</div>
-			</div>
-		</div>
-		<?php
-		    endforeach;
-		?>
-	</div>
+	<?php
+	    endforeach;
+	?>
 </div>

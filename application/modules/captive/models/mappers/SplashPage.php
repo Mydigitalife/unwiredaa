@@ -55,6 +55,12 @@ class Captive_Model_Mapper_SplashPage extends Unwired_Model_Mapper
             }
 
             $model->setSettings($settings);
+
+            $mapperLayouts = new Captive_Model_Mapper_Layout();
+
+            $layouts = $mapperLayouts->findBy(array('splash_id' => $model->getSplashId()));
+
+            $model->setLayouts($layouts);
 	    }
 
 	    return $model;

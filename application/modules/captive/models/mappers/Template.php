@@ -35,6 +35,12 @@ class Captive_Model_Mapper_Template extends Unwired_Model_Mapper
 
         $model->setGroups($groupObjects);
 
+        $mapperLayouts = new Captive_Model_Mapper_Layout();
+
+        $layouts = $mapperLayouts->findBy(array('template_id' => $model->getTemplateId()));
+
+        $model->setLayouts($layouts);
+
         $settingRows = $row->findDependentRowset('Captive_Model_DbTable_SplashPageSettings');
 
         $settings = array();

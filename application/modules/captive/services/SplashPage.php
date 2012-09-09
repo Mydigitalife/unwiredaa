@@ -34,6 +34,206 @@ class Captive_Service_SplashPage
         return null;
     }
 
+    public function getLayoutContentSortedArray(Captive_Model_Layout $layout, $splashId = 0, $templateId = 0)
+    {
+        $mapperContent = new Captive_Model_Mapper_Content();
+
+        $criteria = array('layout_id' => $layout->getLayoutId());
+
+        $templateOverrideIds = array();
+        $contents = array();
+
+        $currentUser = Zend_Auth::getInstance()->getIdentity();
+        $acl = Zend_Registry::get('acl');
+
+        if ($splashId) {
+            $criteria['splash_id'] = $splashId;
+
+            $contents = $mapperContent->findBy($criteria,
+                                               null,
+                                               array('column ASC',
+                                                     'order ASC'));
+
+            foreach ($contents as $content) {
+                if ($content->getTemplateContent()) {
+                    $templateOverrideIds[] = $content->getTemplateContent();
+                }
+            }
+        }
+
+        $templateContents = array();
+
+        if ($templateId) {
+            unset($criteria['splash_id']);
+            $criteria['template_id'] = $templateId;
+
+            $templateContents = $mapperContent->findBy($criteria,
+                                                       null,
+                                                       array('column ASC',
+                                                             'order ASC'));
+
+            foreach ($templateContents as $index => $content) {
+                if (in_array($content->getContentId(), $templateOverrideIds)) {
+                    unset($templateContents[$index]);
+                }
+            }
+        }
+
+        $contents = array_merge($contents, $templateContents);
+
+        $placements = array();
+
+        /**
+         * Try to read layout placements from template configuration
+         * row1 => array(cols)
+         * row2 => array(othercols)
+         */
+        if (file_exists(PUBLIC_PATH . '/data/templates/' . $templateId .'/template.xml')) {
+            try {
+                $config = new Zend_Config_Xml(PUBLIC_PATH . '/data/templates/' . $templateId .'/template.xml');
+
+                if (isset($config->templates) && isset($config->templates->{$layout->getLayout()})) {
+                    $placements = $config->templates->{$layout->getLayout()}->toArray();
+
+                    if (isset($placements['rows'])) {
+                        $placements = $placements['rows'];
+                    }
+
+                    foreach ($placements as $row => $cols) {
+
+                        foreach ($cols as $key => $containers) {
+                            $containers = explode(',', $containers);
+
+                            $cols[$key] = array();
+                            foreach ($containers as $container) {
+                                $container = preg_replace('/[^\-\d]*/i', '', $container);
+                                $cols[$key][] = empty($container) ? 0 : (int) $container;
+                            }
+
+                        }
+
+                        $placements[$row] = $cols;
+                    }
+                }
+            } catch (Exception $e) {
+                $placements = array();
+            }
+        }
+
+        /**
+         * There's no layout placement config.
+         * We put all columns in a separate row.
+         */
+        if (empty($placements)) {
+            $placements['special'] = array('all' => array());
+            $placements['main'] = array();
+
+            foreach ($contents as $content) {
+                if ($content->getColumn() < 0) {
+                    $targetRow = 'special';
+                    $targetCol = 'all';
+                } else {
+                    $targetRow = $content->getColumn() == 0 ? 'main' : 'row' . $content->getColumn();
+                    $targetCol = $content->getColumn();
+                }
+
+                if (!isset($placements[$targetRow])) {
+                    $placements[$targetRow] = array();
+                }
+
+                if (!isset($placements[$targetRow][$targetCol])) {
+                    $placements[$targetRow][$targetCol] = array();
+                }
+
+                if (!in_array($content->getColumn(), $placements[$targetRow][$targetCol])) {
+                    $placements[$targetRow][$targetCol][] = $content->getColumn();
+                }
+            }
+        }
+
+        $sortedContent = array();
+
+        /**
+         * Make sorted content keys positions same as placements
+         */
+
+        foreach ($placements as $row => $cols) {
+            $sortedContent[$row] = array();
+
+            foreach ($cols as $key => $containers) {
+                $sortedContent[$row][$key] = array();
+
+                foreach ($containers as $container) {
+                    $sortedContent[$row][$key][$container] = array();
+                }
+            }
+        }
+
+        /**
+         * @todo Optimize this! Too many nested loops.
+         *       Need a better algo.
+         */
+        foreach ($contents as $content) {
+            $colKey = false;
+            $rowKey = false;
+            foreach ($placements as $row => $cols) {
+                foreach ($cols as $key => $containers) {
+                    $colKey = array_search($content->getColumn(), $containers);
+                    if ($colKey === false) {
+                        continue;
+                    }
+
+                    $rowKey = $key;
+
+                    break 2;
+                }
+            }
+
+            if ($colKey === false || $rowKey == false) {
+                // @todo What do we do if the col isn't listed anywhere?
+            }
+
+            if (!isset($sortedContent[$row])) {
+                $sortedContent[$row] = array();
+            }
+
+            if (!isset($sortedContent[$row][$rowKey])) {
+                $sortedContent[$row][$rowKey] = array();
+            }
+
+            if (!isset($sortedContent[$row][$rowKey][$content->getColumn()])) {
+                $sortedContent[$row][$rowKey][$content->getColumn()] = array();
+            }
+            $arrayContent = $content->toArray();
+            $arrayContentData = array();
+            foreach ($arrayContent['data'] as $data) {
+                $data = $data->toArray();
+                $arrayContentData[] = $data;
+            }
+            $arrayContent['data'] = $arrayContentData;
+
+            $arrayContent['edit_allowed'] = 0;
+            $arrayContent['delete_allowed'] = 0;
+
+            if ($acl->isAllowed($currentUser, $content, 'edit')) {
+                $arrayContent['edit_allowed'] = 1;
+            }
+
+            if ($acl->isAllowed($currentUser, $content, 'delete')
+	            && ($splashId && $content->getSplashId())
+	               || (!$splashId && $content->getTemplateId())) {
+
+                    $arrayContent['delete_allowed'] = 1;
+            }
+
+            $sortedContent[$row][$rowKey][$content->getColumn()][] = $arrayContent;
+        }
+
+        return $sortedContent;
+
+
+    }
+
     public function getSplashPageContents(Captive_Model_SplashPage $splashPage/*,
                                           Captive_Model_Language $language*/)
     {
@@ -418,9 +618,72 @@ class Captive_Service_SplashPage
 		    }
 
 		} catch (Exception $e) {
+		    Unwired_Exception::getLog()->debug($e->getMessage());
 		    return false;
 		}
 
 		return true;
+    }
+
+    public function importLayout($layoutData, $parent)
+    {
+        if ($layoutData instanceof Zend_Config) {
+            $layoutData = $layoutData->toArray();
+        }
+
+        try {
+            $mapperLayout = new Captive_Model_Mapper_Layout();
+            $mapperLanguage = new Captive_Model_Mapper_Language();
+            $mapperContent = new Captive_Model_Mapper_Content();
+
+            $layoutContent = array();
+            if (isset($layoutData['content']) && !empty($layoutData['content'])) {
+                $layoutContent = $layoutData['content'];
+            }
+
+            unset($layoutData['content']);
+
+            $layout = new Captive_Model_Layout();
+
+            $layout->fromArray($layoutData);
+
+            if ($parent instanceof Captive_Model_Template) {
+                $layout->setTemplateId($parent->getTemplateId());
+            } else {
+                $layout->setSplashId($parent->getSplashId());
+            }
+            $mapperLayout->save($layout);
+
+
+            foreach ($layoutContent as $contentData) {
+                $content = new Captive_Model_Content();
+                $content->fromArray($contentData);
+                $content->setSplashId($layout->getSplashId())
+                        ->setTemplateId($layout->getTemplateId())
+                        ->setLayoutId($layout->getLayoutId());
+
+                $content->setData(array());
+
+                foreach ($contentData['data'] as $languageCode => $languageContent) {
+                    $language = $mapperLanguage->findOneBy(array('code' => $languageCode));
+
+                    if (!$language) {
+                        continue;
+                    }
+
+                    $dataEntity = new Captive_Model_ContentData();
+                    $dataEntity->setLanguageId($language->getLanguageId());
+                    $dataEntity->fromArray($languageContent);
+                    $content->addData($dataEntity);
+                }
+
+                $mapperContent->save($content);
+            }
+        } catch (Exception $e) {
+            Unwired_Exception::getLog()->debug($e->getMessage());
+            return false;
+        }
+
+        return true;
     }
 }

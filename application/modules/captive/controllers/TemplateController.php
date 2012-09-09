@@ -107,6 +107,7 @@ class Captive_TemplateController extends Unwired_Controller_Crud
 										   								$fileElement->getFileName());
 			}
 		} catch (Exception $e) {
+		    Unwired_Exception::getLog()->debug($e->getMessage());
 			$templateProcessed = false;
 		}
 
@@ -115,6 +116,7 @@ class Captive_TemplateController extends Unwired_Controller_Crud
 		 * Mark form as error if not.
 		 */
 		if ($fileElement && $fileElement->isUploaded() && !$templateProcessed) {
+		    $this->view->uiMessage()->clearMessages();
 			$this->view->form->markAsError();
 			$fileElement->addError('Error processing template file');
 
