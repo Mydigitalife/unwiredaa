@@ -25,6 +25,23 @@
 })();
 
 /**
+ * Add Object.keys to non-ECMA5 compat browsers
+ */
+if (!Object.keys) {
+    Object.keys = function (obj) {
+        var keys = [],
+            k;
+        for (k in obj) {
+            if (Object.prototype.hasOwnProperty.call(obj, k)) {
+                keys.push(k);
+            }
+        }
+        return keys;
+    };
+}
+
+
+/**
  * Check if string is valid email address
  * @param str
  * @returns {Boolean}
