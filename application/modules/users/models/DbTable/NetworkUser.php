@@ -19,6 +19,6 @@ class Users_Model_DbTable_NetworkUser extends Zend_Db_Table_Abstract
 
     protected $_name = 'network_user';
 
-	protected $_dependentTables = array('Users_Model_DbTable_NetworkUserPolicy');
+	protected $_dependentTables = array('Users_Model_DbTable_NetworkUserPolicy', 'Users_Model_DbTable_NetworkUserData');
 }
 

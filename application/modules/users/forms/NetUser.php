@@ -105,7 +105,8 @@ class Users_Form_NetUser extends Unwired_Form
 		$this->addElement('multiselect', 'policy_ids', array('label' => 'users_netuser_edit_form_policy',
 															 'required' => true,
 															 'class' => 'span-5'));
-
+        
+        $this->addElement('hidden', 'data', array('required' => false));
 		/**
 		 * Add policy groups as options
 		 */

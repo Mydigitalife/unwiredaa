@@ -1,307 +1,331 @@
 <?php
+
 /**
-* Unwired AA GUI
-*
-* Author & Copyright (c) 2011 Unwired Networks GmbH
-* alexander.szlezak@unwired.at
-*
-* Licensed under the terms of the Affero Gnu Public License version 3
-* (AGPLv3 - http://www.gnu.org/licenses/agpl.html) or our proprietory
-* license available at http://www.unwired.at/license.html
-*/
+ * Unwired AA GUI
+ *
+ * Author & Copyright (c) 2011 Unwired Networks GmbH
+ * alexander.szlezak@unwired.at
+ *
+ * Licensed under the terms of the Affero Gnu Public License version 3
+ * (AGPLv3 - http://www.gnu.org/licenses/agpl.html) or our proprietory
+ * license available at http://www.unwired.at/license.html
+ */
 
 /**
  * Network user model
  * @author B. Krastev <bkrastev@web-teh.net>
  */
-class Users_Model_NetUser extends Unwired_Model_Generic implements Zend_Acl_Role_Interface,
-																   Zend_Acl_Resource_Interface
-{
-	protected $_userId = null;
+class Users_Model_NetUser extends Unwired_Model_Generic implements Zend_Acl_Role_Interface, Zend_Acl_Resource_Interface {
 
-	protected $_groupId = null;
+    protected $_userId = null;
+    protected $_groupId = null;
+    protected $_username = null;
+    protected $_password = null;
+    protected $_firstname = null;
+    protected $_lastname = null;
+    protected $_email = null;
+    protected $_phone = null;
+    protected $_address = null;
+    protected $_city = null;
+    protected $_zip = null;
+    protected $_country = 'AT';
+    protected $_mac = '';
+    protected $_radiusSync = 0;
+    protected $_policyIds = array(1);
+    protected $_data = array();
 
-	protected $_username = null;
+    /**
+     * @return the $userId
+     */
+    public function getUserId() {
+        return $this->_userId;
+    }
 
-	protected $_password = null;
+    /**
+     * @param integer $userId
+     */
+    public function setUserId($userId) {
+        $this->_userId = (int) $userId;
+        return $this;
+    }
 
-	protected $_firstname = null;
+    /**
+     * @return the $groupId
+     */
+    public function getGroupId() {
+        return $this->_groupId;
+    }
 
-	protected $_lastname = null;
+    /**
+     * @param integer $groupId
+     */
+    public function setGroupId($groupId) {
+        $this->_groupId = (int) $groupId;
+        return $this;
+    }
 
-	protected $_email = null;
+    /**
+     * ACL role unique identifier
+     *
+     * @see Zend_Acl_Role_Interface::getRoleId()
+     */
+    public function getRoleId() {
+        return $this->getEmail();
+    }
 
-	protected $_phone = null;
+    /**
+     * @return the $username
+     */
+    public function getUsername() {
+        return $this->_username;
+    }
 
-	protected $_address = null;
+    /**
+     * @param string $username
+     */
+    public function setUsername($username) {
+        $this->_username = $username;
+        return $this;
+    }
 
-	protected $_city = null;
+    /**
+     * @return the $password
+     */
+    public function getPassword() {
+        return $this->_password;
+    }
 
-	protected $_zip = null;
+    /**
+     * @param string $password
+     */
+    public function setPassword($password) {
+        if (!empty($password)) {
+            if (strlen($password) != 32) {
+                $password = md5($password);
+            }
 
-	protected $_country = 'AT';
+            $this->_password = $password;
+        }
+        return $this;
+    }
 
-	protected $_mac = '';
+    /**
+     * @return the $firstname
+     */
+    public function getFirstname() {
+        return $this->_firstname;
+    }
 
-	protected $_radiusSync = 0;
+    /**
+     * @param string $firstname
+     */
+    public function setFirstname($firstname) {
+        $this->_firstname = $firstname;
+        return $this;
+    }
 
-	protected $_policyIds = array(1);
+    /**
+     * @return the $lastname
+     */
+    public function getLastname() {
+        return $this->_lastname;
+    }
 
-	/**
-	 * @return the $userId
-	 */
-	public function getUserId() {
-		return $this->_userId;
-	}
+    /**
+     * @param string $lastname
+     */
+    public function setLastname($lastname) {
+        $this->_lastname = $lastname;
+        return $this;
+    }
 
-	/**
-	 * @param integer $userId
-	 */
-	public function setUserId($userId) {
-		$this->_userId = (int) $userId;
-		return $this;
-	}
+    /**
+     * @return the $email
+     */
+    public function getEmail() {
+        return $this->_email;
+    }
 
-	/**
-	 * @return the $groupId
-	 */
-	public function getGroupId() {
-		return $this->_groupId;
-	}
+    /**
+     * @param string $email
+     */
+    public function setEmail($email) {
+        $this->_email = $email;
+        return $this;
+    }
 
-	/**
-	 * @param integer $groupId
-	 */
-	public function setGroupId($groupId) {
-		$this->_groupId = (int) $groupId;
-		return $this;
-	}
+    /**
+     * @return the $phone
+     */
+    public function getPhone() {
+        return $this->_phone;
+    }
 
-	/**
-	 * ACL role unique identifier
-	 *
-	 * @see Zend_Acl_Role_Interface::getRoleId()
-	 */
-	public function getRoleId()
-	{
-		return $this->getEmail();
-	}
+    /**
+     * @param string $phone
+     */
+    public function setPhone($phone) {
+        $this->_phone = $phone;
+    }
 
-	/**
-	 * @return the $username
-	 */
-	public function getUsername() {
-		return $this->_username;
-	}
+    /**
+     * @return the $address
+     */
+    public function getAddress() {
+        return $this->_address;
+    }
 
-	/**
-	 * @param string $username
-	 */
-	public function setUsername($username) {
-		$this->_username = $username;
-		return $this;
-	}
+    /**
+     * @param string $address
+     */
+    public function setAddress($address) {
+        $this->_address = $address;
+        return $this;
+    }
 
-	/**
-	 * @return the $password
-	 */
-	public function getPassword() {
-		return $this->_password;
-	}
+    /**
+     * @return the $city
+     */
+    public function getCity() {
+        return $this->_city;
+    }
 
-	/**
-	 * @param string $password
-	 */
-	public function setPassword($password) {
-		if (!empty($password)) {
-			if (strlen($password) != 32) {
-				$password = md5($password);
-			}
+    /**
+     * @param string $city
+     */
+    public function setCity($city) {
+        $this->_city = $city;
+        return $this;
+    }
 
-			$this->_password = $password;
-		}
-		return $this;
-	}
+    /**
+     * @return the $zip
+     */
+    public function getZip() {
+        return $this->_zip;
+    }
 
-	/**
-	 * @return the $firstname
-	 */
-	public function getFirstname() {
-		return $this->_firstname;
-	}
+    /**
+     * @param string $zip
+     */
+    public function setZip($zip) {
+        $this->_zip = $zip;
+        return $this;
+    }
 
-	/**
-	 * @param string $firstname
-	 */
-	public function setFirstname($firstname) {
-		$this->_firstname = $firstname;
-		return $this;
-	}
+    /**
+     * @return the $country
+     */
+    public function getCountry() {
+        return $this->_country;
+    }
 
-	/**
-	 * @return the $lastname
-	 */
-	public function getLastname() {
-		return $this->_lastname;
-	}
+    /**
+     * @param string $country Two character country code
+     */
+    public function setCountry($country) {
+        $this->_country = $country;
+        return $this;
+    }
 
-	/**
-	 * @param string $lastname
-	 */
-	public function setLastname($lastname) {
-		$this->_lastname = $lastname;
-		return $this;
-	}
+    /**
+     * @return the $mac
+     */
+    public function getMac() {
+        return $this->_mac;
+    }
 
-	/**
-	 * @return the $email
-	 */
-	public function getEmail() {
-		return $this->_email;
-	}
+    /**
+     * @param string $mac
+     */
+    public function setMac($mac) {
+        /*
+          if (!preg_match('/^[A-Z0-9]+$/i', $mac)) {
+          $mac = preg_replace('/[^A-Z0-9]+/i', '', $mac);
+          }
 
-	/**
-	 * @param string $email
-	 */
-	public function setEmail($email) {
-		$this->_email = $email;
-		return $this;
-	}
+          $mac = strtoupper(implode('-', str_split($mac, 2)));
+          $this->_mac = $mac;
+         */
 
-	/**
-	 * @return the $phone
-	 */
-	public function getPhone() {
-		return $this->_phone;
+        $this->_mac = strtoupper(preg_replace('/[^A-F0-9]/i', '', $mac));
 
-	}
+        return $this;
+    }
 
-	/**
-	 * @param string $phone
-	 */
-	public function setPhone($phone) {
-		$this->_phone = $phone;
-	}
+    public function isRadiusSync() {
+        return (int) (bool) $this->_radiusSync;
+    }
 
-	/**
-	 * @return the $address
-	 */
-	public function getAddress() {
-		return $this->_address;
-	}
+    public function setRadiusSync($synced = 0) {
+        $this->_radiusSync = (int) (bool) $synced;
 
-	/**
-	 * @param string $address
-	 */
-	public function setAddress($address) {
-		$this->_address = $address;
-		return $this;
-	}
+        return $this;
+    }
 
-	/**
-	 * @return the $city
-	 */
-	public function getCity() {
-		return $this->_city;
-	}
+    /**
+     * @return array $policyIds
+     */
+    public function getPolicyIds() {
+        return $this->_policyIds;
+    }
 
-	/**
-	 * @param string $city
-	 */
-	public function setCity($city) {
-		$this->_city = $city;
-		return $this;
-	}
+    /**
+     * @param array $policyIds
+     */
+    public function setPolicyIds($policyIds = array(1)) {
+        if (!is_array($policyIds)) {
+            $policyIds = array(1);
+        }
 
-	/**
-	 * @return the $zip
-	 */
-	public function getZip() {
-		return $this->_zip;
-	}
+        $this->_policyIds = $policyIds;
 
-	/**
-	 * @param string $zip
-	 */
-	public function setZip($zip) {
-		$this->_zip = $zip;
-		return $this;
-	}
+        return $this;
+    }
 
-	/**
-	 * @return the $country
-	 */
-	public function getCountry() {
-		return $this->_country;
-	}
+    public function getResourceId() {
+        return 'users_netuser';
+    }
 
-	/**
-	 * @param string $country Two character country code
-	 */
-	public function setCountry($country) {
-		$this->_country = $country;
-		return $this;
-	}
+    /**
+     * @return array
+     */
+    public function getData() {
+        return $this->_data;
+    }
 
-	/**
-	 * @return the $mac
-	 */
-	public function getMac() {
-		return $this->_mac;
-	}
+    /**
+     * @param array $data
+     * @return \Users_Model_NetUser
+     */
+    public function setData($data) {
+        if (!is_array($data)) {
+            $data = Array($data);
+        }
+        
+        $this->_data = $data;
+        return $this;
+    }
 
-	/**
-	 * @param string $mac
-	 */
-	public function setMac($mac) {
-		/*
-		if (!preg_match('/^[A-Z0-9]+$/i', $mac)) {
-			$mac = preg_replace('/[^A-Z0-9]+/i', '', $mac);
-		}
+    /**
+     * adds data with a specific key, returns old value if available
+     * @param string $key
+     * @param string $value
+     * @return string
+     */
+    public function addData($key, $value) {
+        if (isset($this->_data[$key])) {
+            $old = $this->_data[$key];
+        }
 
-		$mac = strtoupper(implode('-', str_split($mac, 2)));
-		$this->_mac = $mac;
-		*/
+        $this->_data[$key] = $value;
 
-		$this->_mac = strtoupper(preg_replace('/[^A-F0-9]/i', '', $mac));
+        return $old;
+    }
 
-		return $this;
-	}
+    public function fromArray(array $data) {
+        parent::fromArray($data);
+        return $this;
+    }
 
-	public function isRadiusSync()
-	{
-		return (int) (bool) $this->_radiusSync;
-	}
-
-	public function setRadiusSync($synced = 0)
-	{
-		$this->_radiusSync = (int) (bool) $synced;
-
-		return $this;
-	}
-
-	/**
-	 * @return array $policyIds
-	 */
-	public function getPolicyIds() {
-		return $this->_policyIds;
-	}
-
-	/**
-	 * @param array $policyIds
-	 */
-	public function setPolicyIds($policyIds = array(1)) {
-		if (!is_array($policyIds)) {
-			$policyIds = array(1);
-		}
-
-		$this->_policyIds = $policyIds;
-
-		return $this;
-	}
-
-	public function getResourceId()
-	{
-		return 'users_netuser';
-	}
 }
